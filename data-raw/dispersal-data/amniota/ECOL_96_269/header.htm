@@ -1,0 +1,60 @@
+<!--?php
+    $id = 9683;
+    if($id != false)
+        include 'C:/inetpub/archives_login.php';
+    
+    //Displays the header information for the manuscript associated with the given id number.
+    function displayHeader() {
+        global $id;
+        if($id == false)
+            echo 'Manuscript metadata not yet available.';
+        else {
+            $val = intval($id);
+            $result = mysql_query("SELECT * FROM manuscripts WHERE id='$val'");
+            $row = mysql_fetch_assoc($result);
+            $fullJournal = '<i--><html><head><meta http-equiv="Content-Type" content="text/html, charset=UTF-8"></head><body>' . getJournalName($row['journal']) . '';
+            $doiURL = 'http://dx.doi.org/10.1890/' . $row['msNumber'] . '.1';
+            $header = $row['authors'] . '. ' . $row['year'] . '. ' . $row['title'] . ' ' . $fullJournal . ' ' . $row['volume'] . ':' . $row['pages'] . '. <a href="' . $doiURL . '">' . $doiURL . '</a>';
+            echo '<p class="heading">' . $header . '</p>';
+        }
+    }
+    
+    //Returns full journal name from given abbreviation letter.
+    function getJournalName($letter) {
+        if($letter == 'E')
+            return 'Ecology';
+        else if($letter == 'A')
+            return 'Ecological Applications';
+        else if($letter == 'M')
+            return 'Ecological Monographs';
+        else if($letter == 'C')
+            return 'Ecosphere';
+		else if($letter == 'H')
+            return 'Ecosystem Health and Sustainability';	
+        else if($letter == 'B')
+            return 'Bulletin of the Ecological Society America';
+    }
+    
+    
+    //Displays the full accession number (journal letter + volume + accession).
+    function displayAccession() {
+        global $id;
+        if($id == false)
+            echo 'X###-###';
+        else {
+            $val = intval($id);
+            $result = mysql_query("SELECT * FROM manuscripts WHERE id='$val'");
+            $row = mysql_fetch_assoc($result);
+            echo $row['journal'] . addZeroes($row['volume']) . '-' . addZeroes($row['accession']);
+        }
+    }
+    
+    //Adds zeroes to strings shorter than 3 characters.
+    function addZeroes($value) {
+        if(strlen($value) == 1)
+            $value = '00' . $value;
+        else if(strlen($value) == 2)
+            $value = '0' . $value;
+        return $value;
+    }
+?&gt;</body></html>
