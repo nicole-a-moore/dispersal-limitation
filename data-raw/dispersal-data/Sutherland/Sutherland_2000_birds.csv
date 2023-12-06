@@ -1,0 +1,133 @@
+﻿Species,Body mass (kg),Obs type,Natal dispersal median distance (km),Natal dispersal maximum distance (km),1,2,3,n,Source
+Phalacrocorax pelagicus,2.03 m,S,...,150.0 m/f,C,G,M,...,Hobson (1997)
+,1.7 f,,,,,,,,
+Cygnus olor,11.80 m,S,...,64.0 m/f,H,T,R,...,Ciaranca et al. (1997)
+,9.67 f,,,,,,,,
+Cygnus buccinator,11.40 m,S,...,128.0 m/f,O,T,M,...,Mitchell (1994)
+,10.30 f,,,,,,,,
+Branta canadensis,3.814 m,D,2.0 m,28.4 m,H,T,R,19 m,Lessells (1985)
+,3.314 f,,1.5 f,11.2 f,,,,20 f,
+Aix sponsa,0.681 m,S,...,3.8 m/f,O,N,M,...,Hepp and Bellrose (1995)
+,0.685 f,,,,,,,,
+Bucephala clangula,1.00 m,D,0.75 f,6.0 f,O,N,M,138 f,Dow and Fredga (1983)
+,0.80 f,,,,,,,,
+Bucephala albeola,0.334 f,S,...,4.5 f,C,T,M,...,Gauthier (1993)
+Lophodytes cucullatus,0.68 m,S,...,5.6 m/f,C,T,M,10 f,Dugger et al. (1994)
+,0.54 f,,,,,,,,
+Eudocimus albus,1.04 m,S,...,100.0 m/f,C,G,M,...,Kushlan and Bildstein (1992)
+,0.76 f,,,,,,,,
+Elanus leucurus,0.325 m/f,S,...,160.0 m/f,C,N,R,...,Dunk (1995)
+Accipiter gentilis,0.912 m,D,32 m,1150 m/f,C,T,M,87 m,"Marcström and Kenward (1981), Mueller and Berger (1967)"
+,1.137 f,,17 f,,,,,66 f,
+Accipiter cooperi,0.349 m,D,9.2 m,35.2 m,C,T,M,6 m,Rosenfield and Bielefeldt (1992)
+,0.529 f,,14.4 f,,,,,,
+Accipiter nisus,0.150 m,D,9.0 m,108.0 m,C,T,R,99 m,Newton and Marquiss (1983)
+,0.280 f,,18.5 f,166.0 f,,,,65 f,
+Parabuteo unicinctus,0.69 m,S,...,160.0 m/f,C,N,R,...,Bednarz (1995)
+,0.99 f,,,,,,,,
+Buteo lineatus,0.475 m,S,...,24.0 m/f,C,T,M,4 m/f,Crocoll (1994)
+,0.643 f,,,,,,,,
+Buteo swainsoni,1.069 f,S,...,320.0 f,C,T,M,46 m/f,Preston and Beane (1993)
+Aquila adalberti,3.0 m/f,D,100.0 m/f,430.0 m/f,C,T,R,24 m/f,Ferrer (1993)
+Falco peregrinus,0.611 m,D,58.0 m,357.0 m,C,T,R,11 m,"Mearns and Newton (1982), James et al. (1989)"
+,0.952 f,,83.0 f,324.0 f,,,,,
+Falco sparverius,0.111 m,D,4.8 m,32.45 m,C,T,M,21 f,Miller and Smallwood (1997)
+,0.120 f,,5.06 f,38.79 f,,,,,
+Bonasa bonasia,...,S,...,5.7 m,H,N,R,9 m/f,Fang and Sun (1997)
+,,,,4.8 f,,,,,
+Dendragapus canadensis,0.492 m,D,0.6 m,6.0 m,H,T,M,88 m,"Hines (1986), Schroeder (1986)"
+,0.456 f,,5.0 f,6.0 f,,,,,
+Dendragapus obscurus,1.188 m,D,0.9 m,2.6 m,H,T,R,24 m,"Beaudette and Keppie (1992), Jamieson and Zwickel (1983)"
+,0.891 f,,1.4 f,11.0 f,,,,42 f,
+Tympanuchus cupido,0.999 m,D,1.0 m/f,10.8 m/f,H,N,M,24 m/f,Bowman and Robel (1977)
+,0.772 f,,,,,,,,
+Meleagris gallopavo,7.40 m,S,...,48.0 f,O,N,R,...,Eaton (1992)
+,4.22 f,,,,,,,,
+Lagopus leucurus,0.359 m,D,1.0 m,7.5 m,H,T,R,258 m,Giesen and Braun (1993)
+,0.516 f,,4.0 f,29.0 f,,,,68 f,
+Lagopus lagopus,0.601 m,D,1.0 m,4.0 m,H,T,R,60 m,Martin and Hannon (1987)
+,0.516 f,,2.9 f,7.5 f,,,,17 f,
+Actitis macularia,0.477 m,S,...,146.7 m/f,C,T,P,5 m/f,Oring et al. (1997)
+,0.394 f,,,,,,,,
+Numenius phaeopus,0.36 m,S,...,1.63 m,O,N,M,...,Skeel and Mallory (1996)
+,0.40 f,,,,,,,,
+Recurvirostra americana,0.32 m/f,S,...,19.4 f,O,G,M,5 m,Robinson and Oring (1997)
+,,,,,,,,3 f,
+Charadrius melodus,0.552 m/f,D,11.8 m/f,596.0 m,C,T,M,34 m/f,Haig and Oring (1988)
+,,,,146 f,,,,,
+Larus delawarensis,0.57 m,D,98.0 m/f,700 m/f,O,G,M,2427 m/f,Gabrey (1996)
+,0.47 f,,,,,,,,
+Larus glaucescens,1.010 m/f,D,100.0 m/f,400.0 m/f,C,G,R,581 m/f,"Butler et al. (1980), Belant and Dolbeer (1993)"
+Larus fuscus,0.71 m/f,D,42 m/f,202 m/f,C,G,R,1836 m/f,Paradis et al. (1998)
+Columba palumbus,0.49m/f,D,4 m/f,150 m/f,O,T,R,751 m/f,Paradis et al. (1998)
+Zenaida macroura,0.123 m,S,...,4.8 m,H,N,M,...,Tomlinson et al. (1960)
+,0.115 f,,,4.8 f,,,,,
+Otus asio,0.167 m,D,10.7 m/f,158.5 m/f,C,N,R,17 m/f,"Belthoff and Ritchison (1989), VanCamp and Henny (1975), Gehlbach (1986)"
+,0.194 f,,,,,,,,
+Strix aluco,0.454 m,D,4.0 m/f,22.4 m/f,C,T,R,9 m/f,Southern (1970)
+,0.478 f,,,,,,,,
+Strix nebulosa,0.79 m,S,...,50.0 m/f,C,N,R,21 m/f,Bull and Duncan (1993)
+,1.16 f,,,,,,,,
+Strix occidentalis,0.582 m,D,29.0 m/f,87.4 m/f,C,T,R,11 m/f,"Gutiérrez et al. (1985), Miller and Meslow (1985)"
+,0.637 f,,,,,,,,
+Speotyto cunicularia,0.150 m/f,S,...,30.0 m/f,C,G,M,...,Haug et al. (1993)
+Aegolius funereus,0.101 m,D,12.8 m,67.5 m,C,N,R,23 m/f,"Wallin and Andersson (1981), Löfgren et al. (1986), Korpimäki (1987), Korpimäki and Lagerström (1988)"
+,0.167 f,,56.0 f,300.0 f,,,,13 m,
+,,,,,,,,37 f,
+Bubo virginianus,1.154 m,S,...,1305.0 m/f,C,T,R,111 m/f,Adamcik and Keith (1978)
+,1.555 f,,,,,,,,
+Picoides borealis,0.044 m/f,S,...,90.0 m/f,O,T,M,...,Jackson (1994)
+Dryocopus pileatus,0.31 m,S,...,32.0 m/f,O,T,R,8 m/f,Bull and Jackson (1995)
+,0.27 f,,,,,,,,
+Hirundo fulva,0.020 m/f,S,...,30.0 m/f,C,G,M,...,West (1995)
+Hirundo rustica,0.19 m/f,D,6.4 m/f,8.1 m/f,C,G,R,7 m/f,"Allen and Nice (1952), Shields (1982)"
+Iridoprocne bicolor,0.02 m/f,D,1.0 m/f,6.4 m/f,O,N,M,41 m/f,Chapman (1955)
+Riparia riparia,0.015 m/f,D,6.0 m/f,144.0 m/f,C,N,M,3046 m/f,Mead (1979)
+Progne subis,0.049 m/f,D,40 m/f,336.0 m/f,O,G,M,46 m/f,Allen and Nice (1952)
+Delichon urbica,0.020 m/f,D,0.03 m/f,4.3 m/f,C,N,M,49 m/f,Rheinwald (1975)
+Aphelocoma coerulescens,0.080 m/f,D,0.7 m,1.1 m,H,N,R,38 m,Woolfenden and Fitzpatrick (1978)
+,,,0.3 f,1.8 f,,,,32 f,
+Malurus splendens,0.010 m/f,D,0.20 m,2.40 m/f,C,G,R,94 f,Russell and Rowley (1993)
+,,,0.20 f,,,,,,
+Gymnorhinus cyanocephalus,0.103 m/f,S,...,640.0 m/f,O,N,R,1064 m/f,Marzluff and Balda (1989)
+Sayornis nigricans,0.02 m,S,...,34.4 m,C,T,R,33 m,Wolf (1997)
+,0.018 f,,,20.0 f,,,,30 f,
+Perisoreus canadensis,0.071 m/f,D,0.0 m,11.3 m/f,O,T,R,15 m/f,Strickland (1991)
+,,,2.8 f,,,,,,
+Pica pica,0.189 m,D,0.35 m,1.3 m,O,N,R,...,Eden (1987)
+,0.166 f,,0.5 f,0.8 f,,,,,
+Parus atricapillus,0.011 m/f,D,1.1 f,11.2 f,O,N,R,58 m,Weise and Meyer (1979)
+,,,,,,,,45 f,
+Parus major,0.02 m,D,0.6 m,3.3 m,O,T,R,92 m,"Berndt and Sternberg (1968), Greenwood et al. (1979), Weise and Meyer (1979), Nilsson (1989)"
+,0.018 f,,0.9 f,3.3 f,,,,98 f,
+Parus palustris,0.014 m/f,D,1.1 m,4.6 m,O,T,R,65 m,Nilsson (1989)
+,,,2.6 f,7.3 f,,,,53 f,
+Parus caeruleus,0.011 m/f,D,0.7 m/f,470.0 m/f,O,T,R,72 f,Berndt and Sternberg (1968)
+Sitta europea,0.022 m/f,D,1.1 m,...,O,T,M,29 m,"Berndt and Sternberg (1968), Mattysen and Schmidt (1987)"
+,,,0.8 f,,,,,26 f,
+Vireo griseus,0.011 m/f,S,...,20.0 m/f,C,T,M,...,Hopp et al. (1995)
+Lanius ludovicianus,0.047 m/f,D,7.3 m/f,79.7 m/f,O,T,M,69 m/f,Collister and De Smet (1997)
+Turdus merula,0.095 m/f,D,5.0 m/f,355.0 m/f,O,T,R,74 m,"Allen and Nice (1952), Greenwood and Harvey (1977)"
+,,,,,,,,50 f,
+Turdus merula,0.095 m/f,D,4.0 m/f,355 m/f,O,T,R,2204 m/f,Paradis et al. (1998)
+Toxostoma curvirostre,0.079 m/f,S,...,30.0 m/f,C,T,R,...,Tweit (1996)
+Hylocichla mustelina,0.044 m,S,...,4.68 m/f,C,T,M,680 m/f,Anders et al. (1998)
+,0.050 f,,,,,,,,
+Acrocephalus scirpaceus,0.012 m/f,D,51 m/f,271 m/f,C,N,M,78 m/f,Paradis et al. (1998)
+Motacilla alba,0.24 m/f,S,...,100.0 m/f,C,N,M,...,Badyaev et al. (1996)
+Seiurus motacilla,0.020 m,S,...,4.0 m/f,C,T,M,...,Robinson (1995)
+,0.021 f,,,,,,,,
+Passerculus sandwichensis,0.019 m/f,D,0.248 f,1.4 f,H,N,M,65 m,Wheelwright and Mauck (1998)
+,,,0.202 m,1.6 m,,,,76 f,
+Melospiza melodia,0.021 m/f,D,0.20 m,13.2 m,H,T,R,36 m/f,"Nice (1937), Johnston (1956), Halliburton and Mewaldt (1976), Arcese (1989)"
+,,,0.20 f,1.3 f,,,,34 m/f,
+Zonotrichia leucophrys,0.294 m/f,D,0.3 m,2.6 m/f,O,T,M,138 m,Baker and Mewaldt (1978)
+,,,0.4 f,,,,,173 f,
+Passerina cyanea,0.108 m/f,S,...,470.0 m/f,O,N,M,...,Payne (1991)
+Carduelis chloris,0.03 m/f,D,7.0 m,150.0 m,H,T,R,15 m,Greenwood and Harvey (1977)
+,,,3.0 f,37.5 f,,,,11 f,
+Ficedula hypoleuca,0.015 m/f,D,0.9 m/f,75.0 m/f,O,T,M,473 m/f,"Berndt and Sternberg (1968), Pärt (1990)"
+Quiscalus major,0.21 m,S,...,35.0 m,O,G,R,...,Post et al. (1996)
+,0.12 f,,,7.0 f,,,,,
+Molothrus ater,0.05 m,S,...,40.0 m/f,O,N,M,15 m/f,Lowther (1993)
+,0.04 f,,,,,,,,
