@@ -3,6 +3,10 @@ harmonize <- function(sp_names){
   
   library(taxadb)
   library(bdc)
+  library(parallel)
+  library(traitdataform)
+  library(pbapply)
+  library(data.table)
   source("R/taxonomic-harmonization/clean_taxa_functions.R")
   
   sp_names = Clean_Names(sp_names,

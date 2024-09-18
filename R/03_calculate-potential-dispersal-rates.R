@@ -2,6 +2,8 @@
 ## combine with range expansion data 
 library(tidyverse)
 source("R/taxonomic-harmonization/clean_taxa_functions.R")
+## read function to harmonize taxonomy
+source("R/taxonomic-harmonization/harmonize.R")
 
 #########################################
 ####   prep dispersal distance data  ####
@@ -147,8 +149,8 @@ dscale <- rename(dscale, "DispersalSource"= Source, "DispersalUnit"= Unit)
 v1 = left_join(v1, dscale, by = "scientificName") 
 
 ## check on merge
-length(unique(v1$scientificName[which(!is.na(v1$DispersalDistanceKm))])) # 586 species have dispersal scale
-length(which(is.na(v1$DispersalDistanceKm))) # 0 missing dispersal scale
+length(unique(v1$scientificName[which(!is.na(v1$DispersalDistanceKm))])) # 586 species have dispersal distance
+length(which(is.na(v1$DispersalDistanceKm))) # 0 missing dispersal distance
 
 
 
@@ -275,6 +277,61 @@ ggsave(groups, path = "figures/sotm", filename = "barplot-groups.png",
 v1_filtered %>%
   group_by(group) %>% tally()
 
+## get rid of "Chloris chloris" since range shift is for a bird, dispersal distance is for the plant
+
+v1_filtered <- filter(v1_filtered, scientificName != "Chloris chloris")
+
 ## save 
 write.csv(v1_filtered, "data-processed/v1_potential-dispersal-rate.csv", row.names = FALSE)
+
+v1_filtered <- read.csv("data-processed/v1_potential-dispersal-rate.csv")
+
+## filter out elevational studies 
+lat <- v1_filtered  %>%
+  filter(Gradient != "Elevation")
+  
+nrow(lat) # 1337 shifts
+length(unique(lat$scientificName)) # 346 species 
+  
+## how many are centroid vs. leading edge 
+lat %>% 
+  group_by(Position) %>%
+  tally()
+
+## plot distribution of dispersal scale for proposal document:
+lat %>%
+  select(DispersalPotentialKmY, scientificName, group) %>%
+  unique() %>%
+  ggplot(aes(x = DispersalPotentialKmY, fill = group)) + geom_histogram() +
+  theme_bw() +
+  scale_x_log10(breaks = c(0.0001, 0.001, 0.01, 0.01, 0.1, 1, 10, 100, 1000),
+                labels = c("0.0001", "0.001", "0.01", "0.01", "0.1", "1", "10", "100", "1000")) +
+  labs(fill = "", x = "Potential dispersal rate (km/y)", y = "Frequency") +
+  theme(panel.grid = element_blank())
+
+ggsave(path = "figures/proposal", filename = "disp-pot-distribution.png",
+       height = 3, width = 6)
+
+lat %>%
+  select(DispersalPotentialKmY, scientificName, group) %>%
+  unique() %>%
+  ggplot(aes(x = DispersalPotentialKmY)) + geom_histogram() +
+  theme_bw() +
+  scale_x_log10(breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000),
+                labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100", "1000")) +
+  labs(fill = "", x = "Potential dispersal rate (km/y)", y = "Frequency") +
+  theme(panel.grid = element_blank()) 
+
+lat %>%
+  ggplot(aes(x = DispersalPotentialKmY, fill = group)) + geom_histogram() +
+  theme_bw() +
+  scale_x_log10(breaks = c(0.0001, 0.001, 0.01, 0.01, 0.1, 1, 10, 100, 1000),
+                labels = c("0.0001", "0.001", "0.01", "0.01", "0.1", "1", "10", "100", "1000")) +
+  labs(fill = "", x = "Potential dispersal rate (km/y)", y = "Frequency") +
+  theme(panel.grid = element_blank()) +
+  facet_wrap(~Position) +
+  theme(legend.position = "none")
+
+ggsave(path = "figures/proposal", filename = "disp-pot-distribution-by-position.png",
+       height = 3, width = 6)
 

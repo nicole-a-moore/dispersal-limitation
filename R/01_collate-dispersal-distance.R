@@ -325,6 +325,9 @@ tamme <- left_join(tamme, tamme_harm, by = c("reported_name_fixed" = "species"),
                      relationship = "many-to-many") %>%
   unique()
 
+## write
+write.csv(tamme, "data-processed/Tamme_harmonized.csv", row.names = FALSE)
+
 
 ## Tamme
 tamme_dd <- tamme %>%
@@ -526,6 +529,9 @@ length(unique(dd_collated$scientificName)) # 622
 
 length(which(!dd_collated$scientificName %in% sp$scientificName))
 
+## write intermediate file 
+write.csv(dd_collated, "data-processed/dispersal-distance-collated_intermediate.csv", row.names = FALSE)
+dd_collated <- read.csv("data-processed/dispersal-distance-collated_intermediate.csv")
 
 ## fix classes that are missing
 sp <- read.csv("data-processed/BIOSHIFTSv1_harmonized.csv") %>%

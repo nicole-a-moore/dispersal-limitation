@@ -3,6 +3,7 @@ library(ggplot2)
 library(tidyverse)
 library(tidybayes)
 library(cmdstanr)
+library(loo)
 
 theme_set(theme_minimal())
 
@@ -75,10 +76,10 @@ shift_obs2 <- study2$ShiftKmY
 
 ## feed the data to the model
 breakpoint_B_gamma_Nikki_posterior2 <- breakpoint_B_gamma_Nikki$sample(parallel_chains = 4, 
-                                                                      data = list(disp = study2$DispersalPotentialKmY,
-                                                                                  n = nrow(study2), 
-                                                                                  climVelo = unique(study2$LatVeloT),
-                                                                                  shift = study2$ShiftKmY)) 
+                                                                       data = list(disp = study2$DispersalPotentialKmY,
+                                                                                   n = nrow(study2), 
+                                                                                   climVelo = unique(study2$LatVeloT),
+                                                                                   shift = study2$ShiftKmY)) 
 
 breakpoint_B_gamma_Nikki_posterior2
 ## b2 = 4.01
@@ -256,14 +257,17 @@ study2 %>%
 breakpoint_all_studies <- cmdstan_model("stan/breakpoint_all_studies.stan")
 breakpoint_all_studies
 
+## filter to only leading edge observations 
+#dd = filter(dd, Position == 'Leading edge')
+
 shift_obs = dd$ShiftKmY
 
 ## feed the data to the model
 breakpoint_all_studies_posterior <- breakpoint_all_studies$sample(parallel_chains = 4, 
-                                                            data = list(disp = dd$DispersalPotentialKmY,
-                                                                        n = nrow(dd), 
-                                                                        climVelo = dd$LatVeloT,
-                                                                        shift = dd$ShiftKmY)) 
+                                                                  data = list(disp = dd$DispersalPotentialKmY,
+                                                                              n = nrow(dd), 
+                                                                              climVelo = dd$LatVeloT,
+                                                                              shift = dd$ShiftKmY)) 
 
 breakpoint_all_studies_posterior
 ## b2 = 1.04 
@@ -296,7 +300,397 @@ samples <- dd %>%
 samples %>% 
   ggplot(aes(x = DispersalPotentialKmY, y = shift, colour = type)) + 
   geom_point() + 
-  facet_wrap(~.draw)
+  facet_wrap(~.draw) +
+  scale_x_log10()
+
+
+
+
+#####################################################
+## write model without slope parameter 
+#####################################################
+## in this model, range expansion rate = the minimum of clim velo and dispersal + sampling error
+## read in stan model
+## this model has gamma error distributions + two slopes 
+## before breakpoint = 1, after breakpoint = 0
+breakpoint_minimum <- cmdstan_model("stan/breakpoint_minimum.stan")
+breakpoint_minimum
+
+
+shift_obs = dd$ShiftKmY
+
+## feed the data to the model
+breakpoint_minimum_posterior <- breakpoint_minimum$sample(parallel_chains = 4, 
+                                                          data = list(disp = dd$DispersalPotentialKmY,
+                                                                      n = nrow(dd), 
+                                                                      climVelo = dd$LatVeloT,
+                                                                      shift = dd$ShiftKmY)) 
+
+breakpoint_minimum_posterior
+## sigma = 1.83
+
+
+shinystan::launch_shinystan(breakpoint_minimum_posterior)
+
+## get 11 samples 
+samples <- breakpoint_minimum_posterior %>%
+  tidybayes::gather_draws(shift_pred[i], ndraws = 11) %>% 
+  mutate(disp = dd$DispersalPotentialKmY[i]) %>%
+  rename("shift" = .value, "DispersalPotentialKmY" = disp) %>%
+  mutate(type = "predicted", .draw = paste0("shift_pred_", .draw)) %>%
+  ungroup() %>%
+  select(DispersalPotentialKmY, type, shift, .draw)
+
+## add real data to the dataframe 
+samples <- dd %>%
+  rename("shift" = ShiftKmY) %>%
+  mutate(type = "observed", .draw = "shift_obs") %>%
+  select(shift, type, DispersalPotentialKmY, .draw) %>%
+  rbind(., samples)
+
+## plot scatter plot
+samples %>% 
+  ggplot(aes(x = DispersalPotentialKmY, y = shift, colour = type)) + 
+  geom_point() + 
+  facet_wrap(~.draw) +
+  scale_x_log10() 
+
+samples %>% 
+  ggplot(aes(x = DispersalPotentialKmY, y = shift, colour = type)) + 
+  geom_point() + 
+  facet_wrap(~.draw) +
+  scale_x_log10() + 
+  scale_y_log10() 
+## model allows for really small shifts because climate velocity + dispersal potential is allowed to be really small
+
+sort(samples$shift)[which(sort(samples$shift) != 0)]
+sort(dd$ShiftKmY)[which(sort(dd$ShiftKmY) != 0)]
+## but we know that studies can't detect shifts of say 6.284515e-321 km/y
+## could we somehow implement a minimum detectable shift? 
+## like shifts that are less a certain amount are either 0 shifts or are the minimum detected shift in the data?
+
+
+min(dd$ShiftKmY) ## minimum detected shift = 2.18e-17
+hist(dd$ShiftKmY)
+
+exp(1)^quantile(log(dd$ShiftKmY), 0.05)
+
+samples %>% 
+  filter(shift >= 0.02579858,
+         DispersalPotentialKmY >= 0.02579858) %>%
+  ggplot(aes(x = DispersalPotentialKmY, y = shift, colour = type)) + 
+  geom_point() + 
+  facet_wrap(~.draw) +
+  scale_x_log10() + 
+  scale_y_log10() 
+
+
+
+
+
+
+## falsifying a model:
+
+### could compare to a model with just an intercept 
+### could fit and see if it fails 
+### could start with simplest model and add complexity, then compete models 
+
+
+
+
+
+
+## read in stan model
+## this model has gamma error distributions + two slopes 
+## before breakpoint = 1, after breakpoint = 0
+breakpoint_all_studies <- cmdstan_model("stan/breakpoint_all_studies_noneg.stan", pedantic = TRUE)
+breakpoint_all_studies
+
+## feed the data to the model
+breakpoint_all_studies_posterior <- breakpoint_all_studies$sample(parallel_chains = 4, 
+                                                                  data = list(disp = dd$DispersalPotentialKmY,
+                                                                              n = nrow(dd), 
+                                                                              climVelo = dd$LatVeloT,
+                                                                              shift = dd$ShiftKmY)) 
+## throws errors about non-finite parameters, but only during warmup - so it's okay 
+
+breakpoint_all_studies_posterior
+## b2 = 1.04 
+## sigma = 1.89
+
+
+### plotting 
+## choose one study
+## choose one with the highest climate veloicity 
+
+study <- dd %>%
+  filter(ClimVeloTKmY == max(ClimVeloTKmY))
+
+study %>%
+  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY)) +
+  geom_point() 
+
+
+## generate quantities 
+n = 100
+disp_vec <- modelr::seq_range(study$DispersalPotentialKmY, n)
+disp_vec <- seq(0.00001, max(study$DispersalPotentialKmY), length.out = n)
+
+breakpoint_generate_quantities <- cmdstan_model("stan/breakpoint_generate_quantities.stan", pedantic = TRUE)
+
+breakpoint_generate_quantities <- breakpoint_generate_quantities$generate_quantities(fitted_params = breakpoint_all_studies_posterior,
+                                                                                     parallel_chains = 4, 
+                                                                                     data = list(disp = disp_vec,
+                                                                                                 n = n, 
+                                                                                                 climVelo = rep(unique(study$ClimVeloTKmY), n))) 
+
+breakpoint_generate_quantities
+
+library(tidybayes)
+
+# breakpoint_generate_quantities %>%
+#   gather_rvars(shift_pred[i]) %>% head(2) %>% 
+#   #mutate(disp = disp_vec[i]) %>%
+#   ggplot(aes(y = i, dist = .value)) +
+#   stat_histinterval()
+
+## this is like broom
+## .variable = model parameter 
+## .value is value of parameter 
+
+breakpoint_generate_quantities %>%
+  gather_rvars(shift_pred[i]) %>%
+  mutate(disp = disp_vec[i]) %>%
+  ggplot(aes(x = disp, dist = .value)) +
+  stat_lineribbon() +
+  geom_point(data = study, aes(x = DispersalPotentialKmY, y = ShiftKmY), inherit.aes = FALSE) 
+
+## zoom in
+breakpoint_generate_quantities %>%
+  gather_rvars(shift_pred[i]) %>%
+  mutate(disp = disp_vec[i]) %>%
+  ggplot(aes(x = disp, dist = .value)) +
+  stat_lineribbon() +
+  geom_point(data = study, aes(x = DispersalPotentialKmY, y = ShiftKmY), inherit.aes = FALSE) +
+  coord_cartesian(xlim = c(0,10), ylim = c(0, 10))
+
+
+## plot all the predictions:
+n = 100
+cvs = unique(dd$ClimVeloTKmY)
+disp_vec <- c()
+for(i in cvs) {
+  study = filter(dd, ClimVeloTKmY == i)
+  disp_vec = append(disp_vec, seq(0.00001, max(study$DispersalPotentialKmY), length.out = n))
+}
+
+breakpoint_generate_quantities <- cmdstan_model("stan/breakpoint_generate_quantities.stan", pedantic = TRUE)
+
+breakpoint_generate_quantities <- breakpoint_generate_quantities$generate_quantities(fitted_params = breakpoint_all_studies_posterior,
+                                                                                     parallel_chains = 4, 
+                                                                                     data = list(disp = disp_vec,
+                                                                                                 n = n*length(unique(dd$ClimVeloTKmY)), 
+                                                                                                 climVelo = rep(unique(dd$ClimVeloTKmY), each = n))) 
+
+breakpoint_generate_quantities
+
+## plot one 
+study_1 = filter(dd, ClimVeloTKmY == first(dd$ClimVeloTKmY))
+breakpoint_generate_quantities %>%
+  gather_rvars(shift_pred[i]) %>%
+  mutate(disp = disp_vec[i],
+         climVelo = rep(unique(dd$ClimVeloTKmY), each = n)[i]) %>%
+  filter(climVelo == first(dd$ClimVeloTKmY)) %>% 
+  ggplot(aes(x = disp, dist = .value)) +
+  stat_lineribbon() +
+  geom_point(data = study_1, aes(x = DispersalPotentialKmY, y = ShiftKmY), inherit.aes = FALSE) 
+
+
+## plot all
+preds <- breakpoint_generate_quantities %>%
+  gather_rvars(shift_pred[i]) %>%
+  mutate(disp = disp_vec[i],
+         climVelo = rep(unique(dd$ClimVeloTKmY), each = n)[i]) 
+
+preds %>%
+  ggplot(aes(x = disp, dist = .value, group = climVelo)) +
+  stat_lineribbon() +
+  geom_point(data = dd, aes(x = DispersalPotentialKmY, y = ShiftKmY), inherit.aes = FALSE) 
+
+## zoom in
+preds %>%
+  ggplot(aes(x = disp, dist = .value, group = climVelo)) +
+  stat_lineribbon() +
+  geom_point(data = study, aes(x = DispersalPotentialKmY, y = ShiftKmY), inherit.aes = FALSE) +
+  coord_cartesian(xlim = c(0,10), ylim = c(0, 10))
+
+## facet by study 
+dd$climVelo = dd$ClimVeloTKmY
+
+preds %>%
+  ggplot(aes(x = disp, dist = .value, group = climVelo)) +
+  stat_lineribbon() +
+  geom_point(data = dd, aes(x = DispersalPotentialKmY, y = ShiftKmY, dist = NA)) + 
+  facet_wrap(~climVelo)
+
+## zoom in 
+preds %>%
+  ggplot(aes(x = disp, dist = .value, group = climVelo)) +
+  stat_lineribbon() +
+  geom_point(data = dd, aes(x = DispersalPotentialKmY, y = ShiftKmY, dist = NA)) + 
+  facet_wrap(~climVelo) +
+  coord_cartesian(xlim = c(0,10), ylim = c(0, 10))
+## data do not really follow mean - hmm 
+
+## other thoughts:
+## low signal to noise ratio when climate velocity is low - could lead to bias in shift detection 
+
+
+
+
+#### null model
+#############################
+null_model <- cmdstan_model("stan/null-model.stan", pedantic = TRUE)
+null_model
+
+## feed the data to the model
+null_posterior <- null_model$sample(parallel_chains = 4, 
+                                                  data = list(disp = dd$DispersalPotentialKmY,
+                                                                              n = nrow(dd), 
+                                                                              climVelo = dd$LatVeloT,
+                                                                              shift = dd$ShiftKmY)) 
+
+shinystan::launch_shinystan(null_posterior)
+
+null_loo <- null_posterior$loo()
+null_loo$pointwise
+plot(null_loo)
+
+#### model with b2 
+#############################
+breakpoint_all_studies <- cmdstan_model("stan/breakpoint_all_studies.stan")
+breakpoint_all_studies
+
+
+breakpoint_all_studies_posterior <- breakpoint_all_studies$sample(parallel_chains = 4, 
+                                                                  data = list(disp = dd$DispersalPotentialKmY,
+                                                                              n = nrow(dd), 
+                                                                              climVelo = dd$LatVeloT,
+                                                                              shift = dd$ShiftKmY)) 
+                                                                                   
+bp_loo <- breakpoint_all_studies_posterior$loo()
+bp_loo$pointwise
+plot(bp_loo)
+
+# compare the models
+comparison <- loo_compare(null_loo, bp_loo, intercept_only_loo, intercept_slope_loo)
+
+null_posterior
+breakpoint_all_studies_posterior
+
+
+#### null model with random effect of study ID
+###############################################
+## add random effects
+## need to make sure when you add/subtract, value doesn't go below zero
+## one way to do this: use a log scale 
+intercept_only_model <- cmdstan_model("stan/intercept-only-model.stan", pedantic = TRUE)
+intercept_only_model
+
+## feed the data to the model
+intercept_only_model_posterior <- intercept_only_model$sample(parallel_chains = 4, 
+                                    data = list(n = nrow(dd), 
+                                                num_study = length(unique(dd$Source)),
+                                                disp = dd$DispersalPotentialKmY,
+                                                climVelo = dd$LatVeloT,
+                                                shift = dd$ShiftKmY,
+                                                study_id = as.numeric(factor(dd$Source)))) 
+
+shinystan::launch_shinystan(intercept_only_model_posterior)
+
+intercept_only_loo <- intercept_only_model_posterior$loo()
+intercept_only_loo$pointwise
+plot(intercept_only_loo)
+
+# compare the models
+comparison <- loo_compare(null_loo, intercept_only_loo)
+
+#### slope model with random effect of study ID
+###############################################
+intercept_slope_model <- cmdstan_model("stan/intercept-slope-model.stan", pedantic = TRUE)
+intercept_slope_model
+
+## feed the data to the model
+intercept_slope_model_posterior <- intercept_slope_model$sample(parallel_chains = 4, 
+                                                                data = list(n = nrow(dd), 
+                                                                            num_study = length(unique(dd$Source)),
+                                                                            disp = dd$DispersalPotentialKmY,
+                                                                            climVelo = dd$LatVeloT,
+                                                                            shift = dd$ShiftKmY,
+                                                                            study_id = as.numeric(factor(dd$Sourc )))) 
+
+shinystan::launch_shinystan(intercept_slope_model_posterior)
+
+intercept_slope_loo <- intercept_slope_model_posterior$loo()
+intercept_slope_loo$pointwise
+plot(intercept_slope_loo)
+
+# compare the models
+comparison <- loo_compare(null_loo, intercept_only_loo, intercept_slope_loo)
+
+intercept_only_model_posterior$summary("sigma_log_study_diffs")
+intercept_slope_model_posterior$summary("sigma_log_study_diffs")
+
+
+#### null model with random effect of study ID + species 
+###############################################
+## add random effects
+## need to make sure when you add/subtract, value doesn't go below zero
+## one way to do this: use a log scale 
+intercept_only_model_sp_reff <- cmdstan_model("stan/intercept-only-model-species-reff.stan", pedantic = TRUE)
+intercept_only_model_sp_reff
+
+## feed the data to the model
+intercept_only_model_sp_reff_posterior <- intercept_only_model_sp_reff$sample(parallel_chains = 4, 
+                                                              data = list(n = nrow(dd), 
+                                                                          num_study = length(unique(dd$Source)),
+                                                                          num_sp = length(unique(dd$scientificName)),
+                                                                          disp = dd$DispersalPotentialKmY,
+                                                                          climVelo = dd$LatVeloT,
+                                                                          shift = dd$ShiftKmY,
+                                                                          study_id = as.numeric(factor(dd$Source)),
+                                                                          sp_id = as.numeric(factor(dd$scientificName)))) 
+
+shinystan::launch_shinystan(intercept_only_model_sp_reff_posterior)
+
+intercept_only_model_sp_reff_posterior$summary(c("sigma_log_study_diffs", "sigma_log_sp_diffs"))
+
+#### slope model with random effect of study ID + species 
+###############################################
+## add random effects
+## need to make sure when you add/subtract, value doesn't go below zero
+## one way to do this: use a log scale 
+intercept_slope_model_sp_reff <- cmdstan_model("stan/intercept-slope-model-species-reff.stan", pedantic = TRUE)
+intercept_slope_model_sp_reff
+
+## feed the data to the model
+intercept_slope_model_sp_reff_posterior <- intercept_slope_model_sp_reff$sample(parallel_chains = 4, 
+                                                                              data = list(n = nrow(dd), 
+                                                                                          num_study = length(unique(dd$Source)),
+                                                                                          num_sp = length(unique(dd$scientificName)),
+                                                                                          disp = dd$DispersalPotentialKmY,
+                                                                                          climVelo = dd$LatVeloT,
+                                                                                          shift = dd$ShiftKmY,
+                                                                                          study_id = as.numeric(factor(dd$Source)),
+                                                                                          sp_id = as.numeric(factor(dd$scientificName)))) 
+
+shinystan::launch_shinystan(intercept_slope_model_sp_reff_posterior)
+
+intercept_slope_model_sp_reff_posterior$summary(c("sigma_log_study_diffs", "sigma_log_sp_diffs"))
+
+
+#### compare models
+###############################################
 
 
 

@@ -326,8 +326,12 @@ prior_draws |>
   facet_wrap(~.draw)
 
 
-vec = rgamma(400, 15^2/3^2, 15/3^2)
+vec = rgamma(400, 1^2/0.1^2, 1/0.1^2)
 sd(vec)
 mean(vec)
+
+hist(vec)
+min(vec)
+
 
 

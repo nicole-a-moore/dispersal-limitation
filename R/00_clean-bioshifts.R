@@ -1,4 +1,4 @@
-## hamronize names in bioshifts v1 
+## hamronize names in bioshifts v3 
 library(readr)
 library(tidyverse)
 library(taxadb)
@@ -9,6 +9,7 @@ library(data.table)
 
 ## read function to harmonize taxonomy
 source("R/taxonomic-harmonization/harmonize.R")
+source("R/taxonomic-harmonization/clean_taxa_functions.R")
 
 #----------------------
 ## read in bioshifts v1 
@@ -17,7 +18,7 @@ v1 = read.table("data-raw/BIOSHIFTSv1/bioshifts-download/Lenoir_et_al/Analysis/T
                 stringsAsFactors = FALSE) 
 v1$reported_name = v1$Species
 
-## clean names in the orginal database 
+## clean names in the original database 
 v1$Species = Clean_Names(v1$Species, return_gen_sps = F)
 
 ## manual cleaning 
@@ -37,6 +38,12 @@ notfound$scientificName = notfound$species
 bs_harm <- rbind(bs_harm, notfound) %>%
   distinct()
 
+## Carduelis chloris (a bird) becomes Chloris chloris (also a plant)
+## fix it:
+bs_harm[which(bs_harm$scientificName == "Chloris chloris"),] <- c("Carduelis chloris", "Chloris chloris",
+                                                        "Animalia", "Chordata", "Aves", "Passeriformes", 
+                                                        "Fringillidae", "gbif", "GBIF:145360")
+
 ## rename columns 
 v1 <- v1 %>%
   rename("reported_name_fixed" = Species)
@@ -48,9 +55,12 @@ v1_corrected <- left_join(v1, bs_harm, by = c("reported_name_fixed" = "species")
 
 length(unique(v1_corrected$scientificName)) # 12189 species 
 
+
+
 ## save version of bioshifts with fixed taxonomy 
 #################################################
 # 'reported_name' is the name originally in the database 
 # 'reported_name_fixed' is the name after cleaning
 # 'scientificName' is the name after cleaning and harmonizing the reported name
+
 write.csv(v1_corrected, "data-processed/BIOSHIFTSv1_harmonized.csv", row.names = FALSE)
