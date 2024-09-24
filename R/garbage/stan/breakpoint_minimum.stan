@@ -8,18 +8,17 @@ data {
 //   real M = max(x);
 // }
 parameters {
- real b2;
  real<lower=0> sigma;
 }
 model {
-  b2 ~ normal(1, 1);
+  // add sampling error around dispersal and climate velocity observations 
   sigma ~ exponential(1);
   
   for(i in 1:n){
     if (disp[i] < climVelo[i]) {
-      shift[i] ~ gamma((disp[i]*b2)^2 / sigma^2, (disp[i]*b2) / sigma^2);
+      shift[i] ~ gamma((disp[i])^2 / sigma^2, (disp[i]) / sigma^2);
     } else {
-      shift[i] ~ gamma((climVelo[i]*b2)^2 / sigma^2, (climVelo[i]*b2) / sigma^2);
+      shift[i] ~ gamma((climVelo[i])^2 / sigma^2, (climVelo[i]) / sigma^2);
     }
   }
   
@@ -30,9 +29,9 @@ generated quantities {
   // compare these to real data (posterior predictive check - step 1 in model validation)
   for(i in 1:n){
     if (disp[i] < climVelo[i]) {
-      shift_pred[i] = gamma_rng((disp[i]*b2)^2 / sigma^2, (disp[i]*b2) / sigma^2);
+      shift_pred[i] = gamma_rng((disp[i])^2 / sigma^2, (disp[i]) / sigma^2);
     } else {
-      shift_pred[i] = gamma_rng((climVelo[i]*b2)^2 / sigma^2, (climVelo[i]*b2) / sigma^2);
+      shift_pred[i] = gamma_rng((climVelo[i])^2 / sigma^2, (climVelo[i]) / sigma^2);
     }
   }
 }
