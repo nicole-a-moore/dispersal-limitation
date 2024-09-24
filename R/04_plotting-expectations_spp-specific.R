@@ -21,10 +21,10 @@ v3 <- v3 %>%
 v3 = filter(v3, is_contraction %in% c("UNKNOWN", "NO"))
 
 ## get rid of centroid shifts in opposite direction to cv 
-v3 = filter(v3, !(Param == "0" & !sign(ClimVeloTKmY_study) == sign(ShiftKmY)))
+v3 = filter(v3, !(Param == "0" & !sign(ClimVeloTKmY_spp) == sign(ShiftKmY)))
 
 ## standardize so CV > 0 meanings away from range centre 
-v3$ClimVeloTKmY_study = abs(v3$ClimVeloTKmY_study)
+v3$ClimVeloTKmY_spp = abs(v3$ClimVeloTKmY_spp)
 v3$ShiftKmY = abs(v3$ShiftKmY)
 
 ## add gradient 
@@ -32,10 +32,16 @@ v3 <- v3 %>%
   mutate(Gradient = ifelse(Type == "ELE", "Elevation", "Latitudinal")) %>%
   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) 
 
+## get rid of shifts that don't have a spp-specific climate velocity
+v3 <- filter(v3, !is.na(ClimVeloTKmY_spp))
+
+hist(v3$ClimVeloTKmY_study)
+hist(v3$ClimVeloTKmY_spp)
+
 ##################################
 ##       plot expectations      ##
 ##################################
-hist(v3$ClimVeloTKmY_study)
+hist(v3$ClimVeloTKmY_spp)
 
 ## rug data
 rug <- v3 %>%
@@ -43,7 +49,7 @@ rug <- v3 %>%
 
 ## climate velocity 
 rug %>%
-  ggplot(aes(x = x, y = ClimVeloTKmY_study, colour = Type)) +
+  ggplot(aes(x = x, y = ClimVeloTKmY_spp, colour = Type)) +
   geom_point(shape = "_", size = 8) +
   theme_bw() +
   theme(panel.grid = element_blank()) +
@@ -55,7 +61,7 @@ rug %>%
 
 ## make histograms
 v3 %>%
-  ggplot(aes(x = ClimVeloTKmY_study, fill = ..x..)) +
+  ggplot(aes(x = ClimVeloTKmY_spp, fill = ..x..)) +
   geom_histogram() + 
   theme_bw() +
   theme(panel.grid = element_blank()) +
@@ -69,23 +75,23 @@ v3 %>%
         legend.position = "none") +
   scale_fill_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 4.5) 
 
-ggsave(path = "figures/sotm", filename = "climate-velo-hists.png", 
+ggsave(path = "figures/sotm", filename = "climate-velo-hists_spp.png", 
        device = "png", height = 4, width = 8)
 
 
 ## make new dataframe for expectation plot
-clim_velos <- c(v3$ClimVeloTKmY_study)
+clim_velos <- c(v3$ClimVeloTKmY_spp)
 
 y_values = unlist(sapply(clim_velos, FUN = function(x) {
-  reps = length(seq(from = x, 15, by = 0.01)) 
+  reps = length(seq(from = x, 5, by = 0.01)) 
   return(rep(x, reps))
 }))
 reps = unlist(sapply(clim_velos, FUN = function(x) {
-  reps = length(seq(from = x, 15, by = 0.01)) 
+  reps = length(seq(from = x, 5, by = 0.01)) 
   return(reps)
 }))
 x_values = unlist(sapply(clim_velos, FUN = function(x) {
-  return(seq(from = x, 15, by = 0.01))
+  return(seq(from = x, 5, by = 0.01))
 }))
 
 y_values_11 = unlist(sapply(clim_velos, FUN = function(x) {
@@ -103,10 +109,10 @@ clim_data <- data.frame(y_values = append(y_values_11, y_values),
                         x_values = append(x_values_11, x_values), 
                         velos = append(velos, y_values))
 
-gradients <- select(ungroup(v3), ClimVeloTKmY_study, Gradient) %>%
+gradients <- select(ungroup(v3), ClimVeloTKmY_spp, Gradient) %>%
   distinct()
 
-clim_data <- left_join(clim_data, gradients, by = c("velos" = "ClimVeloTKmY_study"))
+clim_data <- left_join(clim_data, gradients, by = c("velos" = "ClimVeloTKmY_spp"))
 
 one <- clim_data %>%
   ggplot(aes(x = x_values, y = y_values, colour = y_values, group = velos)) +
@@ -114,22 +120,21 @@ one <- clim_data %>%
   geom_path(linewidth = 1, alpha = 1) +
   theme_bw() +
   theme(panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(0, 15), expand = c(0,0)) +
-  scale_y_continuous(limits = c(0, 15), expand = c(0,0),
-                     labels = c("   0", "   5", " 10", "   15")) +
+  scale_x_continuous(limits = c(0, 5), expand = c(0,0)) +
+  scale_y_continuous(limits = c(0, 5), expand = c(0,0)) +
   labs(x = "Potential dispersal rate (km/y)",
        y = "Expected range expansion rate (km/y)", 
        colour = "Mean climate\nvelocity\nacross study\narea (km/y)") +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5) 
 
 one_legend <- get_legend(one)
 
 one <- one +
   theme(legend.position = "none")
 
-ggsave(one, path = "figures/sotm", filename = "expectation-climate-1.png", 
+ggsave(one, path = "figures/sotm", filename = "expectation-climate-1_spp.png", 
        device = "png", height = 4, width = 5)
-ggsave(one_legend, path = "figures/sotm", filename = "expectation-climate-1-legend.png", 
+ggsave(one_legend, path = "figures/sotm", filename = "expectation-climate-1-legend_spp.png", 
        device = "png", height = 2, width = 1)
 
 
@@ -142,13 +147,12 @@ two = clim_data %>%
   geom_path(linewidth = 1, alpha = 1) +
   theme_bw() +
   theme(panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(0, 15), expand = c(0,0)) +
-  scale_y_continuous(limits = c(0, 15), expand = c(0,0),
-                     labels = c("   0", "   5", " 10", "   15")) +
+  scale_x_continuous(limits = c(0, 5), expand = c(0,0)) +
+  scale_y_continuous(limits = c(0, 5), expand = c(0,0)) +
   labs(x = "Potential dispersal rate (km/y)",
        y = "Expected range expansion rate (km/y)", 
        colour = "Mean climate\nvelocity\nacross study\narea (km/y)") +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  +
   facet_grid(~Gradient) +
   theme(strip.background = element_blank(),
         strip.text.x = element_blank(),
@@ -159,14 +163,14 @@ two_legend = get_legend(two)
 two <- two +
   theme(legend.position = "none")
 
-ggsave(two, path = "figures/sotm", filename = "expectation-climate-2.png", 
+ggsave(two, path = "figures/sotm", filename = "expectation-climate-2_spp.png", 
        device = "png", height = 4, width = 8)
-ggsave(two_legend, path = "figures/sotm", filename = "expectation-climate-2-legend.png", 
+ggsave(two_legend, path = "figures/sotm", filename = "expectation-climate-2-legend_spp.png", 
        device = "png", height = 2.4, width = 1.5)
 
 ## zoom in
-filtered_lags <- filter(v3, ClimVeloTKmY_study < 0.5)
-clim_velos <- filtered_lags$ClimVeloTKmY_study
+filtered_lags <- filter(v3, ClimVeloTKmY_spp < 0.5)
+clim_velos <- filtered_lags$ClimVeloTKmY_spp
 
 y_values = unlist(sapply(clim_velos, FUN = function(x) {
   reps = length(seq(from = x, 1, by = 0.0001)) 
@@ -195,10 +199,10 @@ clim_data_zoom <- data.frame(y_values = append(y_values_11, y_values),
                              x_values = append(x_values_11, x_values), 
                              velos = append(velos, y_values))
 
-gradients <- select(ungroup(filtered_lags), ClimVeloTKmY_study, Gradient) %>%
+gradients <- select(ungroup(filtered_lags), ClimVeloTKmY_spp, Gradient) %>%
   distinct()
 
-clim_data_zoom <- left_join(clim_data_zoom, gradients, by = c("velos" = "ClimVeloTKmY_study"))
+clim_data_zoom <- left_join(clim_data_zoom, gradients, by = c("velos" = "ClimVeloTKmY_spp"))
 
 three = clim_data_zoom %>%
   filter(x_values <= 0.05) %>%
@@ -216,18 +220,18 @@ three = clim_data_zoom %>%
   labs(x = "",
        y = "", 
        colour = "") +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5) 
 
 three_legend = get_legend(three)
 
 three <- three +
   theme(legend.position = "none")
 
-ggsave(three, path = "figures/sotm", filename = "expectation-climate-3.png", 
+ggsave(three, path = "figures/sotm", filename = "expectation-climate-3_spp.png", 
        device = "png",  height = 2.8, width = 3.1)
-ggsave(three, path = "figures/sotm", filename = "expectation-climate-3-large.png", 
+ggsave(three, path = "figures/sotm", filename = "expectation-climate-3-large_spp.png", 
        device = "png", height = 4, width = 4.2)
-ggsave(three_legend, path = "figures/sotm", filename = "expectation-climate-3-legend.png", 
+ggsave(three_legend, path = "figures/sotm", filename = "expectation-climate-3-legend_spp.png", 
        device = "png", height = 1, width = 1.5)
 
 
@@ -242,13 +246,13 @@ ele_split <- clim_data_zoom %>%
   theme(panel.grid = element_blank()) +
   scale_x_continuous(limits = c(0, 0.04), expand = c(0,0)) +
   scale_y_continuous(limits = c(0, 0.04), expand = c(0,0)) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  +
   labs(x = "",
        y = "", 
        colour = "") +
   theme(legend.position = "none")
 
-ggsave(ele_split, path = "figures/sotm", filename = "expectation-elevation.png", 
+ggsave(ele_split, path = "figures/sotm", filename = "expectation-elevation_spp.png", 
        device = "png", height = 4, width = 4.2)
 
 lat_split = clim_data %>%
@@ -258,10 +262,9 @@ lat_split = clim_data %>%
   geom_path(linewidth = 1, alpha = 1) +
   theme_bw() +
   theme(panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(0, 15), expand = c(0,0)) +
-  scale_y_continuous(limits = c(0, 15), expand = c(0,0),
-                     labels = c("    0", "   5", " 10", "   15")) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  +
+  scale_x_continuous(limits = c(0, 5), expand = c(0,0)) +
+  scale_y_continuous(limits = c(0, 5), expand = c(0,0)) +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  +
   labs(x = "Potential dispersal rate (km/y)",
        y = "Expected range expansion rate (km/y)", 
        colour = "") +
@@ -271,7 +274,7 @@ lat_split = clim_data %>%
         strip.text.x = element_blank(),
         panel.spacing = unit(2 , "lines"))
 
-ggsave(lat_split, path = "figures/sotm", filename = "expectation-latitude.png", 
+ggsave(lat_split, path = "figures/sotm", filename = "expectation-latitude_spp.png", 
        device = "png", height = 4, width = 8)
 
 
@@ -289,9 +292,8 @@ rugplot_lat <- clim_data %>%
   geom_path(linewidth = 1, alpha = 1) +
   theme_bw() +
   theme(panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(0, 15), expand = c(0,0)) +
-  scale_y_continuous(limits = c(0, 15), expand = c(0,0),
-                     labels = c("    0", "   5", " 10", "   15")) +
+  scale_x_continuous(limits = c(0, 5), expand = c(0,0)) +
+  scale_y_continuous(limits = c(0, 5), expand = c(0,0)) +
   labs(x = "Potential dispersal rate (km/y)",
        y = "Expected range expansion rate (km/y)", 
        colour = "") +
@@ -302,15 +304,15 @@ rugplot_lat <- clim_data %>%
   geom_rug(data = rug_ele,
            aes(x = AnnualDispPotKmY),
            inherit.aes = FALSE) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  +
   theme(strip.background = element_blank(),
         strip.text.x = element_blank(),
         panel.spacing = unit(2 , "lines"))
 
-ggsave(rugplot_lat, path = "figures/sotm", filename = "expectation-latitude-rug-zoom.png", 
+ggsave(rugplot_lat, path = "figures/sotm", filename = "expectation-latitude-rug-zoom_spp.png", 
        device = "png", height = 4, width = 8)
 
-rugplot_ele_zoom_squish <- clim_data%>%
+rugplot_ele_zoom_squish <- clim_data %>%
   #filter(x_values <= 0.05) %>%
   filter(Gradient == "Elevation") %>%
   ggplot(aes(x = x_values, y = y_values, colour = y_values, group = velos)) +
@@ -321,7 +323,7 @@ rugplot_ele_zoom_squish <- clim_data%>%
   scale_x_continuous(limits = c(0, 1400), expand = expansion(mult = c(0, 0), 
                                                              add = c(20, 0))) +
   scale_y_continuous(limits = c(0, 0.04), expand = c(0,0)) +
-  scale_colour_gradient2(low = "#B2182B", high = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
+  scale_colour_gradient2(low = "#B2182B", high = "#2166AC", mid = "#F8DCCB", midpoint = 1.5) +
   labs(x = "",
        y = "", 
        colour = "") +
@@ -332,7 +334,7 @@ rugplot_ele_zoom_squish <- clim_data%>%
            aes(x = AnnualDispPotKmY),
            inherit.aes = FALSE) 
 
-ggsave(rugplot_ele_zoom_squish, path = "figures/sotm", filename = "expectation-elevation-rug.png", 
+ggsave(rugplot_ele_zoom_squish, path = "figures/sotm", filename = "expectation-elevation-rug_spp.png", 
        device = "png",  height = 2.8, width = 3.1)
 
 
@@ -346,7 +348,7 @@ rugplot_ele <- clim_data_zoom %>%
   theme(panel.grid = element_blank()) +
   scale_x_continuous(limits = c(0, 0.04), expand = c(0,0)) +
   scale_y_continuous(limits = c(0, 0.04), expand = c(0,0)) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  +
   labs(x = "",
        y = "", 
        colour = "") +
@@ -358,7 +360,7 @@ rugplot_ele <- clim_data_zoom %>%
            aes(x = AnnualDispPotKmY),
            inherit.aes = FALSE) 
 
-ggsave(rugplot_ele, path = "figures/sotm", filename = "expectation-elevation-rug-zoom.png", 
+ggsave(rugplot_ele, path = "figures/sotm", filename = "expectation-elevation-rug-zoom_spp.png", 
        device = "png",  height = 2.8, width = 3.1)
 
 rugplot_lat_inset <- clim_data %>%
@@ -368,9 +370,9 @@ rugplot_lat_inset <- clim_data %>%
   geom_path(linewidth = 1, alpha = 1) +
   theme_bw() +
   theme(panel.grid = element_blank()) +
-  scale_x_continuous(limits = c(0, 15), expand = c(0,0)) +
-  scale_y_continuous(limits = c(0,15), expand = c(0,0))+
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  +
+  scale_x_continuous(limits = c(0,5), expand = c(0,0)) +
+  scale_y_continuous(limits = c(0,5), expand = c(0,0))+
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  +
   labs(x = "",
        y = "", 
        colour = "") +
@@ -381,19 +383,19 @@ rugplot_lat_inset <- clim_data %>%
            aes(x = AnnualDispPotKmY),
            inherit.aes = FALSE) 
 
-ggsave(rugplot_lat_inset, path = "figures/sotm", filename = "expectation-latitude-rug-zoom.png", 
+ggsave(rugplot_lat_inset, path = "figures/sotm", filename = "expectation-latitude-rug-zoom_spp.png", 
        device = "png",  height = 2.8, width = 3)
 
 ## zoom out
 ## make new dataframe for expectation plot
-clim_velos <- c(v3$ClimVeloTKmY_study)
+clim_velos <- c(v3$ClimVeloTKmY_spp)
 
 y_values = unlist(sapply(clim_velos, FUN = function(x) {
   reps = length(seq(from = x, 1400, by = 1)) 
   return(rep(x, reps))
 }))
 reps = unlist(sapply(clim_velos, FUN = function(x) {
-  reps = length(seq(from = x, 15, by = 0.01)) 
+  reps = length(seq(from = x, 5, by = 0.01)) 
   return(reps)
 }))
 x_values = unlist(sapply(clim_velos, FUN = function(x) {
@@ -415,10 +417,10 @@ clim_data <- data.frame(y_values = append(y_values_11, y_values),
                         x_values = append(x_values_11, x_values), 
                         velos = append(velos, y_values))
 
-gradients <- select(ungroup(v3), ClimVeloTKmY_study, Gradient) %>%
+gradients <- select(ungroup(v3), ClimVeloTKmY_spp, Gradient) %>%
   distinct()
 
-clim_data <- left_join(clim_data, gradients, by = c("velos" = "ClimVeloTKmY_study"))
+clim_data <- left_join(clim_data, gradients, by = c("velos" = "ClimVeloTKmY_spp"))
 
 
 rugplot_lat_unzoom <- clim_data %>%
@@ -431,8 +433,7 @@ rugplot_lat_unzoom <- clim_data %>%
   theme(panel.grid = element_blank()) +
   scale_x_continuous(limits = c(0, 1400), expand = expansion(mult = c(0, 0), 
                                                              add = c(20, 0))) +
-  scale_y_continuous(limits = c(0, 15), expand = c(0,0),
-                     labels = c("    0", "   5", " 10", "   15")) +
+  scale_y_continuous(limits = c(0, 5), expand = c(0,0)) +
   labs(x = "Potential dispersal rate (km/y)",
        y = "Expected range expansion rate (km/y)", 
        colour = "") +
@@ -443,12 +444,12 @@ rugplot_lat_unzoom <- clim_data %>%
   geom_rug(data = rug_ele,
            aes(x = AnnualDispPotKmY),
            inherit.aes = FALSE) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  +
   theme(strip.background = element_blank(),
         strip.text.x = element_blank(),
         panel.spacing = unit(2 , "lines"))
 
-ggsave(rugplot_lat_unzoom, path = "figures/sotm", filename = "expectation-latitude-rug-unzoom.png", 
+ggsave(rugplot_lat_unzoom, path = "figures/sotm", filename = "expectation-latitude-rug-unzoom_spp.png", 
        device = "png", height = 4, width = 8)
 
 rugplot_ele_unzoom <- clim_data %>%
@@ -461,7 +462,7 @@ rugplot_ele_unzoom <- clim_data %>%
   scale_x_continuous(limits = c(0, 1400), expand = expansion(mult = c(0, 0), 
                                                              add = c(20, 0))) +
   scale_y_continuous(limits = c(0, 0.04), expand = c(0,0)) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  +
   labs(x = "",
        y = "", 
        colour = "") +
@@ -470,7 +471,7 @@ rugplot_ele_unzoom <- clim_data %>%
            aes(x = AnnualDispPotKmY),
            inherit.aes = FALSE) 
 
-ggsave(rugplot_ele_unzoom, path = "figures/sotm", filename = "expectation-elevation-rug.png", 
+ggsave(rugplot_ele_unzoom, path = "figures/sotm", filename = "expectation-elevation-rug_spp.png", 
        device = "png", height = 4, width = 4.2)
 
 clim_data_test <- clim_data %>%
@@ -491,8 +492,7 @@ rugplot_lat_unzoom_log <- clim_data %>%
   scale_x_log10(limits = c(0.0001, 1400), 
                 breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000),
                 labels = c('0.0001', "0.001", "0.01","0.1", "1","10", "100", "1000")) +
-  scale_y_continuous(limits = c(0, 15), expand = c(0,0),
-                     labels = c("    0", "   5", " 10", "   15")) +
+  scale_y_continuous(limits = c(0, 5), expand = c(0,0)) +
   theme(legend.position = "none") +
   geom_rug(data = rug_lat,
            aes(x = AnnualDispPotKmY),
@@ -500,7 +500,7 @@ rugplot_lat_unzoom_log <- clim_data %>%
   geom_rug(data = rug_ele,
            aes(x = AnnualDispPotKmY),
            inherit.aes = FALSE) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  +
   theme(strip.background = element_blank(),
         strip.text.x = element_blank(),
         panel.spacing = unit(2 , "lines")) +
@@ -508,7 +508,7 @@ rugplot_lat_unzoom_log <- clim_data %>%
        y = "Expected range expansion rate (km/y)", 
        colour = "") 
 
-ggsave(rugplot_lat_unzoom_log, path = "figures/sotm", filename = "expectation-latitude-rug-unzoom-log.png", 
+ggsave(rugplot_lat_unzoom_log, path = "figures/sotm", filename = "expectation-latitude-rug-unzoom-log_spp.png", 
        device = "png", height = 4, width = 8)
 
 rugplot_lat_unzoom_log_line <- clim_data %>%
@@ -525,8 +525,7 @@ rugplot_lat_unzoom_log_line <- clim_data %>%
   scale_x_log10(limits = c(0.0001, 1400), 
                 breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000),
                 labels = c('0.0001', "0.001", "0.01","0.1", "1","10", "100", "1000")) +
-  scale_y_continuous(limits = c(0, 15), expand = c(0,0),
-                     labels = c("    0", "   5", " 10", "   15")) +
+  scale_y_continuous(limits = c(0, 5), expand = c(0,0)) +
   theme(legend.position = "none") +
   geom_rug(data = rug_lat,
            aes(x = AnnualDispPotKmY),
@@ -534,7 +533,7 @@ rugplot_lat_unzoom_log_line <- clim_data %>%
   geom_rug(data = rug_ele,
            aes(x = AnnualDispPotKmY),
            inherit.aes = FALSE) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  +
   theme(strip.background = element_blank(),
         strip.text.x = element_blank(),
         panel.spacing = unit(2 , "lines")) +
@@ -543,18 +542,18 @@ rugplot_lat_unzoom_log_line <- clim_data %>%
        colour = "") +
   geom_vline(aes(xintercept = max(velos)))
 
-ggsave(rugplot_lat_unzoom_log_line, path = "figures/sotm", filename = "expectation-latitude-rug-unzoom-log-line.png", 
+ggsave(rugplot_lat_unzoom_log_line, path = "figures/sotm", filename = "expectation-latitude-rug-unzoom-log-line_spp.png", 
        device = "png", height = 4, width = 8)
 
 
-clim_velos <- c(v3$ClimVeloTKmY_study)
+clim_velos <- c(v3$ClimVeloTKmY_spp)
 
 y_values = unlist(sapply(clim_velos, FUN = function(x) {
   reps = length(seq(from = x, 1400, by = 1)) 
   return(rep(x, reps))
 }))
 reps = unlist(sapply(clim_velos, FUN = function(x) {
-  reps = length(seq(from = x, 15, by = 0.0001)) 
+  reps = length(seq(from = x, 5, by = 0.0001)) 
   return(reps)
 }))
 x_values = unlist(sapply(clim_velos, FUN = function(x) {
@@ -576,10 +575,10 @@ clim_data <- data.frame(y_values = append(y_values_11, y_values),
                         x_values = append(x_values_11, x_values), 
                         velos = append(velos, y_values))
 
-gradients <- select(ungroup(v3), ClimVeloTKmY_study, Gradient) %>%
+gradients <- select(ungroup(v3), ClimVeloTKmY_spp, Gradient) %>%
   distinct()
 
-clim_data <- left_join(clim_data, gradients, by = c("velos" = "ClimVeloTKmY_study"))
+clim_data <- left_join(clim_data, gradients, by = c("velos" = "ClimVeloTKmY_spp"))
 
 
 rugplot_ele_unzoom_log <- clim_data %>%
@@ -596,7 +595,7 @@ rugplot_ele_unzoom_log <- clim_data %>%
                 breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000),
                 labels = c('0.0001', "0.001", "0.01","0.1", "1","10", "100", "1000")) +
   scale_y_continuous(limits = c(0, 0.04), expand = c(0,0)) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  +
   labs(x = "",
        y = "", 
        colour = "") +
@@ -607,7 +606,7 @@ rugplot_ele_unzoom_log <- clim_data %>%
            aes(x = AnnualDispPotKmY),
            inherit.aes = FALSE) 
 
-ggsave(rugplot_ele_unzoom_log, path = "figures/sotm", filename = "expectation-elevation-rug-log.png", 
+ggsave(rugplot_ele_unzoom_log, path = "figures/sotm", filename = "expectation-elevation-rug-log_spp.png", 
        device = "png", height = 2.8, width = 3.1)
 
 rugplot_ele_unzoom_log_line <- clim_data %>%
@@ -624,7 +623,7 @@ rugplot_ele_unzoom_log_line <- clim_data %>%
                 breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000),
                 labels = c('0.0001', "0.001", "0.01","0.1", "1","10", "100", "1000")) +
   scale_y_continuous(limits = c(0, 0.02), expand = c(0,0)) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5) +
   labs(x = "",
        y = "", 
        colour = "") +
@@ -636,13 +635,13 @@ rugplot_ele_unzoom_log_line <- clim_data %>%
            inherit.aes = FALSE) +
   geom_vline(aes(xintercept = max(velos)))
 
-ggsave(rugplot_ele_unzoom_log_line, path = "figures/sotm", filename = "expectation-elevation-rug-log-line.png", 
+ggsave(rugplot_ele_unzoom_log_line, path = "figures/sotm", filename = "expectation-elevation-rug-log-line_spp.png", 
        device = "png", height = 4, width = 4.2)
 
 
 ## compare distributions directly 
 dens_grad <- v3 %>%
-  gather(key = "Measure", value = "Measurement", c(AnnualDispPotKmY, ClimVeloTKmY_study)) %>%
+  gather(key = "Measure", value = "Measurement", c(AnnualDispPotKmY, ClimVeloTKmY_spp)) %>%
   ggplot(aes(x = Measurement, fill = Measure)) +
   geom_density(alpha = 0.1) +
   theme_bw() +
@@ -655,12 +654,12 @@ dens_grad <- v3 %>%
   labs(x = "", y = "Density", fill = "")
 
 
-ggsave(dens_grad, path = "figures/sotm", filename = "density_gradient.png", 
+ggsave(dens_grad, path = "figures/sotm", filename = "density_gradient_spp.png", 
        device = "png", height = 3.5, width = 8.5)
 
 
 dens_taxa <- v3 %>%
-  gather(key = "Measure", value = "Measurement", c(AnnualDispPotKmY, ClimVeloTKmY_study)) %>%
+  gather(key = "Measure", value = "Measurement", c(AnnualDispPotKmY, ClimVeloTKmY_spp)) %>%
   ggplot(aes(x = Measurement, fill = Measure)) +
   geom_density(alpha = 0.1) +
   theme_bw() +
@@ -672,11 +671,11 @@ dens_taxa <- v3 %>%
                                  "Climate velocity")) +
   labs(x = "", y = "Density", fill = "")
 
-ggsave(dens_taxa, path = "figures/sotm", filename = "density_taxa.png", 
+ggsave(dens_taxa, path = "figures/sotm", filename = "density_taxa_spp.png", 
        device = "png", height = 3.5, width = 8.5)
 
 cv_vs_dp <- v3 %>%
-  ggplot(aes(y = ClimVeloTKmY, x = ClimVeloTKmY_study, colour = Gradient)) +
+  ggplot(aes(y = ClimVeloTKmY_spp, x = AnnualDispPotKmY, colour = Gradient)) +
   geom_point() +
   theme_bw() +
   theme(panel.grid = element_blank()) +  
@@ -687,12 +686,12 @@ cv_vs_dp <- v3 %>%
   labs(x = "Dispersal potential (km/y)", y = "Climate velocity (km/y)") +
   theme(legend.position = "none")
 
-ggsave(cv_vs_dp, path = "figures/sotm", filename = "cv_vs_dp.png", 
+ggsave(cv_vs_dp, path = "figures/sotm", filename = "cv_vs_dp_spp.png", 
        device = "png", height = 3.5, width = 4.5)
 
 
 cv_vs_dp_zoom <- v3 %>%
-  ggplot(aes(y = ClimVeloTKmY_study, x = AnnualDispPotKmY, colour = Gradient)) +
+  ggplot(aes(y = ClimVeloTKmY_spp, x = AnnualDispPotKmY, colour = Gradient)) +
   geom_point() +
   theme_bw() +
   theme(panel.grid = element_blank()) +  
@@ -705,11 +704,11 @@ cv_vs_dp_zoom <- v3 %>%
   labs(x = "Dispersal potential (km/y)", y = "Climate velocity (km/y)") +
   theme(legend.position = "none")
 
-ggsave(cv_vs_dp_zoom, path = "figures/sotm", filename = "cv_vs_dp_zoom.png", 
+ggsave(cv_vs_dp_zoom, path = "figures/sotm", filename = "cv_vs_dp_zoom_spp.png", 
        device = "png", height = 3.5, width = 4.5)
 
 cv_vs_dp_zoomzoom <- v3 %>%
-  ggplot(aes(y = ClimVeloTKmY_study, x = AnnualDispPotKmY, colour = Gradient)) +
+  ggplot(aes(y = ClimVeloTKmY_spp, x = AnnualDispPotKmY, colour = Gradient)) +
   geom_point() +
   theme_bw() +
   theme(panel.grid = element_blank()) +  
@@ -722,14 +721,14 @@ cv_vs_dp_zoomzoom <- v3 %>%
   labs(x = "Dispersal potential (km/y)", y = "Climate velocity (km/y)") +
   theme(legend.position = "none")
 
-ggsave(cv_vs_dp_zoomzoom, path = "figures/sotm", filename = "cv_vs_dp_zoomzoom.png", 
+ggsave(cv_vs_dp_zoomzoom, path = "figures/sotm", filename = "cv_vs_dp_zoomzoom_spp.png", 
        device = "png", height = 3.5, width = 4.5)
 
 
 ## make a bar plot
 bar_group <- v3 %>%
   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
-  mutate(expect_limitation = ifelse(ClimVeloTKmY_study <= AnnualDispPotKmY, "No",
+  mutate(expect_limitation = ifelse(ClimVeloTKmY_spp <= AnnualDispPotKmY, "No",
                                     "Yes")) %>%
   mutate(expect_limitation = factor(expect_limitation, levels = c("Yes", "No"), 
                                     ordered = TRUE)) %>%
@@ -742,13 +741,13 @@ bar_group <- v3 %>%
   labs(x = "Expect dispersal limitation?", y = "Number of range expansion observations") +
   theme(legend.position = "none")
 
-ggsave(bar_group, path = "figures/sotm", filename = "bar_group.png", 
+ggsave(bar_group, path = "figures/sotm", filename = "bar_group_spp.png", 
        device = "png", height = 3.5, width = 4.5)
 
 ## get numbers 
 v3 %>%
   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
-  mutate(expect_limitation = ifelse(ClimVeloTKmY_study <= AnnualDispPotKmY, "No",
+  mutate(expect_limitation = ifelse(ClimVeloTKmY_spp <= AnnualDispPotKmY, "No",
                                     "Yes")) %>%
   mutate(expect_limitation = factor(expect_limitation, levels = c("Yes", "No"), 
                                     ordered = TRUE)) %>%
@@ -756,7 +755,7 @@ v3 %>%
   tally()
 
 bar_gradient <- v3 %>%
-  mutate(expect_limitation = ifelse(ClimVeloTKmY_study <= AnnualDispPotKmY, "No",
+  mutate(expect_limitation = ifelse(ClimVeloTKmY_spp <= AnnualDispPotKmY, "No",
                                     "Yes")) %>%
   ggplot(aes(x = expect_limitation, fill = Gradient)) +
   geom_bar() +
@@ -767,7 +766,7 @@ bar_gradient <- v3 %>%
   labs(x = "Expect dispersal limitation?", y = "Number of observed expansions") +
   theme(legend.position = "none")
 
-ggsave(bar_gradient, path = "figures/sotm", filename = "bar_gradient.png", 
+ggsave(bar_gradient, path = "figures/sotm", filename = "bar_gradient_spp.png", 
        device = "png", height = 3.5, width = 4.5)
 
 
@@ -778,16 +777,16 @@ ggsave(bar_gradient, path = "figures/sotm", filename = "bar_gradient.png",
 lat <- filter(v3, Gradient == "Latitudinal") %>%
   mutate(Group = factor(group, ordered = F))
 
-lat$ClimVeloTKmY_og <- lat$ClimVeloTKmY_study
-hist(lat$ClimVeloTKmY_study)
-q = quantile(lat$ClimVeloTKmY_study, probs = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))
-lat$ClimVeloTKmY_study = cut(lat$ClimVeloTKmY_study,
+lat$ClimVeloTKmY_og <- lat$ClimVeloTKmY_spp
+hist(lat$ClimVeloTKmY_spp)
+q = quantile(lat$ClimVeloTKmY_spp, probs = c(0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1))
+lat$ClimVeloTKmY_spp = cut(lat$ClimVeloTKmY_spp,
                        breaks = q,
                        include.lowest = T)
-plot(lat$ClimVeloTKmY_study)
+plot(lat$ClimVeloTKmY_spp)
 
-lat$ClimVeloTKmY_study <- str_replace_all(lat$ClimVeloTKmY_study, "\\[", "(") 
-lat$ClimVeloTKmY_study <- str_replace_all(lat$ClimVeloTKmY_study, "\\]", ")") 
+lat$ClimVeloTKmY_spp <- str_replace_all(lat$ClimVeloTKmY_spp, "\\[", "(") 
+lat$ClimVeloTKmY_spp <- str_replace_all(lat$ClimVeloTKmY_spp, "\\]", ")") 
 
 mycolours <- colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(10)
 
@@ -795,7 +794,7 @@ mycolours <- colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(10)
 #### hypothesis testing 
 data_unlog <- v3 %>%
   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
-  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_study)) +
+  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
   geom_point() +
   theme_bw() +
   facet_grid(~Gradient) +
@@ -813,14 +812,14 @@ data_unlog <- v3 %>%
        y = "Observed range expansion rate (km/y)", 
        colour = "") +
   theme(legend.position = "none")+
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5) 
 
-ggsave(data_unlog, path = "figures/sotm", filename = "data-unlog.png", 
+ggsave(data_unlog, path = "figures/sotm", filename = "data-unlog_spp.png", 
        device = "png", height = 4, width = 8)
 
 data_log <- v3 %>%
   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
-  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_study)) +
+  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
   geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
@@ -839,9 +838,9 @@ data_log <- v3 %>%
        y = "Observed range expansion rate (km/y)", 
        colour = "") +
   theme(legend.position = "none") +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5) 
 
-ggsave(data_log, path = "figures/sotm", filename = "data-log.png", 
+ggsave(data_log, path = "figures/sotm", filename = "data-log_spp.png", 
        device = "png", height = 4, width = 8)
 
 
@@ -849,7 +848,7 @@ ggsave(data_log, path = "figures/sotm", filename = "data-log.png",
 data_ele_log <- v3 %>%
   filter(Rate > 0.0001) %>%
   filter(Gradient == "Elevation") %>%
-  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_study)) +
+  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
   geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
@@ -863,35 +862,35 @@ data_ele_log <- v3 %>%
   scale_x_log10(breaks = c(0.001, 0.01, 0.1, 1, 10, 100, 1000),
                 labels = c("0.001", "0.01", "0.1", "1", "10", "100", "1000"),
                 limits = c(0.0001, 1400)) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5)  + 
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5)  + 
   labs(x = "",
        y = "", 
        colour = "") +
   theme(legend.position = "none") +
   scale_y_continuous(limits = c(0, 0.04), expand = c(0,0)) 
 
-ggsave(data_ele_log, path = "figures/sotm", filename = "data-ele-log.png", 
+ggsave(data_ele_log, path = "figures/sotm", filename = "data-ele-log_spp.png", 
        device = "png", height = 2.8, width = 3.1)
 
 
 ## now, plot line representing max climate velocity across elev and lat:
 data_log <- data_log +
-  geom_vline(aes(xintercept = max(ClimVeloTKmY_study)))
+  geom_vline(aes(xintercept = max(ClimVeloTKmY_spp)))
 
-ggsave(data_log, path = "figures/sotm", filename = "data-log-line.png", 
+ggsave(data_log, path = "figures/sotm", filename = "data-log-line_spp.png", 
        device = "png", height = 4, width = 8)
 
 data_ele_log <- data_ele_log +
-  geom_vline(aes(xintercept = max(ClimVeloTKmY_study)))
+  geom_vline(aes(xintercept = max(ClimVeloTKmY_spp)))
 
-ggsave(data_ele_log, path = "figures/sotm", filename = "data-ele-log-line.png", 
+ggsave(data_ele_log, path = "figures/sotm", filename = "data-ele-log-line_spp.png", 
        device = "png", height = 4, width = 4.2)
 
 
 v3 %>%
   filter(Rate > 0.0001) %>%
   filter(Gradient == "Latitudinal") %>%
-  filter(AnnualDispPotKmY >= ClimVeloTKmY_study) %>%
+  filter(AnnualDispPotKmY >= ClimVeloTKmY_spp) %>%
   ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = Gradient)) +
   geom_point() +
   theme_bw() +
@@ -912,9 +911,9 @@ v3 %>%
   theme(legend.position = "none") + 
   stat_function(colour = "black", fun = function(x){x},
                 linetype = "dashed") + 
-  geom_vline(aes(xintercept = max(ClimVeloTKmY_study)))
+  geom_vline(aes(xintercept = max(ClimVeloTKmY_spp)))
 
-ggsave(path = "figures/sotm", filename = "data-lat-log-gt.png", 
+ggsave(path = "figures/sotm", filename = "data-lat-log-gt_spp.png", 
        device = "png", height = 3.5, width = 4.5)
 
 
@@ -922,20 +921,20 @@ ggsave(path = "figures/sotm", filename = "data-lat-log-gt.png",
 notlimited_lat <- v3 %>%
   filter(Rate > 0.0001) %>%
   filter(Gradient == "Latitudinal") %>%
-  filter(AnnualDispPotKmY >= ClimVeloTKmY_study) %>%
-  mutate(ClimVeloTKmY_study = factor(ClimVeloTKmY_study, levels = unique(.$ClimVeloTKmY_study),
+  filter(AnnualDispPotKmY >= ClimVeloTKmY_spp) %>%
+  mutate(ClimVeloTKmY_spp = factor(ClimVeloTKmY_spp, levels = unique(.$ClimVeloTKmY_spp),
                                ordered = TRUE))
 
 limited_lat <- v3 %>%
   filter(Rate > 0.0001) %>%
   filter(Gradient == "Latitudinal") %>%
-  filter(AnnualDispPotKmY < ClimVeloTKmY_study)  %>%
-  mutate(ClimVeloTKmY_study = factor(ClimVeloTKmY_study, levels = unique(.$ClimVeloTKmY_study),
+  filter(AnnualDispPotKmY < ClimVeloTKmY_spp)  %>%
+  mutate(ClimVeloTKmY_spp = factor(ClimVeloTKmY_spp, levels = unique(.$ClimVeloTKmY_spp),
                                ordered = TRUE))
 
 
 library(nlme)
-mod_nl_lat <- lme(ShiftKmY ~ AnnualDispPotKmY, random = ~1|ClimVeloTKmY_study, 
+mod_nl_lat <- lme(ShiftKmY ~ AnnualDispPotKmY, random = ~1|ClimVeloTKmY_spp, 
                   data = notlimited_lat)
 summary(mod_nl_lat)
 
@@ -944,7 +943,7 @@ R2c=r.squaredGLMM(mod_nl_lat)[[2]]
 R2m
 R2c
 
-mod_l_lat <- lme(ShiftKmY ~ AnnualDispPotKmY, random = ~1|ClimVeloTKmY_study, 
+mod_l_lat <- lme(ShiftKmY ~ AnnualDispPotKmY, random = ~1|ClimVeloTKmY_spp, 
                  data = limited_lat)
 summary(mod_l_lat)
 
@@ -967,20 +966,20 @@ AIC(mod_l_lat_lm,
 notlimited_ele <- v3 %>%
   filter(Rate > 0.0001) %>%
   filter(Gradient == "Elevation") %>%
-  filter(AnnualDispPotKmY >= ClimVeloTKmY_study) %>%
-  mutate(ClimVeloTKmY_study = factor(ClimVeloTKmY_study, levels = unique(.$ClimVeloTKmY_study),
+  filter(AnnualDispPotKmY >= ClimVeloTKmY_spp) %>%
+  mutate(ClimVeloTKmY_spp = factor(ClimVeloTKmY_spp, levels = unique(.$ClimVeloTKmY_spp),
                                ordered = TRUE))
 
 limited_ele <- v3 %>%
   filter(Rate > 0.0001) %>%
   filter(Gradient == "Elevation") %>%
-  filter(AnnualDispPotKmY < ClimVeloTKmY_study)  %>%
-  mutate(ClimVeloTKmY_study = factor(ClimVeloTKmY_study, levels = unique(.$ClimVeloTKmY_study),
+  filter(AnnualDispPotKmY < ClimVeloTKmY_spp)  %>%
+  mutate(ClimVeloTKmY_spp = factor(ClimVeloTKmY_spp, levels = unique(.$ClimVeloTKmY_spp),
                                ordered = TRUE))
 
 
 library(nlme) 
-mod_nl_ele <- lme(ShiftKmY ~ AnnualDispPotKmY, random = ~1|ClimVeloTKmY_study,
+mod_nl_ele <- lme(ShiftKmY ~ AnnualDispPotKmY, random = ~1|ClimVeloTKmY_spp,
                   data = notlimited_ele)
 summary(mod_nl_ele)
 
@@ -989,7 +988,7 @@ R2c=r.squaredGLMM(mod_nl_ele)[[2]]
 R2m
 R2c
 
-mod_l_ele <- lme(ShiftKmY ~ AnnualDispPotKmY, random = ~1|ClimVeloTKmY_study,
+mod_l_ele <- lme(ShiftKmY ~ AnnualDispPotKmY, random = ~1|ClimVeloTKmY_spp,
                  data = limited_ele)
 summary(mod_l_ele)
 
@@ -1027,9 +1026,9 @@ fitted_pred_nl_lat <- new_data %>%
 
 
 nl_lat_nopred <- v3 %>%
-  filter(AnnualDispPotKmY >= ClimVeloTKmY_study) %>%
+  filter(AnnualDispPotKmY >= ClimVeloTKmY_spp) %>%
   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
-  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_study)) +
+  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
   geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
@@ -1048,7 +1047,7 @@ nl_lat_nopred <- v3 %>%
        y = "Observed range expansion rate (km/y)", 
        colour = "") +
   theme(legend.position = "none") +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5) 
 
 nl_lat_pred <- nl_lat_nopred +
   geom_ribbon(data = fitted_pred_nl_lat, 
@@ -1065,9 +1064,9 @@ nl_lat_pred <- nl_lat_nopred +
             size = 1,
             colour = "black") # add prediction
 
-ggsave(nl_lat_nopred, path = "figures/sotm", filename = "data-notlimited-lat-nopredictions.png", 
+ggsave(nl_lat_nopred, path = "figures/sotm", filename = "data-notlimited-lat-nopredictions_spp.png", 
        device = "png", height = 4, width = 8)
-ggsave(nl_lat_pred, path = "figures/sotm", filename = "data-notlimited-lat-predictions.png", 
+ggsave(nl_lat_pred, path = "figures/sotm", filename = "data-notlimited-lat-predictions_spp.png", 
        device = "png", height = 4, width = 8)
 
 
@@ -1085,8 +1084,8 @@ fitted_pred_nl_ele <- new_data %>%
 nl_ele_nopred <- v3 %>%
   filter(Rate > 0.0001) %>%
   filter(Gradient == "Elevation") %>%
-  filter(AnnualDispPotKmY >= ClimVeloTKmY_study) %>%
-  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_study)) +
+  filter(AnnualDispPotKmY >= ClimVeloTKmY_spp) %>%
+  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
   geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
@@ -1105,7 +1104,7 @@ nl_ele_nopred <- v3 %>%
        y = "", 
        colour = "") +
   theme(legend.position = "none")  +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5) 
 
 nl_ele_pred <- nl_ele_nopred +
   geom_ribbon(data = fitted_pred_nl_ele, 
@@ -1122,9 +1121,9 @@ nl_ele_pred <- nl_ele_nopred +
             size = 1,
             colour = "black") # add prediction
 
-ggsave(nl_ele_nopred, path = "figures/sotm", filename = "data-notlimited-ele-nopredictions.png", 
+ggsave(nl_ele_nopred, path = "figures/sotm", filename = "data-notlimited-ele-nopredictions_spp.png", 
        device = "png", height = 2.8, width = 3.1)
-ggsave(nl_ele_pred, path = "figures/sotm", filename = "data-notlimited-ele-predictions.png", 
+ggsave(nl_ele_pred, path = "figures/sotm", filename = "data-notlimited-ele-predictions_spp.png", 
        device = "png", height = 2.8, width = 3.1)
 
 
@@ -1140,9 +1139,9 @@ fitted_pred_l_lat <- new_data %>%
 
 
 l_lat_nopred <- v3 %>%
-  filter(AnnualDispPotKmY < ClimVeloTKmY_study) %>%
+  filter(AnnualDispPotKmY < ClimVeloTKmY_spp) %>%
   mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) %>%
-  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_study)) +
+  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
   geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
@@ -1161,7 +1160,7 @@ l_lat_nopred <- v3 %>%
        y = "Observed range expansion rate (km/y)", 
        colour = "") +
   theme(legend.position = "none") +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5) 
 
 l_lat_pred <- l_lat_nopred +
   geom_ribbon(data = fitted_pred_l_lat, 
@@ -1178,9 +1177,9 @@ l_lat_pred <- l_lat_nopred +
             size = 1,
             colour = "black") # add prediction
 
-ggsave(l_lat_nopred, path = "figures/sotm", filename = "data-limited-lat-nopredictions.png", 
+ggsave(l_lat_nopred, path = "figures/sotm", filename = "data-limited-lat-nopredictions_spp.png", 
        device = "png", height = 4, width = 8)
-ggsave(l_lat_pred, path = "figures/sotm", filename = "data-limited-lat-predictions.png", 
+ggsave(l_lat_pred, path = "figures/sotm", filename = "data-limited-lat-predictions_spp.png", 
        device = "png", height = 4, width = 8)
 
 
@@ -1198,8 +1197,8 @@ fitted_pred_l_ele <- new_data %>%
 l_ele_nopred <- v3 %>%
   filter(Rate > 0.0001) %>%
   filter(Gradient == "Elevation") %>%
-  filter(AnnualDispPotKmY < ClimVeloTKmY_study) %>%
-  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_study)) +
+  filter(AnnualDispPotKmY < ClimVeloTKmY_spp) %>%
+  ggplot(aes(x = AnnualDispPotKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
   geom_point(alpha = 0.7) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
@@ -1218,7 +1217,7 @@ l_ele_nopred <- v3 %>%
        y = "", 
        colour = "") +
   theme(legend.position = "none") +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 1.5) 
 
 l_ele_pred <- l_ele_nopred +
   geom_ribbon(data = fitted_pred_l_ele, 
@@ -1235,10 +1234,12 @@ l_ele_pred <- l_ele_nopred +
             size = 1,
             colour = "black") # add prediction
 
-ggsave(l_ele_nopred, path = "figures/sotm", filename = "data-limited-ele-nopredictions.png", 
+ggsave(l_ele_nopred, path = "figures/sotm", filename = "data-limited-ele-nopredictions_spp.png", 
        device = "png", height = 2.8, width = 3.1)
-ggsave(l_ele_pred, path = "figures/sotm", filename = "data-limited-ele-predictions.png", 
+ggsave(l_ele_pred, path = "figures/sotm", filename = "data-limited-ele-predictions_spp.png", 
        device = "png", height = 2.8, width = 3.1)
+
+
 
 
 

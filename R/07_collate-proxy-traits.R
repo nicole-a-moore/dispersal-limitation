@@ -16,7 +16,7 @@ cols_to_keep <- c("reported_name","reported_name_fixed", "scientificName", "king
 
 
 ## read in dispersal data
-dd_collated <- read.csv("data-processed/dispersal-distance-collated.csv")
+dd <- read.csv("data-processed/dispersal-distance-collated.csv")
 
 #---------------------
 # PLANTS 
@@ -26,8 +26,7 @@ dd_collated <- read.csv("data-processed/dispersal-distance-collated.csv")
 #----------------------------
 # TRY: Vegetative height 
 #----------------------------
-try <- read.csv('data-raw/dispersal-data/TRY-query/TRY_VegetativeHeight.csv',sep=";")
-head(try)
+try = read.csv("data-raw/dispersal-data/TRY-query/TRY_VegetativeHeight.csv", sep = ";")
 
 ## harmonize 
 try_harm <- harmonize(try$SpeciesChecked)
@@ -55,7 +54,7 @@ try <- try_bs %>%
          Field = "VegetativeHeight") %>%
   filter(scientificName %in% dd$scientificName)
 
-length(unique(try$scientificName)) #172
+length(unique(try$scientificName)) #343
 nrow(try)
 
 ## for later
@@ -82,7 +81,7 @@ write.csv(tamme, "data-processed/dispersal-proxy-trait-compilation_tamme.csv", r
 #---------------------
 # BIRDS 
 #---------------------
-## collate body size data for plants
+## collate body size data for birds
 ####################################
 #------------------------
 # AVONET: Tarsus.Length
@@ -116,7 +115,7 @@ avo_bs <- avonet %>%
          Field = "TarsusLength") %>%
   filter(scientificName %in% dd$scientificName)
 
-length(unique(avo_bs$scientificName)) #163
+length(unique(avo_bs$scientificName)) #180
 nrow(avo_bs)
 ## some have multiple measures
 ## take mean for now

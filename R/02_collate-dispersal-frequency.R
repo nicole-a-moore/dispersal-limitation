@@ -14,6 +14,9 @@ source("R/taxonomic-harmonization/harmonize.R")
 ## read in dispersal data
 dd_collated <- read.csv("data-processed/dispersal-distance-collated.csv")
 
+cols_to_keep <- c("reported_name","reported_name_fixed", "scientificName", "kingdom", "phylum",
+                  "class", "order", "family", "db", "db_code")
+
 #---------------------
 # PLANTS 
 #---------------------
@@ -70,9 +73,9 @@ write.csv(try_am, "data-processed/TRY_age-at-maturity_harmonized.csv", row.names
 ## subset to bioshifts species with dispersal distance
 try_am_bs <- filter(try_am, scientificName %in% dd_collated$scientificName)
 
-length(unique(try_am_bs$scientificName)) # 267 species 
+length(unique(try_am_bs$scientificName)) # 268 species 
 
-length(unique(dd_collated$scientificName[which(dd_collated$group == "Plants")])) # out of the 407 plants - nice!!! 
+length(unique(dd_collated$scientificName[which(dd_collated$group == "Plants")])) # out of the 399 plants - nice!!! 
 
 ## clean the data 
 unique(try_am_bs$OriglName)
@@ -150,11 +153,11 @@ unique(lifespan$Database)
 
 ## filter to species with dispersal distance
 lifespan <- filter(lifespan, SpeciesChecked %in% dd_collated$scientificName)
-length(unique(lifespan$SpeciesChecked)) ## 446 of our species 
+length(unique(lifespan$SpeciesChecked)) ## 444 of our species 
 
 ## how many are plants?
 lifespan = filter(lifespan, phylum %in% c("Streptophyta", "Tracheophyta"))
-length(unique(lifespan$SpeciesChecked)) ## 287 of our species 
+length(unique(lifespan$SpeciesChecked)) ## 286 of our species 
 
 ## harmonize names 
 lifespan_harm <- harmonize(lifespan$SpeciesChecked)
@@ -300,7 +303,7 @@ anage_am = anage_bs %>%
          Code = "AgeAtMaturity")%>%
   filter(!is.na(AgeAtMaturity))
 
-length(unique(anage_am$scientificName)) # 170 spp
+length(unique(anage_am$scientificName)) # 169 spp
 
 
 #-----------------
@@ -358,7 +361,7 @@ amniota_am = amniota_bs %>%
   filter(!is.na(AgeAtMaturity)) %>%
   filter(AgeAtMaturity != -999)
 
-length(unique(amniota_am$scientificName)) # 176 spp
+length(unique(amniota_am$scientificName)) # 175 spp
 
 
 ## combine

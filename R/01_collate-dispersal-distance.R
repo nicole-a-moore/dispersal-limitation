@@ -13,11 +13,15 @@ library(data.table)
 source("R/taxonomic-harmonization/harmonize.R")
 
 
-## read list of all species in bioshifts v1 
+## read list of all species in bioshifts v3 
 #################################################
-sp <- read.csv("data-processed/BIOSHIFTSv1_harmonized.csv") %>%
-  select(scientificName) %>%
+v3 = read.csv("data-raw/BIOSHIFTSv3/BIOSHIFTS_v3.csv")
+v3$scientificName = str_replace_all(v3$sp_name_checked, "\\_", " ")
+v3$scientificName
+
+sp <- select(v3, scientificName) %>%
   distinct()
+length(unique(sp$scientificName)) ## 12399 spp
 
 #----------------------------
 # Collate dispersal data 
@@ -88,7 +92,7 @@ par_dd <- par %>%
          Database = "Paradis et al. 2002") 
 
 ## check how many species in bioshifts 
-length(which(unique(par_dd$scientificName) %in% unique(sp$scientificName))) ## 72 :-)
+length(which(unique(par_dd$scientificName) %in% unique(sp$scientificName))) ## 74 :-)
 par_sp <- unique(par_dd$scientificName)[which(unique(par_dd$scientificName) %in% unique(sp$scientificName))]
 
 
@@ -209,6 +213,7 @@ jenkins_dd <- jenkins %>%
          Code = "MaxDispersalDistance", Database = "Jenkins et al. 2007",
          Source = NA) %>%
   filter(!is.na(DispersalDistance))%>%
+  filter(!is.na(scientificName)) %>%
   unique()
 
 ## check how many species in bioshifts 
@@ -259,7 +264,8 @@ flores_dd <- flores %>%
   mutate(Source = ifelse(str_detect(Source, "Bossard CC. The Role of Habitat Disturbance"),
                          "Bossard CC. The Role of Habitat Disturbance, Seed Predation and Ant Dispersal on Establishment of the Exotic Shrub Cytisus scoparius in California. American Midland Naturalist. 1991;126(1):1",
                          Source)) %>%
-  distinct()
+  distinct() %>% 
+  filter(!is.na(scientificName))
 
 ## some duplicates from Flores in Jenkins
 ## exclude observations from Jenkins with same Code and DispersalDistance as those from Flores since has more info
@@ -277,7 +283,7 @@ length(which(unique(flores_dd$scientificName) %in% unique(sp$scientificName))) #
 flores_sp <- unique(flores_dd$scientificName)[which(unique(flores_dd$scientificName) %in% unique(sp$scientificName))]
 
 ## check how many species in bioshifts 
-length(which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))) ## 296
+length(which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))) ## 295
 jenkins_sp <- unique(jenkins_dd$scientificName)[which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))]
 
 
@@ -390,7 +396,7 @@ jenkins_dd <- jenkins_dd %>%
   filter(!paste(scientificName, DispersalDistance, sep = "_") %in% key$data_id)
 
 ## check how many species in bioshifts 
-length(which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))) ## 217
+length(which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))) ## 218
 jenkins_sp <- unique(jenkins_dd$scientificName)[which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))]
 
 
@@ -456,10 +462,11 @@ try_dd_dd <- try_dd %>%
                                      NA)))) %>%
   mutate(Sex = NA, ObservationTypeSpecific = "seed/plant dispersal (unknown)",  
          Database = "TRY database") %>% 
-  filter(!is.na(Unit)) 
+  filter(!is.na(Unit)) %>%
+  filter(!is.na(scientificName))
 
 ## check how many species in bioshifts 
-length(which(unique(try_dd_dd$scientificName) %in% unique(sp$scientificName))) ## 53
+length(which(unique(try_dd_dd$scientificName) %in% unique(sp$scientificName))) ## 50
 try_dd_sp <- unique(try_dd_dd$scientificName)[which(unique(try_dd_dd$scientificName) %in% unique(sp$scientificName))]
 
 
@@ -494,7 +501,7 @@ chu_dd <- chu %>%
          Database = "Chu 2021") 
 
 ## check how many species in bioshifts 
-length(which(unique(chu_dd$scientificName) %in% unique(sp$scientificName))) ## 83
+length(which(unique(chu_dd$scientificName) %in% unique(sp$scientificName))) ## 82
 chu_sp <- unique(chu_dd$scientificName)[which(unique(chu_dd$scientificName) %in% unique(sp$scientificName))]
 
 ## check how many unique species we have data for:
@@ -505,7 +512,7 @@ species_with_dd <- append(tamme_sp, jenkins_sp) %>%
   append(., par_sp) %>%
   append(., chu_sp)
 
-length(unique(species_with_dd)) # 622 species 
+length(unique(species_with_dd)) # 618 species 
 
 ## now: make subsets of each database with only bioshifts species 
 tamme_sub = filter(tamme_dd, scientificName %in% tamme_sp)
@@ -525,7 +532,7 @@ dd_collated <- rbind(tamme_sub, suth_bird_sub) %>%
   rbind(., chu_sub) %>%
   unique()
 
-length(unique(dd_collated$scientificName)) # 622
+length(unique(dd_collated$scientificName)) # 618
 
 length(which(!dd_collated$scientificName %in% sp$scientificName))
 
@@ -534,15 +541,14 @@ write.csv(dd_collated, "data-processed/dispersal-distance-collated_intermediate.
 dd_collated <- read.csv("data-processed/dispersal-distance-collated_intermediate.csv")
 
 ## fix classes that are missing
-sp <- read.csv("data-processed/BIOSHIFTSv1_harmonized.csv") %>%
-  select(reported_name, reported_name_fixed, scientificName, class, kingdom, phylum, order, family, db,
-         db_code) %>%
+v3 <- v3 %>%
+  select(scientificName, class, kingdom, phylum, family) %>%
   distinct()
 
 missing_class <- dd_collated %>%
   filter(is.na(class)) 
 
-missing_class_sp <- filter(sp, scientificName %in% missing_class$scientificName) 
+missing_class_sp <- filter(v3, scientificName %in% missing_class$scientificName) 
 
 missing_class <- select(missing_class, -class) %>%
   left_join(., missing_class_sp)
@@ -550,11 +556,17 @@ missing_class <- select(missing_class, -class) %>%
 dd_collated <- filter(dd_collated, !scientificName %in% missing_class$scientificName) %>%
   rbind(., missing_class)
 
+## fix Chloris chloris 
+dd_collated[which(dd_collated$scientificName == "Chloris chloris"), c(4,5,6,7,8)] <-
+  rep(c("Animalia", "Chordata", "Aves", "Passeriformes", "Fringillidae"), each = 7)
+
 ## filter to birds and plants
 dd_collated <- filter(dd_collated, class == "Aves" | kingdom == "Plantae")
 
 ## make column for group and for type of dispersal estimate
 dd_collated$group <- ifelse(dd_collated$class == "Aves", "Birds", "Plants")
+
+dd_collated <- filter(dd_collated, !(group == "Birds" & str_detect(ObservationTypeSpecific, "seed")))
 
 dd_collated <- dd_collated %>%
   mutate(type = ifelse(Code %in% c("MaxDispersalDistance", "90thPercentileDispersalDistance",
@@ -571,7 +583,7 @@ dd_collated <- dd_collated %>%
                                                  ObservationTypeSpecific))) 
 
 
-length(unique(dd_collated$scientificName)) #586 species
+length(unique(dd_collated$scientificName)) #581 species
 
 ## make general observation type column 
 ## general types of studies:
@@ -631,7 +643,7 @@ dd_collated %>%
   ggplot(aes(x = log(DispersalDistanceKm), fill = group)) + geom_histogram() +
   theme_classic() + coord_flip() + facet_wrap(~Code)
 
-## compare mean versus max versus meadian versus mode
+## compare mean versus max versus median versus mode
 dd_collated %>%
   select(scientificName, group, Code, type, DispersalDistanceKm) %>%
   unique() %>% 

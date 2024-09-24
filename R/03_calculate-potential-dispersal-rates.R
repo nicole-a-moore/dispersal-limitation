@@ -52,13 +52,13 @@ dscale <- dscale %>%
 ## look at duplicates
 dups = dscale %>%
   group_by(scientificName) %>%
-  filter(length(scientificName) >=2) %>%
+  filter(length(scientificName) >=2) %>% 
   mutate(Field = ifelse(Source == "Chu 2021", "geom/arimean", Field),
          ObservationTypeSpecific = ifelse(Source == "Chu 2021", "geometric/arithmetic mean natal dispersal distance",
                                           ObservationTypeSpecific)) %>%
   ungroup() %>%
   filter(Source != "unpub.") %>%
-  distinct()
+  distinct()  
 
 leftover = dups %>% group_by(scientificName) %>%
   filter(length(scientificName) >=2) %>% distinct() 
@@ -76,82 +76,32 @@ dscale <- dscale %>%
 ###########################################
 ####   prep range expansion rate data  ####
 ###########################################
-## read clean version of bioshifts 
-v1 = read.csv("data-processed/BIOSHIFTSv1_harmonized.csv")
+## read clean version of bioshifts v3 with climate velocities
+v3 = read.csv("data-processed/v3_with-cv.csv")
 
-## get start and end / duration data from other version of bioshifts 
-other_rs_data <- read.delim('data-raw/BIOSHIFTSv1/Shifts2018_checkedtaxo.txt')
-
-other_rs_data <- select(other_rs_data, c(New_name, ID, START, END, DUR)) %>%
-  distinct()
-
-## if there are multiple durations per study, choose shortest 
-other_rs_data = other_rs_data %>%
-  group_by(ID, New_name) %>%
-  mutate(DUR = min(DUR), 
-         START = min(START),
-         END = min(END)) %>%
-  ungroup() %>%
-  distinct() %>%
-  rename("Source" = ID) %>%
-  mutate(New_name = str_replace_all(New_name, "\\_", " "))
-
-## clean names in the orginal database 
-other_rs_data$reported_name <- other_rs_data$New_name
-other_rs_data$New_name = Clean_Names(other_rs_data$New_name, return_gen_sps = F)
-
-##harmonize the new name
-bs_harm <- harmonize(other_rs_data$New_name)
-notfound <- filter(bs_harm, is.na(db_code))
-
-## add back species that weren't found but are resolved to species level
-notfound <- filter(notfound, !str_detect(notfound$species, "sp."))
-notfound$scientificName = notfound$species
-bs_harm <- rbind(bs_harm, notfound) %>%
-  distinct()
-
-other_rs_data <- other_rs_data %>%
-  rename("reported_name_fixed" = New_name)
-
-other_rs_data_corrected <- left_join(other_rs_data, bs_harm, by = c("reported_name_fixed" = "species"),
-                          relationship = "many-to-many") %>%
-  unique() %>%
-  filter(!is.na(scientificName))
-
-v1$scientificName[which(!v1$scientificName %in% other_rs_data_corrected$scientificName)]
-## all are there 
-
-## left join with original database 
-v1 = left_join(v1,  other_rs_data_corrected)
-
-## subset v1 to only species with dispersal distance  
-v1 <- filter(v1, scientificName %in% dscale$scientificName)
-length(unique(v1$scientificName)) #586 species 
+## subset v3 to only species with dispersal distance  
+v3 <- filter(v3, scientificName %in% dscale$scientificName)
+length(unique(v3$scientificName)) #581 species 
 
 
 #########################################################
 ####   join range shift and dispersal distance data  ####
 #########################################################
 #----------------------
-## add dispersal distance 
-## get rid of old taxonomy columns from v1 (they aren't right)
-v1 <- select(v1, -c("Kingdom", "Phylum", "Class", "Order", "Family"))
-v1_saved = v1
-
 ## get rid of columns that will cause duplication in dispersal scale database 
-dscale <- select(dscale, -c("reported_name", "reported_name_fixed", "db", "db_code")) %>%
+dscale <- select(dscale, -c("reported_name", "reported_name_fixed", "db", "db_code", "kingdom",
+                            "phylum", "class", "family")) %>%
   unique()
 
 ## rename some columns that have the same names 
 dscale <- rename(dscale, "DispersalSource"= Source, "DispersalUnit"= Unit)
 
 ## join
-v1 = left_join(v1, dscale, by = "scientificName") 
+v3 = left_join(v3, dscale) 
 
 ## check on merge
-length(unique(v1$scientificName[which(!is.na(v1$DispersalDistanceKm))])) # 586 species have dispersal distance
-length(which(is.na(v1$DispersalDistanceKm))) # 0 missing dispersal distance
-
+length(unique(v3$scientificName[which(!is.na(v3$DispersalDistanceKm))])) # 581 species have dispersal distance
+length(which(is.na(v3$DispersalDistanceKm))) # 0 missing dispersal distance
 
 
 ###################################################
@@ -182,19 +132,19 @@ am_join <- am %>%
   mutate(YearOfMaturity = ceiling(AgeAtMaturityDays/365)) ## make new column for a value that's rounded to the nearest year 
 
 ## join to dispersal data:
-v1 <- left_join(v1, am_join, by = "scientificName")
+v3 <- left_join(v3, am_join, by = "scientificName")
 
-length(unique(v1$scientificName)) ## still have all the species
-length(unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays))])) 
-## 137 / 586 species with dispersal estimates do not have age at maturity data 
+length(unique(v3$scientificName)) ## still have all the species
+length(unique(v3$scientificName[which(is.na(v3$AgeAtMaturityDays))])) 
+## 132 / 581 species with dispersal estimates do not have age at maturity data 
 
-unique(v1$scientificName[which(is.na(v1$AgeAtMaturityDays))])
+unique(v3$scientificName[which(is.na(v3$AgeAtMaturityDays))])
 
 ## filter to only species with age at maturity 
-v1 <- filter(v1, !is.na(AgeAtMaturityDays))
+v3 <- filter(v3, !is.na(AgeAtMaturityDays))
 
 ## calculate dispersal potential for species with age at maturity 
-v1 = v1 %>%
+v3 = v3 %>%
   mutate(DispersalPotentialKmY = ifelse(!is.na(YearOfMaturity), 
                                         DispersalDistanceKm/YearOfMaturity,
                                         NA)) %>%
@@ -203,34 +153,30 @@ v1 = v1 %>%
                                        NA)) %>%
   mutate(DispersalDistancem = DispersalDistanceKm*1000)
 
-
-## filter data 
-v1_filtered <- v1 %>%
-  ## filter out observations where climate velocity is negative at leading edge/optimum (expect contraction)
-  filter(LatVeloT >= 0 | EleVeloT >= 0) %>% 
-  ## get rid of negative shifts 
-  filter(ShiftR > 0) %>%
-  ## get rid of trailing edge 
-  filter(., Position != "Trailing edge") %>%
-  ## make one column for annual dispersal potential, climate velo for easier plotting of lat x elev data together
-  mutate(annual_dispersal_pot = ifelse(Gradient == "Elevation",
+## make new vars 
+v3 <- v3 %>%
+  ## make variable for whether shift is in line with climate velocity 
+  mutate(tracking_climate = sign(Rate) == sign(mean_cv_studylevel)) %>%
+  ## make variable for whether shift is a contraction
+  mutate(is_contraction = ifelse(Param == "LE" & Rate >= 0, "NO",
+                                 ifelse(Param == "TE" & Rate <= 0, "NO",
+                                        ifelse(Param == "O", "UNKNOWN", "YES")))) %>%
+  ## make one column for annual dispersal potential
+  mutate(annual_dispersal_pot = ifelse(Type == "ELE",
                                        DispersalPotentialmY,
-                                       ifelse(Gradient == "Latitudinal",
+                                       ifelse(Type == "LAT",
                                               DispersalPotentialKmY,
-                                              NA))) %>%
-  mutate(climate_velocity = ifelse(Gradient == "Elevation",
-                                   EleVeloT,
-                                   ifelse(Gradient == "Latitudinal",
-                                          LatVeloT,
-                                          NA)))
+                                              NA))) 
 
 ## convert units of latitudinal and elevation shifts & dispersal & climate velocity to km/y:
-v1_filtered$ShiftKmY <- ifelse(v1_filtered$Gradient == "Elevation", v1_filtered$ShiftR / 1000, 
-                               v1_filtered$ShiftR)
-v1_filtered$ClimVeloTKmY <- ifelse(v1_filtered$Gradient == "Elevation", v1_filtered$EleVeloT / 1000,
-                                   v1_filtered$LatVeloT)
-v1_filtered$AnnualDispPotKmY <- ifelse(v1_filtered$Gradient == "Elevation", v1_filtered$annual_dispersal_pot / 1000,
-                                       v1_filtered$annual_dispersal_pot)
+v3$ShiftKmY <- ifelse(v3$Type == "ELE", v3$Rate / 1000, 
+                               v3$Rate)
+v3$ClimVeloTKmY_study <- ifelse(v3$Type == "ELE", v3$mean_cv_studylevel / 1000,
+                                   v3$mean_cv_studylevel)
+v3$ClimVeloTKmY_spp <- ifelse(v3$Type == "ELE", v3$mean_cv_sppspecific / 1000,
+                                       v3$mean_cv_sppspecific)
+v3$AnnualDispPotKmY <- ifelse(v3$Type == "ELE", v3$annual_dispersal_pot / 1000,
+                                       v3$annual_dispersal_pot)
 
 
 ##########################
@@ -239,12 +185,12 @@ v1_filtered$AnnualDispPotKmY <- ifelse(v1_filtered$Gradient == "Elevation", v1_f
 ## colour pal
 mycolours <- colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(10)
 
-nrow(v1_filtered) # 1938 range shifts
-length(unique(v1_filtered$scientificName)) # 411 species 
-unique(v1_filtered$Position)
+nrow(v3) # 3823 range shifts
+length(unique(v3$scientificName)) # 449 species 
+unique(v3$Param)
 
-grad <- v1_filtered %>%
-  ggplot(aes(x = Gradient, fill = Gradient)) +
+grad <- v3 %>%
+  ggplot(aes(x = Type, fill = Type)) +
   geom_bar() +
   theme_bw() +
   theme(panel.grid = element_blank(),
@@ -258,10 +204,10 @@ grad
 ggsave(grad, path = "figures/sotm", filename = "barplot-gradients.png", 
        device = "png", height = 2, width = 4)
 
-v1_filtered %>%
-  group_by(Gradient) %>% tally()
+v3 %>%
+  group_by(Type) %>% tally()
 
-groups <- v1_filtered %>%
+groups <- v3 %>%
   ggplot(aes(x = group)) +
   geom_bar() +
   theme_bw() +
@@ -274,28 +220,46 @@ groups
 ggsave(groups, path = "figures/sotm", filename = "barplot-groups.png", 
        device = "png", height = 2, width = 4)
 
-v1_filtered %>%
+v3 %>%
   group_by(group) %>% tally()
 
-## get rid of "Chloris chloris" since range shift is for a bird, dispersal distance is for the plant
+v3 %>%
+  ggplot(aes(x = mean_cv_studylevel, y = mean_cv_sppspecific)) +
+  geom_point() +
+  theme_bw() +
+  geom_abline(intercept = 0, slope = 1)
 
-v1_filtered <- filter(v1_filtered, scientificName != "Chloris chloris")
+## how often are the signs of study versus species-level climate velocity different?
+v3 %>%
+  filter(!is.na(mean_cv_sppspecific)) %>%
+  mutate(same_sign = ifelse(sign(mean_cv_studylevel) == sign(mean_cv_sppspecific), "same", "different")) %>%
+  ggplot(aes(same_sign)) +
+  geom_bar()
+## not often at all
+
+## 
+v3 %>%
+  ggplot(aes(x = ClimVeloTKmY_study, y = ShiftKmY, colour = is_contraction)) +
+  geom_point() +
+  theme_bw() +
+  geom_abline(intercept = 0, slope = 1) +
+  facet_wrap(Type~Param)
 
 ## save 
-write.csv(v1_filtered, "data-processed/v1_potential-dispersal-rate.csv", row.names = FALSE)
+write.csv(v3, "data-processed/v3_potential-dispersal-rate.csv", row.names = FALSE)
 
-v1_filtered <- read.csv("data-processed/v1_potential-dispersal-rate.csv")
+v3 <- read.csv("data-processed/v3_potential-dispersal-rate.csv")
 
 ## filter out elevational studies 
-lat <- v1_filtered  %>%
-  filter(Gradient != "Elevation")
+lat <- v3  %>%
+  filter(Type != "ELE")
   
-nrow(lat) # 1337 shifts
-length(unique(lat$scientificName)) # 346 species 
+nrow(lat) # 2722 shifts
+length(unique(lat$scientificName)) # 391 species 
   
 ## how many are centroid vs. leading edge 
 lat %>% 
-  group_by(Position) %>%
+  group_by(Param) %>%
   tally()
 
 ## plot distribution of dispersal scale for proposal document:
@@ -329,9 +293,13 @@ lat %>%
                 labels = c("0.0001", "0.001", "0.01", "0.01", "0.1", "1", "10", "100", "1000")) +
   labs(fill = "", x = "Potential dispersal rate (km/y)", y = "Frequency") +
   theme(panel.grid = element_blank()) +
-  facet_wrap(~Position) +
+  facet_wrap(~Param) +
   theme(legend.position = "none")
 
 ggsave(path = "figures/proposal", filename = "disp-pot-distribution-by-position.png",
        height = 3, width = 6)
+
+
+
+
 

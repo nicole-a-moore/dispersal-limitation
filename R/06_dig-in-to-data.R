@@ -3,32 +3,34 @@ library(tidyverse)
 library(sf)
 
 ## read in data 
-dd <- read.csv("data-processed/v1_potential-dispersal-rate.csv")
-
- ## read in study area metadata
-meta <- read.csv("data-raw/BIOSHIFTSv1/Geodatabase_Bioshiftsv3_metadata.csv")
-
-## left join to dispersal data 
-dd <- left_join(dd, meta, by = c("Source" = "Name")) 
+dd <- read.csv("data-processed/v3_potential-dispersal-rate.csv")
 
 ## filter to latitudinal 
-dd <- filter(dd, Gradient == "Latitudinal")
+dd <- filter(dd, Type == "LAT")
+
+## filter 
+dd <- dd %>%
+  ## filter to cases where we expect dispersal to matter (range expansion): 
+  ## leading edge shifts where climate velocity is positive
+  ## trailing edge shifts where climate velocity is negative 
+  ## centroid shifts
+  filter(Param == "TE" & mean_cv_studylevel <= 0 |
+           Param == "LE" & mean_cv_studylevel >= 0 |
+           Param == "O") 
 
 ## split into plants and birds
 plants <- filter(dd, group == "Plants")
 birds <- filter(dd, group == "Birds")
 
-
 ## what types of plants are we dealing with? 
-
 plants %>% 
-  ggplot(aes(x = class.x)) + geom_bar()
-## mostly Magnoliopsida (dicotyledons - flowering plants), mall number of liliopsida (monocotyledons) 
+  ggplot(aes(x = class)) + geom_bar()
+## mostly Magnoliopsida (dicotyledons - flowering plants), small number of liliopsida (monocotyledons) 
 ## and pinopsida (gymnosperms)
 
 ## annual/biennial/perennial? 
 plants %>% 
-  ggplot(aes(x = YearOfMaturity, fill = class.x)) + geom_histogram()
+  ggplot(aes(x = YearOfMaturity, fill = class)) + geom_histogram()
 ## most mature after 1 year  
 
 ## which ones mature really late?
@@ -48,14 +50,14 @@ plants_traits <- plants %>%
 
 ## GROWTH FORM
 plants_traits %>% 
-  ggplot(aes(x = Growth_form, fill = class.x)) + geom_bar()
+  ggplot(aes(x = Growth_form, fill = class)) + geom_bar()
 ## most are herbaceous plants or trees
 
 ## DISPERSAL SYNDROME
 plants_traits %>% 
-  ggplot(aes(x = Dispersal_syndrome, fill = class.x)) + geom_bar()
+  ggplot(aes(x = Dispersal_syndrome, fill = class)) + geom_bar()
 ## most are wind dispersed with special seed adaptations or with no special adaptation
-## then ballistic, then animal
+## then animal, then wind
 ## very few ant
 plants_traits %>% 
   ggplot(aes(x = Dispersal_syndrome, y = ShiftKmY, colour = Growth_form)) + 
@@ -64,11 +66,11 @@ plants_traits %>%
 
 ## HEIGHT
 plants_traits %>% 
-  ggplot(aes(x = Seed_release_height_.m., fill = class.x)) + geom_histogram()
+  ggplot(aes(x = Seed_release_height_.m., fill = class)) + geom_histogram()
 
 plants_traits %>%
   filter(Seed_release_height_.m. < 10) %>%
-  ggplot(aes(x = Seed_release_height_.m., fill = class.x)) + geom_histogram()
+  ggplot(aes(x = Seed_release_height_.m., fill = class)) + geom_histogram()
 
 ## most plants are pretty short (release seeds from < 5m)
 
@@ -93,23 +95,22 @@ try_bs %>%
 
 
 
-
 plants %>% 
-  filter(class.x == "Magnoliopsida") %>% 
-  ggplot(aes(x = order.x)) + geom_bar() +
+  filter(class == "Magnoliopsida") %>% 
+  ggplot(aes(x = order)) + geom_bar() +
   coord_flip()
 ## lots of asterales 
 ## caryophyllales
 
 plants %>% 
-  filter(class.x == "Pinopsida") %>% 
-  ggplot(aes(x = family.x)) + geom_bar() +
+  filter(class == "Pinopsida") %>% 
+  ggplot(aes(x = family)) + geom_bar() +
   coord_flip()
 ## pine trees
 
 plants %>% 
-  filter(class.x == "Liliopsida") %>% 
-  ggplot(aes(x = order.x)) + geom_bar() +
+  filter(class == "Liliopsida") %>% 
+  ggplot(aes(x = order)) + geom_bar() +
   coord_flip()
 ## most are poales (grasses, bromeliads, rushes, sedges)
 
@@ -121,7 +122,7 @@ plants %>%
   ggplot(aes(x = ShiftKmY)) + geom_histogram()
 
 plants %>%
-  ggplot(aes(y = ShiftKmY, x = DispersalPotentialKmY, colour = ClimVeloTKmY)) + geom_point() +
+  ggplot(aes(y = ShiftKmY, x = DispersalPotentialKmY, colour = ClimVeloTKmY_study)) + geom_point() +
   scale_x_log10() +
   stat_function(colour = "black", fun = function(x){x},
                 linetype = "dashed") +
@@ -129,8 +130,8 @@ plants %>%
 
 plants %>%
   filter(Code != "MeanDispersalDistance") %>%
-  filter(Position == "Leading edge") %>%
-  ggplot(aes(y = ShiftKmY*1000, x = DispersalPotentialKmY*1000, colour = Grain)) + geom_point() +
+  filter(Param == "LE") %>%
+  ggplot(aes(y = ShiftKmY*1000, x = DispersalPotentialKmY*1000, colour = Grain_size)) + geom_point() +
   scale_x_log10() +
   stat_function(colour = "black", fun = function(x){x},
                 linetype = "dashed") +
@@ -142,7 +143,7 @@ plants %>%
 plants %>%
   mutate(diff = ShiftKmY - DispersalPotentialKmY) %>% 
   arrange(-diff) %>%
-  select(scientificName, class.x, ShiftKmY, DispersalPotentialKmY, diff, YearOfMaturity,AgeAtMaturityDays,
+  select(scientificName, class, ShiftKmY, DispersalPotentialKmY, diff, YearOfMaturity,AgeAtMaturityDays,
          DispersalDistance, DispersalUnit,  
          DispersalPotentialKmY, Database, Code) %>%
   View
@@ -158,8 +159,8 @@ plants_traits %>%
 
 birds %>%
   filter(Code != "MeanDispersalDistance") %>%
-  filter(Position == "Leading edge") %>%
-  ggplot(aes(y = ShiftKmY, x = DispersalPotentialKmY, colour = Grain)) + geom_point() +
+  filter(Param == "LE") %>%
+  ggplot(aes(y = ShiftKmY, x = DispersalPotentialKmY, colour = Grain_size)) + geom_point() +
   scale_x_log10() +
   stat_function(colour = "black", fun = function(x){x},
                 linetype = "dashed") +
@@ -171,7 +172,7 @@ birds %>%
 ## what types of birds are we dealing with?
 ## site fidelity limitations? habitat limitations? 
 birds %>% 
-  ggplot(aes(x = order.x)) + geom_bar() +
+  ggplot(aes(x = order)) + geom_bar() +
   coord_flip()
 ## mostly passeriformes
 
@@ -191,25 +192,25 @@ plants %>%
 
 ## plot area 
 plants %>%
-  ggplot(aes(x = Areakm2, fill = class.x)) + geom_histogram() 
+  ggplot(aes(x = Areakm2, fill = class)) + geom_histogram() 
 ## plot area versus shift distance 
 plants %>%
-  ggplot(aes(x = Areakm2, y = ShiftKmY*DUR, colour = class.x)) + geom_point() +
+  ggplot(aes(x = Areakm2, y = ShiftKmY*Duration, colour = class)) + geom_point() +
   geom_abline(intercept = 0, slope = 1)
 
 ## plot latitudinal extent versus shift distance 
 plants %>%
-  ggplot(aes(x = LatExtentk, y = ShiftKmY*DUR, colour = class.x)) + geom_point() +
+  ggplot(aes(x = LatExtentk, y = ShiftKmY*Duration, colour = class)) + geom_point() +
   geom_abline(intercept = 0, slope = 1)
 
 ## plot latitudinal extent versus potential shift based on dispersal
 plants %>%
-  ggplot(aes(x = LatExtentk, y = DispersalPotentialKmY*DUR, colour = class.x)) + geom_point() +
+  ggplot(aes(x = LatExtentk, y = DispersalPotentialKmY*Duration, colour = class)) + geom_point() +
   geom_abline(intercept = 0, slope = 1)
 
 
 plants %>%
-  ggplot(aes(x = DUR)) + geom_histogram() 
+  ggplot(aes(x = Duration)) + geom_histogram() 
 
 plants %>%
   ggplot(aes(x = ShiftKmY)) + geom_histogram() 
@@ -221,6 +222,9 @@ min(plants$ShiftKmY*1000)
 max(plants$ShiftKmY*1000)
 
 
+#######
+## garbage 
+#######
 
 ## read in study area shapefiles 
 layers <- st_layers("data-raw/BIOSHIFTSv1/bioshifts-download/Bioshifts/Study_Areas.gdb")
