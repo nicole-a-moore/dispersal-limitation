@@ -137,6 +137,7 @@ cvs_spp <- cvs_spp %>%
   select(species_studyid, cv_type, range_source, 
          mean_cv_sppspecific, sd_cv_sppspecific, Type, ID) %>%
   mutate(scientificName = str_split_fixed(species_studyid, "\\_", 2)[,1]) %>%
+  filter(!str_detect(cv_type, "map")) %>% ## get rid of precipitation
   distinct()
 
 ## do small test join
@@ -146,23 +147,10 @@ join <- join %>%
 join <- left_join(join, cvs_spp, 
                   relationship = "many-to-many")
 
-length(which(is.na(join$mean_cv_sppspecific))) ## 15513 shifts missing species-specific cv estimate
+length(which(is.na(join$mean_cv_sppspecific))) ## 3724 shifts missing species-specific cv estimate
 
 ## check nothing got duplicated 
 nrow(join) == nrow(v3)
 
 ## save 
 write.csv(join, "data-processed/v3_with-cv.csv", row.names = FALSE)
-
-
-
-## look at cv data 
-difs <- abs(v3$mean_cv_sppspecific - v3$mean_cv_studylevel)
-which(difs == max(difs, na.rm = TRUE))
-
-v3$mean_cv_sppspecific[3033]
-v3$mean_cv_studylevel[3033]
-v3$scientificName[3033]
-v3$ID[3033]
-
-

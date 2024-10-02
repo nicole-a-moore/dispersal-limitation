@@ -5,32 +5,39 @@
 ## TESTING EXPANSIONS
 ## - fit models to range expansions and compare 
 ##    rs ~ dd
+##    rs ~ cv
 ##    rs ~ min(dd, cv)
 # (...are these slopeless models really necessary? could just comment on whether estimated slope = 1)
 
 ##    rs ~ slope*dd + int
+##    rs ~ slope*cv + int 
 ##    rs ~ slope*min(dd, cv) + int 
+
 ##    rs ~ slope*proxy trait + int
-##    rs ~ slope*cv + int (show it is better than climate velocity alone)
+
+## macroecological proxy traits: body size, range size
+
 
 ##    expect:
-##    - hyp 1 (traits poorly estimate dispersal): dispersal rate model has slope of 1 
-##    - hyp 2 (some spp not dispersal limited): limiting rate model has slope of 1 
-##    - hyp 2 (some spp not dispersal limited): limiting rate model is better fit than climate velocity or dispersal rate alone
+##    - under hyp 1 (proxy traits poorly estimate dispersal): dispersal rate model has slope of 1 and is better fit than proxy trait models 
+##    - under hyp 2 (some spp not dispersal limited): limiting rate model has slope of 1 & is better fit than climate velocity or dispersal rate alone
 
-## - test whether results are robust to:
+## - test whether results are robust:
 
 ## TESTING CONTRACTIONS
 ##    -  modelling range contractions
 ##       expect:
 ##       - hyp 1 (traits poorly estimate dispersal): dispersal rate model is not a good fit
-##       - hyp 2 (some spp not dispersal limited): limiting rate model does not have a slope of 1 (although.. it might because of climate velocity)
-##       - hyp 2 (some spp not dispersal limited): limiting rate model is not better fit than climate velocity alone
+##       - hyp 2 (some spp not dispersal limited): limiting rate model does not have a slope of 1 (although.. it might because of climate velocity) and is not better fit than climate velocity alone
 
 ## RANDOMIZATION
 ##    - randomization
-##      - randomize range shift 1000 times 
+##      - sample range shift rate randomly without replacement 1000 times 
 ##      - fit all models and compare the distribution of their coefficients to the real ones
+
+## ERROR
+##    - in climate velocity
+##    - in dispersal
 
 ##    - study versus species-specific climate velocity 
 
@@ -41,6 +48,11 @@
 ##      - or just forget about them??
 
 
+## Qs for Jenn:
+## treatment of expansions and contractions 
+##  - bounding of data by 0
+## models and hypothesis testing framework
+## structure in residual variation
 
 ###################################
 ##       TESTING EXPANSIONS      ##
@@ -62,6 +74,7 @@ dd <- filter(dd, tracking_climate == TRUE)
 
 ## standardize so CV > 0 means away from range centre 
 dd$ClimVeloTKmY_study = abs(dd$ClimVeloTKmY_study)
+dd$ClimVeloTKmY_spp = abs(dd$ClimVeloTKmY_spp)
 dd$ShiftKmY = abs(dd$ShiftKmY)
 
 ## add gradient 
@@ -190,7 +203,8 @@ lat %>%
 lat %>%
   ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = ClimVeloTKmY_study, shape = group)) +
   geom_point(alpha = 0.7) +
-  geom_point(data = filter(lat, is.na(colour)), inherit.aes = FALSE, colour = "black", fill = "transparent", pch = 1,
+  geom_point(data = filter(lat, is.na(colour)), inherit.aes = FALSE, colour = "black", 
+             fill = "transparent", pch = 1,
              aes(x = LimitingRate, y = ShiftKmY, shape = group)) +
   theme_bw() +
   stat_function(colour = "black", fun = function(x){x},
@@ -207,8 +221,46 @@ lat %>%
                          na.value = "black") +
   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred), inherit.aes = FALSE)
 
+## methodological effects
+lat %>%
+  ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = ID, shape = group)) +
+  geom_point(alpha = 0.7) +
+  geom_point(data = filter(lat, is.na(colour)), inherit.aes = FALSE, colour = "black", fill = "transparent", pch = 1,
+             aes(x = LimitingRate, y = ShiftKmY, shape = group)) +
+  theme_bw() +
+  stat_function(colour = "black", fun = function(x){x},
+                linetype = "dashed") + 
+  facet_grid(~Gradient) +
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank(),
+        panel.spacing = unit(2 , "lines")) +
+  labs(x = "Minimum of rate of climate change and\npotential dispersal rate (km/y)",
+       y = "Range shift rate (km/y)", 
+       colour = 'Mean\nclimate\nvelocity\n(km/y)', 
+       shape = "") +
+  geom_line(data = df_limrate, aes(x = LimitingRate, y = pred), inherit.aes = FALSE)
 
+## study ID as a random effect?
+library(nlme)
+lme_disp <- lme(ShiftKmY ~ DispersalPotentialKmY,
+                random = ~1|ID, 
+                data = lat)
+lme_climvelo <- lme(ShiftKmY ~ ClimVeloTKmY_study,
+                    random = ~1|ID, 
+                    data = lat)
+lme_limrate <- lme(ShiftKmY ~ LimitingRate,
+                random = ~1|ID, 
+                data = lat)
 
+summary(lme_disp)
+summary(lme_climvelo)
+summary(lme_limrate)
+
+AIC(lme_disp, lme_climvelo, lme_limrate)
+
+r.squaredGLMM(lme_disp)
+r.squaredGLMM(lme_climvelo)
+r.squaredGLMM(lme_limrate)
 
 #####################################
 ##       TESTING CONTRACTIONS      ##
@@ -350,6 +402,26 @@ lat %>%
                          na.value = "black") +
   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred), inherit.aes = FALSE)
 
+library(nlme)
+lme_disp <- lme(ShiftKmY ~ DispersalPotentialKmY,
+                random = ~1|ID, 
+                data = lat)
+lme_climvelo <- lme(ShiftKmY ~ ClimVeloTKmY_study,
+                    random = ~1|ID, 
+                    data = lat)
+lme_limrate <- lme(ShiftKmY ~ LimitingRate,
+                   random = ~1|ID, 
+                   data = lat)
+
+summary(lme_disp)
+summary(lme_climvelo)
+summary(lme_limrate)
+
+AIC(lme_disp, lme_climvelo, lme_limrate)
+
+r.squaredGLMM(lme_disp)
+r.squaredGLMM(lme_climvelo)
+r.squaredGLMM(lme_limrate)
 
 
 ###################################
@@ -490,6 +562,94 @@ coeffs %>%
   geom_histogram() +
   geom_vline(aes(xintercept = real_adj_r_squ), colour = "red") +
   facet_wrap(~mod_type)
+
+
+
+#### body size model
+bodysize <- read.csv("data-processed/dispersal-proxy-trait-compilation.csv")
+
+## read in data 
+dd <- read.csv("data-processed/v3_potential-dispersal-rate.csv")
+
+## filter to only latitude 
+dd <- filter(dd, Type == "LAT")
+
+## get rid of centroid shifts
+dd = filter(dd, Param != "O")
+
+## get rid of contractions
+dd = filter(dd, is_contraction %in% c("UNKNOWN", "NO"))
+
+## filter to expansions in same direction as cv 
+dd <- filter(dd, tracking_climate == TRUE)
+
+## standardize so CV > 0 means away from range centre 
+dd$ClimVeloTKmY_study = abs(dd$ClimVeloTKmY_study)
+dd$ShiftKmY = abs(dd$ShiftKmY)
+
+## add gradient 
+dd <- dd %>%
+  mutate(Gradient = ifelse(Type == "ELE", "Elevation", "Latitudinal")) %>%
+  mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) 
+
+hist(dd$ClimVeloTKmY_study)
+hist(dd$ClimVeloTKmY_spp)
+
+lat <- filter(dd, Type == "LAT") %>%
+  mutate(LimitingRate = ifelse(DispersalPotentialKmY <= ClimVeloTKmY_study,
+                               DispersalPotentialKmY,
+                               ClimVeloTKmY_study)) %>%
+  mutate(ClimVeloTKmY_study = abs(ClimVeloTKmY_study)) %>%
+  mutate(what_is_limiting = ifelse(DispersalPotentialKmY == LimitingRate, "Dispersal", "Climate")) %>%
+  mutate(colour = ifelse(what_is_limiting == "Climate", ClimVeloTKmY_study, NA)) %>%
+  mutate(Gradient = ifelse(Type == "ELE", "Elevation", "Latitudinal")) %>%
+  mutate(Gradient = factor(Gradient, levels = c("Latitudinal", "Elevation"), ordered = TRUE)) 
+
+bs <- bodysize %>%
+  select(BodySize, scientificName) %>%
+  left_join(lat, .) %>%
+  select(BodySize, everything()) %>%
+  filter(!is.na(BodySize))
+
+mod_bs <- lm(ShiftKmY ~ log(BodySize), data = bs)
+
+summary(mod_bs)
+summary(mod_bs)$r.squared
+summary(mod_bs)$adj.r.squared
+
+## predict using each model
+df_bs <- data.frame(BodySize = log(seq(min(bs$BodySize), max(bs$BodySize),
+                                                  by = 0.001)))
+
+df_bs$pred <- predict(mod_bs, se.fit = FALSE, newdata = df_bs)
+
+## plot
+bs %>%
+  ggplot(aes(x = BodySize, y = ShiftKmY, colour = ClimVeloTKmY_study)) +
+  geom_point(alpha = 0.7) +
+  geom_point(data = filter(bs, is.na(colour)), inherit.aes = FALSE, colour = "black", 
+             fill = "transparent", pch = 1,
+             aes(x = BodySize, y = ShiftKmY, shape = group)) +
+  theme_bw() +
+  stat_function(colour = "black", fun = function(x){x},
+                linetype = "dashed") + 
+  facet_grid(~Gradient) +
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank(),
+        panel.spacing = unit(2 , "lines")) +
+  scale_x_log10() +
+  scale_y_continuous(limits = c(0, 40), expand = c(0,0)) +
+  labs(x = "Body size (m)",
+       y = "Observed range shift rate (km/y)", 
+       colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~is_contraction) +
+  geom_line(data = df_bs, aes(x = exp(BodySize), y = pred), inherit.aes = FALSE)
+
+
+
+
 
 
 
