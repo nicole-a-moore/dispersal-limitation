@@ -2,6 +2,8 @@ library(AICcmodavg)
 library(tidyverse)
 library(ggplot2)
 library(dotwhisker)
+library(nlraa)
+library(cowplot)
 theme_set(theme_bw())
 
 ## TESTING EXPANSIONS
@@ -179,15 +181,7 @@ saveRDS(expansion_models, "data-processed/modelfits_expansions.rds")
 df_disp <- data.frame(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY),
                                                   by = 0.001))
 
-bs = nlraa::boot_nls(nls_disp, R = 1e2, data = data)
-confint(bs, type = "perc")
-
-df_disp$pred_nls <- nlraa::predict2_nls(nls_disp, interval = "confidence", level = 0.95,
-                            newdata = df_disp)[,1]
-
-
-df_disp$pred_nls <- predict(nls_disp, se.fit = T, interval = "confidence", level = 0.95,
-                                newdata = df_disp)[,1]
+df_disp$pred_nls <- predict(nls_disp, se.fit = T, newdata = df_disp)
 df_disp$pred_lm <- predict(lm_disp, se.fit = FALSE, newdata = df_disp)
 
 df_climvelo <- data.frame(ClimVeloTKmY_spp = seq(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp),
@@ -202,7 +196,7 @@ df_limrate <- data.frame(LimitingRate = seq(min(data$LimitingRate), max(data$Lim
 df_limrate$pred_nls <- predict(nls_limrate, se.fit = FALSE, newdata = df_limrate)
 df_limrate$pred_lm <- predict(lm_limrate, se.fit = FALSE, newdata = df_limrate)
 
-df_dr <- data.frame(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY),
+df_dr <- data.frame(DispersalPotentialKmY = seq(0.0001, max(data$DispersalPotentialKmY),
                                                 by = 0.001))
 df_bs <- data.frame(BodySize = seq(min(data$BodySize, na.rm = TRUE), max(data$BodySize, na.rm = TRUE),
                                    by = 0.001))
@@ -214,6 +208,14 @@ df_dr$pred <- predict(lm_dr, se.fit = FALSE, newdata = df_dr)
 df_bs$pred <- predict(lm_bs, se.fit = FALSE, newdata = df_bs)
 df_rs$pred <- predict(lm_rs, se.fit = FALSE, newdata = df_rs)
 
+## bootstrap 95% confidence intervals for linear models
+ints_lm_disp <- predict2_nls(lm_disp, interval = "conf")
+ints_lm_climvelo <- predict2_nls(lm_climvelo, interval = "conf")
+ints_lm_limrate <- predict2_nls(lm_limrate, interval = "conf")
+
+ints_lm_dr <- predict2_nls(lm_dr, interval = "conf")
+ints_lm_bs <- predict2_nls(lm_bs, interval = "conf")
+ints_lm_rs <- predict2_nls(lm_rs, interval = "conf")
 
 ## plot
 ## DISPERSAL
@@ -235,30 +237,38 @@ disp_plot <- data %>%
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
-  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lm), colour = "black", inherit.aes = FALSE) 
-disp_plot_2 <- data %>%
-  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
-  geom_point(alpha = 0.7, aes(shape = group)) +
-  geom_point(data = filter(data, is.na(colour)), inherit.aes = FALSE, colour = "black", 
-             fill = "transparent", pch = 1,
-             aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  theme_bw() +
-  stat_function(colour = "grey", fun = function(x){x},
-                linetype = "dashed") + 
-  theme(panel.grid = element_blank(),
-        strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines")) +
-  scale_x_log10(breaks = c(0.001, 0.01, 0.1, 1, 10, 100, 1000),
-                labels = c("0.001", "0.01", "0.1", "1", "10", "100", "1000"),
-                limits = c(0.0001, 1400)) +
-  scale_y_continuous(limits = c(0, 26), expand = c(0,0.5)) +
-  labs(x = "Potential dispersal rate (km/y)",
-       y = "Observed range shift rate (km/y)", 
-       colour = 'Mean\nclimate\nvelocity\n(km/y)') +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
-  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lm), colour = "black", inherit.aes = FALSE) 
+  geom_ribbon(data = cbind(data, ints_lm_disp), aes(x = DispersalPotentialKmY, y = fitted(lm_disp),
+                                                    ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
+  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "grey", 
+            inherit.aes = FALSE) +
+  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lm), colour = "black", 
+            inherit.aes = FALSE) 
+
+# disp_plot_2 <- data %>%
+#   ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
+#   geom_point(alpha = 0.7, aes(shape = group)) +
+#   geom_point(data = filter(data, is.na(colour)), inherit.aes = FALSE, colour = "black", 
+#              fill = "transparent", pch = 1,
+#              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
+#   theme_bw() +
+#   stat_function(colour = "grey", fun = function(x){x},
+#                 linetype = "dashed") + 
+#   theme(panel.grid = element_blank(),
+#         strip.background = element_blank(),
+#         panel.spacing = unit(2 , "lines")) +
+#   scale_x_log10(breaks = c(0.001, 0.01, 0.1, 1, 10, 100, 1000),
+#                 labels = c("0.001", "0.01", "0.1", "1", "10", "100", "1000"),
+#                 limits = c(0.0001, 1400)) +
+#   scale_y_continuous(limits = c(0, 26), expand = c(0,0.5)) +
+#   labs(x = "Potential dispersal rate (km/y)",
+#        y = "Observed range shift rate (km/y)", 
+#        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+#   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
+#   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "grey", 
+#             inherit.aes = FALSE) +
+#   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lm), colour = "black", 
+#             inherit.aes = FALSE) 
 
 ## CLIMATE
 clim_velo_plot <- data %>%
@@ -281,6 +291,9 @@ clim_velo_plot <- data %>%
        shape = "") +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
                          na.value = "black") +
+  geom_ribbon(data = cbind(data, ints_lm_climvelo), aes(x = ClimVeloTKmY_spp, y = fitted(lm_climvelo),
+                                                    ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_climvelo, aes(x = ClimVeloTKmY_spp, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
   geom_line(data = df_climvelo, aes(x = ClimVeloTKmY_spp, y = pred_lm), colour = "black", inherit.aes = FALSE)
 
@@ -305,6 +318,9 @@ limrate_plot <- data %>%
        shape = "") +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
                          na.value = "black") +
+  geom_ribbon(data = cbind(data, ints_lm_limrate), aes(x = LimitingRate, y = fitted(lm_limrate),
+                                                        ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_nls), colour = "grey", 
             inherit.aes = FALSE) +
   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_lm), colour = "black", 
@@ -331,10 +347,13 @@ dr_plot = data %>%
   scale_x_log10(breaks = c(0.001, 0.01, 0.1, 1, 10, 100, 1000),
                 labels = c("0.001", "0.01", "0.1", "1", "10", "100", "1000"),
                 limits = c(0.0001, 1400)) +
-  scale_y_continuous(limits = c(0, 26), expand = c(0,0.5)) +
+  scale_y_continuous(limits = c(-2, 26), expand = c(0,0.5)) +
   labs(x = "Maximum potential dispersal rate (km/y)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+  geom_ribbon(data = cbind(data, ints_lm_dr), aes(x = DispersalPotentialKmY, y = fitted(lm_dr),
+                                                        ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_dr, aes(x = DispersalPotentialKmY, y = pred), colour = "black", inherit.aes = FALSE)
 
 ## body size
@@ -349,10 +368,13 @@ bs_plot = data %>%
         strip.background = element_blank(),
         panel.spacing = unit(2 , "lines")) +
   scale_x_log10() +
-  scale_y_continuous(limits = c(0, 26), expand = c(0,0.5)) +
+  scale_y_continuous(limits = c(-2, 26), expand = c(0,0.5)) +
   labs(x = "Body size (mm)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+  geom_ribbon(data = cbind(data[!is.na(data$BodySize),], ints_lm_bs), aes(x = BodySize, y = fitted(lm_bs),
+                                                        ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_bs, aes(x = BodySize, y = pred), colour = "black", inherit.aes = FALSE)
 
 ## range size
@@ -367,10 +389,13 @@ rs_plot = data %>%
         strip.background = element_blank(),
         panel.spacing = unit(2 , "lines")) +
   scale_x_log10() +
-  scale_y_continuous(limits = c(0, 26), expand = c(0,0.5)) +
+  scale_y_continuous(limits = c(-2, 26), expand = c(0,0.5)) +
   labs(x = "Realized ange size (m2)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+  geom_ribbon(data = cbind(data, ints_lm_rs), aes(x = Area_m2_range, y = fitted(lm_rs),
+                                                                          ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_rs, aes(x = Area_m2_range, y = pred), colour = "black", inherit.aes = FALSE)
 
 plot_grid(bs_plot, rs_plot, dr_plot, 
@@ -483,6 +508,16 @@ df_dr$pred <- predict(lm_dr_error, se.fit = FALSE, newdata = df_dr)
 df_bs$pred <- predict(lm_bs_error, se.fit = FALSE, newdata = df_bs)
 df_rs$pred <- predict(lm_rs_error, se.fit = FALSE, newdata = df_rs)
 
+## bootstrap 95% confidence intervals for linear models
+ints_lm_disp <- predict2_nls(lm_disp_error, interval = "conf")
+ints_lm_climvelo <- predict2_nls(lm_climvelo_error, interval = "conf")
+ints_lm_limrate <- predict2_nls(lm_limrate_error, interval = "conf")
+
+ints_lm_dr <- predict2_nls(lm_dr_error, interval = "conf")
+ints_lm_bs <- predict2_nls(lm_bs_error, interval = "conf")
+ints_lm_rs <- predict2_nls(lm_rs_error, interval = "conf")
+
+
 ## plot
 ## DISPERSAL
 disp_plot = data %>%
@@ -503,32 +538,36 @@ disp_plot = data %>%
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
+  geom_ribbon(data = cbind(data, ints_lm_disp), aes(x = DispersalPotentialKmY, y = fitted(lm_disp_error),
+                                                    ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
+  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "grey", 
+            inherit.aes = FALSE) +
   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lm), colour = "black", inherit.aes = FALSE) 
 
-data %>%
-  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
-  geom_point(alpha = 0.7) +
-  geom_point(data = filter(data, is.na(colour)), inherit.aes = FALSE, colour = "black", 
-             fill = "transparent", pch = 1,
-             aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  theme_bw() +
-  stat_function(colour = "black", fun = function(x){x},
-                linetype = "dashed") + 
-  theme(panel.grid = element_blank(),
-        strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines")) +
-  scale_x_log10(breaks = c(0.001, 0.01, 0.1, 1, 10, 100, 1000),
-                labels = c("0.001", "0.01", "0.1", "1", "10", "100", "1000"),
-                limits = c(0.0001, 1400)) +
-  scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
-  labs(x = "Potential dispersal rate (km/y)",
-       y = "Observed range shift rate (km/y)", 
-       colour = 'Mean\nclimate\nvelocity\n(km/y)') +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  geom_hline(yintercept = 0) +
-  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "red", inherit.aes = FALSE) +
-  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lm), colour = "purple", inherit.aes = FALSE) 
+# data %>%
+#   ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
+#   geom_point(alpha = 0.7) +
+#   geom_point(data = filter(data, is.na(colour)), inherit.aes = FALSE, colour = "black", 
+#              fill = "transparent", pch = 1,
+#              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
+#   theme_bw() +
+#   stat_function(colour = "black", fun = function(x){x},
+#                 linetype = "dashed") + 
+#   theme(panel.grid = element_blank(),
+#         strip.background = element_blank(),
+#         panel.spacing = unit(2 , "lines")) +
+#   scale_x_log10(breaks = c(0.001, 0.01, 0.1, 1, 10, 100, 1000),
+#                 labels = c("0.001", "0.01", "0.1", "1", "10", "100", "1000"),
+#                 limits = c(0.0001, 1400)) +
+#   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
+#   labs(x = "Potential dispersal rate (km/y)",
+#        y = "Observed range shift rate (km/y)", 
+#        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+#   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
+#   geom_hline(yintercept = 0) +
+#   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "red", inherit.aes = FALSE) +
+#   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lm), colour = "purple", inherit.aes = FALSE) 
 
 ## CLIMATE
 clim_velo_plot = data %>%
@@ -550,6 +589,9 @@ clim_velo_plot = data %>%
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
                          na.value = "black") +
+  geom_ribbon(data = cbind(data, ints_lm_climvelo), aes(x = ClimVeloTKmY_spp, y = fitted(lm_climvelo_error),
+                                                    ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_climvelo, aes(x = ClimVeloTKmY_spp, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
   geom_line(data = df_climvelo, aes(x = ClimVeloTKmY_spp, y = pred_lm), colour = "black", inherit.aes = FALSE)
 
@@ -574,6 +616,9 @@ limrate_plot =data %>%
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
                          na.value = "black") +
+  geom_ribbon(data = cbind(data, ints_lm_limrate), aes(x = LimitingRate, y = fitted(lm_limrate_error),
+                                                        ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_lm), colour = "black", inherit.aes = FALSE)
 
@@ -602,6 +647,9 @@ dr_plot <- data %>%
   labs(x = "Maximum potential dispersal rate (km/y)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+  geom_ribbon(data = cbind(data, ints_lm_dr), aes(x = DispersalPotentialKmY, y = fitted(lm_dr_error),
+                                                       ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_dr, aes(x = DispersalPotentialKmY, y = pred), colour = "black", inherit.aes = FALSE)
 
 ## body size
@@ -620,6 +668,9 @@ bs_plot <- data %>%
   labs(x = "Body size (mm)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+  geom_ribbon(data = cbind(data[!is.na(data$BodySize),], ints_lm_bs), aes(x = BodySize, y = fitted(lm_bs_error),
+                                                  ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_bs, aes(x = BodySize, y = pred), colour = "black", inherit.aes = FALSE)
 
 ## range size
@@ -638,6 +689,9 @@ rs_plot <- data %>%
   labs(x = "Realized range size (m2)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+  geom_ribbon(data = cbind(data, ints_lm_rs), aes(x = Area_m2_range, y = fitted(lm_rs_error),
+                                                                          ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_rs, aes(x = Area_m2_range, y = pred), colour = "black", inherit.aes = FALSE)
 
 plot_grid(bs_plot, rs_plot, dr_plot, 
@@ -768,7 +822,7 @@ df_limrate <- data.frame(LimitingRate = seq(min(data$LimitingRate), max(data$Lim
 df_limrate$pred_nls <- predict(nls_limrate_cont, se.fit = FALSE, newdata = df_limrate)
 df_limrate$pred_lm <- predict(lm_limrate_cont, se.fit = FALSE, newdata = df_limrate)
 
-df_dr <- data.frame(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY),
+df_dr <- data.frame(DispersalPotentialKmY = seq(0.0001, max(data$DispersalPotentialKmY),
                                                 by = 0.001))
 df_bs <- data.frame(BodySize = seq(min(data$BodySize, na.rm = TRUE), max(data$BodySize, na.rm = TRUE),
                                    by = 0.001))
@@ -779,6 +833,15 @@ df_rs <- data.frame(Area_m2_range = seq(min(data$Area_m2_range, na.rm = TRUE),
 df_dr$pred <- predict(lm_dr_cont, se.fit = FALSE, newdata = df_dr)
 df_bs$pred <- predict(lm_bs_cont, se.fit = FALSE, newdata = df_bs)
 df_rs$pred <- predict(lm_rs_cont, se.fit = FALSE, newdata = df_rs)
+
+## bootstrap 95% confidence intervals for linear models
+ints_lm_disp <- predict2_nls(lm_disp_cont, interval = "conf")
+ints_lm_climvelo <- predict2_nls(lm_climvelo_cont, interval = "conf")
+ints_lm_limrate <- predict2_nls(lm_limrate_cont, interval = "conf")
+
+ints_lm_dr <- predict2_nls(lm_dr_cont, interval = "conf")
+ints_lm_bs <- predict2_nls(lm_bs_cont, interval = "conf")
+ints_lm_rs <- predict2_nls(lm_rs_cont, interval = "conf")
 
 ## plot
 ## DISPERSAL
@@ -795,11 +858,14 @@ disp_plot <- data %>%
         strip.background = element_blank(),
         panel.spacing = unit(2 , "lines"), 
         legend.position = "none") +
-  scale_y_continuous(limits = c(0, 20), expand = c(0,0.5)) +
+  scale_y_continuous(limits = c(-2, 20), expand = c(0,0.5)) +
   labs(x = "Maximum potential dispersal rate (km/y)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
+  geom_ribbon(data = cbind(data, ints_lm_disp), aes(x = DispersalPotentialKmY, y = fitted(lm_disp_cont),
+                                                  ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lm), colour = "black", inherit.aes = FALSE)
 
@@ -821,9 +887,12 @@ clim_velo_plot <- data %>%
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)', 
        shape = "") +
-  scale_y_continuous(limits = c(0, 20), expand = c(0,0.5)) +
+  scale_y_continuous(limits = c(-2, 20), expand = c(0,0.5)) +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
                          na.value = "black") +
+  geom_ribbon(data = cbind(data, ints_lm_climvelo), aes(x = ClimVeloTKmY_spp, y = fitted(lm_climvelo_cont),
+                                                    ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_climvelo, aes(x = ClimVeloTKmY_spp, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
   geom_line(data = df_climvelo, aes(x = ClimVeloTKmY_spp, y = pred_lm), colour = "black", inherit.aes = FALSE)
 
@@ -841,13 +910,16 @@ limrate_plot <- data %>%
         strip.background = element_blank(),
         panel.spacing = unit(2 , "lines"),
         legend.position = "none") +
-  scale_y_continuous(limits = c(0, 20), expand = c(0,0.5)) +
-  labs(x = "Minimum of rate of climate change and\npotential dispersal rate (km/y)",
+  scale_y_continuous(limits = c(-2, 20), expand = c(0,0.5)) +
+  labs(x = "Minimum of potential dispersal rate\nand rate of climate change (km/y)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)', 
        shape = "") +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
                          na.value = "black") +
+  geom_ribbon(data = cbind(data, ints_lm_limrate), aes(x = LimitingRate, y = fitted(lm_limrate_cont),
+                                                        ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_lm), colour = "black", inherit.aes = FALSE)
 
@@ -874,10 +946,13 @@ dr_plot <- data %>%
   scale_x_log10(breaks = c(0.001, 0.01, 0.1, 1, 10, 100, 1000),
                 labels = c("0.001", "0.01", "0.1", "1", "10", "100", "1000"),
                 limits = c(0.0001, 1400)) +
-  scale_y_continuous(limits = c(0, 20), expand = c(0,0.5)) +
+  scale_y_continuous(limits = c(-2, 20), expand = c(0,0.5)) +
   labs(x = "Maximum potential dispersal rate (km/y)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+  geom_ribbon(data = cbind(data, ints_lm_dr), aes(x = DispersalPotentialKmY, y = fitted(lm_dr_cont),
+                                                       ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_dr, aes(x = DispersalPotentialKmY, y = pred), colour = "black", inherit.aes = FALSE)
 
 ## body size
@@ -892,10 +967,13 @@ bs_plot <- data %>%
         strip.background = element_blank(),
         panel.spacing = unit(2 , "lines")) +
   scale_x_log10() +
-  scale_y_continuous(limits = c(0, 20), expand = c(0,0.5)) +
+  scale_y_continuous(limits = c(-2, 20), expand = c(0,0.5)) +
   labs(x = "Body size (mm)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+  geom_ribbon(data = cbind(data[!is.na(data$BodySize),], ints_lm_bs), aes(x = BodySize, y = fitted(lm_bs_cont),
+                                                  ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_bs, aes(x = BodySize, y = pred), colour = "black", inherit.aes = FALSE)
 
 ## range size
@@ -910,10 +988,14 @@ rs_plot <- data %>%
         strip.background = element_blank(),
         panel.spacing = unit(2 , "lines")) +
   scale_x_log10() +
-  scale_y_continuous(limits = c(0, 20), expand = c(0,0.5)) +
+  scale_y_continuous(limits = c(-2, 20), expand = c(0,0.5)) +
   labs(x = "Realized range size (m2)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
+  geom_ribbon(data = cbind(data[!is.na(data$Area_m2_range),], ints_lm_rs), 
+              aes(x = Area_m2_range, y = fitted(lm_rs_cont),
+                                                  ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_rs, aes(x = Area_m2_range, y = pred), colour = "black", inherit.aes = FALSE)
 
 plot_grid(bs_plot, rs_plot, dr_plot, 
@@ -987,26 +1069,49 @@ coeffs <- coeffs %>%
                                     summary(lm(ShiftKmY ~ predict(lm_disp), data = data))$r.squared)))
 
 ## slope
-coeffs %>%
+rando_slope <- coeffs %>%
+  mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+                           "Mean rate of climate change (km/y)", 
+                           ifelse(mod_type == "DispersalPotentialKmY",
+                                  "Maximum potential dispersal rate (km/y)",
+                                  "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
   ggplot(aes(x = slope)) +
   geom_histogram() +
   geom_vline(aes(xintercept = real_slope), colour = "red") +
-  facet_wrap(~mod_type)
+  facet_wrap(~mod_type) +
+  labs(x = "Estimated slope", y = "Count")
 
 ## intercept
-coeffs %>%
+rando_int <- coeffs %>%
+  mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+                           "Mean rate of climate change (km/y)", 
+                           ifelse(mod_type == "DispersalPotentialKmY",
+                                  "Maximum potential dispersal rate (km/y)",
+                                  "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
   ggplot(aes(x = intercept)) +
   geom_histogram() +
   geom_vline(aes(xintercept = real_intercept), colour = "red") +
-  facet_wrap(~mod_type)
+  facet_wrap(~mod_type) +
+  labs(x = "Estimated intercept", y = "Count")
 
 ## r squared
-coeffs %>%
+rando_r2 <- coeffs %>%
+  mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+                           "Mean rate of climate change (km/y)", 
+                           ifelse(mod_type == "DispersalPotentialKmY",
+                                  "Maximum potential dispersal rate (km/y)",
+                                  "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
   ggplot(aes(x = r_squared)) +
   geom_histogram() +
   geom_vline(aes(xintercept = real_r_squ), colour = "red") +
-  facet_wrap(~mod_type)
+  facet_wrap(~mod_type) +
+  labs(x = "Regression coefficient", y = "Count")
 
+plot_grid(rando_slope, rando_int, rando_r2, 
+          nrow = 3, align = "v")
+
+ggsave(path = "figures/model_results", filename = "randomization-histograms.png", 
+       width = 8, height = 6)
 
 
 ##################################
@@ -1230,8 +1335,5 @@ dwplot(list(lm_dr_cont, lm_bs_cont, lm_rs_cont)) +
 
 ggsave(path = "figures/model_results", filename = "dwplot_proxy-trait_contractions.png", 
        width = 6, height = 3)
-
-
-
 
 
