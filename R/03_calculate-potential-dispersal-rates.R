@@ -156,7 +156,7 @@ v3 = v3 %>%
 ## make new vars 
 v3 <- v3 %>%
   ## make variable for whether shift is in line with climate velocity 
-  mutate(tracking_climate = sign(Rate) == sign(mean_cv_studylevel)) %>%
+  mutate(tracking_climate = sign(Rate) == sign(mean_cv_sppspecific)) %>%
   ## make variable for whether shift is a contraction
   mutate(is_contraction = ifelse(Param == "LE" & Rate >= 0, "NO",
                                  ifelse(Param == "TE" & Rate <= 0, "NO",

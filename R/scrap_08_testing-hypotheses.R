@@ -1,13 +1,8 @@
-## next: 
-
-## - update species-specific climate velocity 
-
 ## TESTING EXPANSIONS
 ## - fit models to range expansions and compare 
 ##    rs ~ dd
 ##    rs ~ cv
 ##    rs ~ min(dd, cv)
-# (...are these slopeless models really necessary? could just comment on whether estimated slope = 1)
 
 ##    rs ~ slope*dd + int
 ##    rs ~ slope*cv + int 
@@ -67,10 +62,10 @@ dd <- filter(dd, Type == "LAT")
 dd = filter(dd, Param != "O")
 
 ## get rid of contractions
-dd = filter(dd, is_contraction %in% c("UNKNOWN", "NO"))
+dd = filter(dd, is_contraction %in% c("NO"))
 
-## filter to expansions in same direction as cv 
-dd <- filter(dd, tracking_climate == TRUE)
+## filter to leading edge shifts with positive climate velocity 
+dd <- filter(dd, Param == "LE" & ClimVeloTKmY_spp >= 0)
 
 ## standardize so CV > 0 means away from range centre 
 dd$ClimVeloTKmY_study = abs(dd$ClimVeloTKmY_study)
@@ -648,9 +643,10 @@ bs %>%
   geom_line(data = df_bs, aes(x = exp(BodySize), y = pred), inherit.aes = FALSE)
 
 
-
-
-
+dd %>%
+  filter(ID == "A181_P1") %>%
+  ggplot(aes(x = Rate)) + 
+  geom_histogram()
 
 
 
