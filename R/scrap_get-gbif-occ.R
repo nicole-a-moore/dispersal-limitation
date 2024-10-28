@@ -49,7 +49,7 @@ missing <- filter(missing, !str_detect(missing$db_code, "\\:"))
 ## request occurrence downloads for each species 
 requests <- data.frame()
 inforequest <- list()
-for(i in 184:nrow(missing)){ 
+for(i in 199:nrow(missing)){ 
   
   print(paste0("Requesting species ", i))
   

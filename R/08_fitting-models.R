@@ -6,8 +6,40 @@ library(nlraa)
 library(cowplot)
 theme_set(theme_bw())
 
+
+## functions to extract predictions from nls models 
+fun_disp = function(x, mod) {
+  predict2_nls(mod, interval = "conf", 
+               newdata = data.frame(ClimVeloTKmY_spp = median(data$ClimVeloTKmY_spp), 
+                                    DispersalPotentialKmY = x,
+                                    m = coefficients(mod)[2], 
+                                    m_cv = coefficients(mod)[3], 
+                                    m_int = coefficients(mod)[4],
+                                    int = coefficients(mod)[1]))
+}
+fun_bs = function(x, mod) {
+  predict2_nls(mod, interval = "conf", 
+               newdata = data.frame(ClimVeloTKmY_spp = median(data$ClimVeloTKmY_spp), 
+                                    BodySize = x,
+                                    m = coefficients(mod)[2], 
+                                    m_cv = coefficients(mod)[3], 
+                                    m_int = coefficients(mod)[4],
+                                    int = coefficients(mod)[1]))
+}
+fun_rs = function(x, mod) {
+  predict2_nls(mod, interval = "conf", 
+               newdata = data.frame(ClimVeloTKmY_spp = median(data$ClimVeloTKmY_spp), 
+                                    Area_km2_range = x,
+                                    m = coefficients(mod)[2], 
+                                    m_cv = coefficients(mod)[3], 
+                                    m_int = coefficients(mod)[4],
+                                    int = coefficients(mod)[1]))
+}
+
 ## TESTING EXPANSIONS
 ## filter to leading edge range shifts with positive climate velocity (expect expansion)
+## filter to only expansions + contractions that are < 1sd from the mean
+
 ## - fit models to range expansions and compare 
 ##    rs ~ dd
 ##    rs ~ cv
@@ -27,9 +59,6 @@ theme_set(theme_bw())
 ##    expect:
 ##    - under hyp 1 (proxy traits poorly estimate dispersal): dispersal rate model has slope of 1 and is better fit than proxy trait models 
 ##    - under hyp 2 (some spp not dispersal limited): limiting rate model has slope of 1 & is better fit than climate velocity or dispersal rate alone
-
-## ACCOUNTING FOR ERROR 
-## see whether including slow, negative contractions (which might be improperly measured expansions) changes the result 
 
 ## ROBUSTNESS TO RANDOMIZATION
 ##    - randomization
@@ -104,26 +133,21 @@ dd <- dd %>%
 ###################################
 ##       TESTING EXPANSIONS      ##
 ###################################
-## get rid of range contractions
-data <- filter(dd, is_contraction == "NO")
+## range contractions at the leading edge likely happen for ecological reasons other than climate (e.g., habitat loss)
+## but small contractions might be expansions that are measured as contractions due to measurement error 
+## to be sure that the bounding of the response variable (range shift rate) at 0 doesn't have an effect on the results, refit models keeping range contractions that are slower than 10km/y
+
+## get rid of range contractions that are father than 1 sd from the mean shift 
+data <- filter(dd, Rate >= (mean(dd$ShiftKmY) - sd(dd$ShiftKmY)))
 
 ## save data
 write.csv(data, "data-processed/model-data_expansions.csv", row.names = FALSE)
 
-## make version of data where all obs have traits
+## make version where all observations have traits 
 data_traits <- filter(data, !is.na(BodySize), !is.na(Area_km2_range))
 
 ## look at distribution of response variable 
 hist(data$ShiftKmY)
-## bounded by 0 
-## use a gamma distribution? 
-
-# mod <- glm(ShiftKmY ~ LimitingRate, 
-#            family = Gamma(link="log"),
-#            data = data)
-# summary(mod, dispersion = 1)
-
-## relationship with DispersalPotentialKmY definitely not well-represented by a linear model - what to do?
 
 ## fit models without slope parameter 
 nls_disp <- nls(formula = ShiftKmY ~ DispersalPotentialKmY + int,
@@ -132,37 +156,37 @@ nls_disp <- nls(formula = ShiftKmY ~ DispersalPotentialKmY + int,
                 algorithm = "port")
 
 nls_climvelo <- nls(formula = ShiftKmY ~ ClimVeloTKmY_spp + int,
-                data = data, 
-                start = list(int = 0),
-                algorithm = "port")
-
-nls_limrate <- nls(formula = ShiftKmY ~ LimitingRate + int,
                     data = data, 
                     start = list(int = 0),
                     algorithm = "port")
 
+nls_limrate <- nls(formula = ShiftKmY ~ LimitingRate + int,
+                   data = data, 
+                   start = list(int = 0),
+                   algorithm = "port")
+
 ## fit models with estimated slope parameter 
 lm_disp <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + int,
-                data = data, 
-                start = list(int = 0, m = 1),
-                algorithm = "port")
+               data = data, 
+               start = list(int = 0, m = 1),
+               algorithm = "port")
 
 lm_climvelo <- nls(formula = ShiftKmY ~ m*ClimVeloTKmY_spp + int,
-                    data = data, 
-                    start = list(int = 0, m = 1),
-                    algorithm = "port")
-
-lm_limrate <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
                    data = data, 
                    start = list(int = 0, m = 1),
                    algorithm = "port")
 
+lm_limrate <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
+                  data = data, 
+                  start = list(int = 0, m = 1),
+                  algorithm = "port")
+
 ## fit model where dispersal interacts with climate velocity 
 lm_disp_int <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + m_cv*ClimVeloTKmY_spp +
-                m_int*ClimVeloTKmY_spp*DispersalPotentialKmY + int,
-                  data = data, 
-                  start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
-                  algorithm = "port")
+                     m_int*ClimVeloTKmY_spp*DispersalPotentialKmY + int,
+                   data = data, 
+                   start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
+                   algorithm = "port")
 
 ## trait models
 lm_dr <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + m_cv*ClimVeloTKmY_spp +
@@ -181,16 +205,17 @@ lm_rs <- nls(formula = ShiftKmY ~ m*Area_km2_range + m_cv*ClimVeloTKmY_spp +
              start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
              algorithm = "port")
 
-
 ## save models 
-expansion_models <- list(nls_disp, nls_climvelo, nls_limrate,
-                        lm_disp, lm_climvelo, lm_limrate, lm_disp_int,
-                        lm_dr, lm_bs, lm_rs)
-names(expansion_models) <- c("nls_disp", "nls_climvelo", "nls_limrate",
-                             "lm_disp", "lm_climvelo", "lm_limrate", "lm_disp_int",
+exp_models <- list(nls_disp, nls_climvelo, nls_limrate,
+                         lm_disp, lm_climvelo, lm_limrate,
+                     lm_disp_int,
+                         lm_dr, lm_bs, lm_rs)
+names(exp_models) <- c("nls_disp", "nls_climvelo", "nls_limrate",
+                             "lm_disp", "lm_climvelo", "lm_limrate",
+                         "lm_disp_int",
                              "lm_dr", "lm_bs", "lm_rs")
 
-saveRDS(expansion_models, "data-processed/modelfits_expansions.rds")
+saveRDS(exp_models, "data-processed/modelfits_expansions.rds")
 
 ## predict using each model
 df_disp <- data.frame(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY),
@@ -200,446 +225,16 @@ df_disp$pred_nls <- predict(nls_disp, se.fit = T, newdata = df_disp)
 df_disp$pred_lm <- predict(lm_disp, se.fit = FALSE, newdata = df_disp)
 
 df_climvelo <- data.frame(ClimVeloTKmY_spp = seq(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp),
-                                                  by = 0.001))
+                                                 by = 0.001))
 
 df_climvelo$pred_nls <- predict(nls_climvelo, se.fit = FALSE, newdata = df_climvelo)
 df_climvelo$pred_lm <- predict(lm_climvelo, se.fit = FALSE, newdata = df_climvelo)
 
 df_limrate <- data.frame(LimitingRate = seq(min(data$LimitingRate), max(data$LimitingRate),
-                                                   by = 0.001))
+                                            by = 0.001))
 
 df_limrate$pred_nls <- predict(nls_limrate, se.fit = FALSE, newdata = df_limrate)
 df_limrate$pred_lm <- predict(lm_limrate, se.fit = FALSE, newdata = df_limrate)
-
-## for models with interactions, predict across all climate velocites:
-df_disp_int <- expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY),
-                                                  by = 0.1),
-                      ClimVeloTKmY_spp = seq(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp),
-                                             by = 0.1))
-
-df_disp_int$pred_lm <- predict(lm_disp_int, se.fit = FALSE, newdata = df_disp_int)
-
-
-df_dr <- expand.grid(DispersalPotentialKmY = seq(0.0001, max(data$DispersalPotentialKmY),
-                                                 by = 0.1),
-                     ClimVeloTKmY_spp = seq(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp),
-                                            by = 0.1))
-df_bs <- expand.grid(BodySize = seq(min(data$BodySize, na.rm = TRUE), max(data$BodySize, na.rm = TRUE),
-                                   by = 0.001),
-                     ClimVeloTKmY_spp = seq(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp),
-                                            by = 0.1))
-
-df_rs <- expand.grid(Area_km2_range = seq(min(data$Area_km2_range, na.rm = TRUE), 
-                         max(data$Area_km2_range, na.rm = TRUE),
-                         by = 100000),
-                     ClimVeloTKmY_spp = seq(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp),
-                                            by = 0.1))
-
-df_dr$pred <- predict(lm_dr, se.fit = FALSE, newdata = df_dr)
-df_bs$pred <- predict(lm_bs, se.fit = FALSE, newdata = df_bs)
-df_rs$pred <- predict(lm_rs, se.fit = FALSE, newdata = df_rs)
-
-## bootstrap 95% confidence intervals for linear models
-ints_lm_disp <- predict2_nls(lm_disp, interval = "conf")
-ints_lm_climvelo <- predict2_nls(lm_climvelo, interval = "conf")
-ints_lm_limrate <- predict2_nls(lm_limrate, interval = "conf")
-
-ints_lm_dr <- predict2_nls(lm_dr, interval = "conf")
-ints_lm_bs <- predict2_nls(lm_bs, interval = "conf")
-ints_lm_rs <- predict2_nls(lm_rs, interval = "conf")
-  
-## ones with continuous interactions 
-fun_disp = function(x, mod) {
-  predict2_nls(mod, interval = "conf", 
-               newdata = data.frame(ClimVeloTKmY_spp = median(data$ClimVeloTKmY_spp), 
-                                    DispersalPotentialKmY = x,
-                                    m = coefficients(mod)[2], 
-                                    m_cv = coefficients(mod)[3], 
-                                    m_int = coefficients(mod)[4],
-                                    int = coefficients(mod)[1]))
-}
-fun_bs = function(x, mod) {
-  predict2_nls(mod, interval = "conf", 
-               newdata = data.frame(ClimVeloTKmY_spp = median(data$ClimVeloTKmY_spp), 
-                                    BodySize = x,
-                                    m = coefficients(mod)[2], 
-                                    m_cv = coefficients(mod)[3], 
-                                    m_int = coefficients(mod)[4],
-                                    int = coefficients(mod)[1]))
-}
-fun_rs = function(x, mod) {
-  predict2_nls(mod, interval = "conf", 
-               newdata = data.frame(ClimVeloTKmY_spp = median(data$ClimVeloTKmY_spp), 
-                                    Area_km2_range = x,
-                                    m = coefficients(mod)[2], 
-                                    m_cv = coefficients(mod)[3], 
-                                    m_int = coefficients(mod)[4],
-                                    int = coefficients(mod)[1]))
-}
-ints_lm_disp_int <- do.call(rbind, lapply(data$DispersalPotentialKmY, fun_disp, mod = lm_disp_int))
-ints_lm_dr <- do.call(rbind, lapply(data_traits$DispersalPotentialKmY, fun_disp, mod = lm_dr))
-ints_lm_bs <- do.call(rbind, lapply(data_traits$BodySize, fun_bs, mod = lm_bs))
-ints_lm_rs <- do.call(rbind, lapply(data_traits$Area_km2_range, fun_rs, mod = lm_rs))
-  
-## plot
-## DISPERSAL
-# disp_plot <- data %>%
-#   ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
-#   geom_point(alpha = 0.7, aes(shape = group)) +
-#   geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
-#              fill = "transparent", pch = 2,
-#              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-#   geom_point(data = filter(data, is.na(colour), group == "Birds"), colour = "black", inherit.aes = FALSE,
-#              fill = "transparent", pch = 1,
-#              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-#   theme_bw() +
-#   stat_function(colour = "grey", fun = function(x){x},
-#                 linetype = "dashed") + 
-#   theme(panel.grid = element_blank(),
-#         strip.background = element_blank(),
-#         panel.spacing = unit(2 , "lines"), 
-#         legend.position = "none") +
-#   scale_y_continuous(limits = c(0, 26), expand = c(0,0.5)) +
-#   labs(x = "Maximum potential dispersal rate (km/y)",
-#        y = "Observed range shift rate (km/y)", 
-#        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
-#   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-#   geom_ribbon(data = cbind(data, ints_lm_disp), aes(x = DispersalPotentialKmY, y = fitted(lm_disp),
-#                                                     ymin = Q2.5, ymax = Q97.5), 
-#               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-#   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "grey", 
-#             inherit.aes = FALSE) +
-#   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lm), colour = "black", 
-#             inherit.aes = FALSE) 
-
-# disp_plot_2 <- data %>%
-#   ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
-#   geom_point(alpha = 0.7, aes(shape = group)) +
-#   geom_point(data = filter(data, is.na(colour)), inherit.aes = FALSE, colour = "black", 
-#              fill = "transparent", pch = 1,
-#              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-#   theme_bw() +
-#   stat_function(colour = "grey", fun = function(x){x},
-#                 linetype = "dashed") + 
-#   theme(panel.grid = element_blank(),
-#         strip.background = element_blank(),
-#         panel.spacing = unit(2 , "lines")) +
-#   scale_x_log10(breaks = c(0.001, 0.01, 0.1, 1, 10, 100, 1000),
-#                 labels = c("0.001", "0.01", "0.1", "1", "10", "100", "1000"),
-#                 limits = c(0.0001, 1400)) +
-#   scale_y_continuous(limits = c(0, 26), expand = c(0,0.5)) +
-#   labs(x = "Potential dispersal rate (km/y)",
-#        y = "Observed range shift rate (km/y)", 
-#        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
-#   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-#   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "grey", 
-#             inherit.aes = FALSE) +
-#   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lm), colour = "black", 
-#             inherit.aes = FALSE) 
-
-## DISPERSAL x CLIMATE
-disp_int_plot <- data %>%
-  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
-  geom_line(data = df_disp_int, aes(x = DispersalPotentialKmY, y = pred_lm, colour = ClimVeloTKmY_spp), 
-            inherit.aes = FALSE, alpha = 0.1) +
-  geom_point(alpha = 0.7, aes(shape = group)) +
-  geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
-             fill = "transparent", pch = 2,
-             aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour), group == "Birds"), colour = "black", inherit.aes = FALSE,
-             fill = "transparent", pch = 1,
-             aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  theme_bw() +
-  stat_function(colour = "grey", fun = function(x){x},
-                linetype = "dashed") + 
-  theme(panel.grid = element_blank(),
-        strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines"),
-        legend.position = "none") +
-  scale_y_continuous(limits = c(0, 26), expand = c(0,0.5)) +
-  labs(x = "Maximum potential dispersal rate (km/y)",
-       y = "Observed range shift rate (km/y)", 
-       colour = 'Mean\nclimate\nvelocity\n(km/y)') +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
-
-disp_int_plot_med <- data %>%
-  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
-  geom_point(alpha = 0.7, aes(shape = group)) +
-  geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
-             fill = "transparent", pch = 2,
-             aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour), group == "Birds"), colour = "black", inherit.aes = FALSE,
-             fill = "transparent", pch = 1,
-             aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  theme_bw() +
-  stat_function(colour = "grey", fun = function(x){x},
-                linetype = "dashed") + 
-  theme(panel.grid = element_blank(),
-        strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines"),
-        legend.position = "none") +
-  scale_y_continuous(limits = c(0, 26), expand = c(0,0.5)) +
-  labs(x = "Maximum potential dispersal rate (km/y)",
-       y = "Observed range shift rate (km/y)", 
-       colour = 'Mean\nclimate\nvelocity\n(km/y)') +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  geom_ribbon(data = cbind(data, ints_lm_disp_int), aes(x = DispersalPotentialKmY, 
-                                                        y = Estimate,
-                                                       ymin = Q2.5, ymax = Q97.5), 
-              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_line(data = cbind(data, ints_lm_disp_int), aes(x = DispersalPotentialKmY, 
-                                                      y = Estimate), 
-            colour = "black", inherit.aes = FALSE) +
-  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "grey",
-            inherit.aes = FALSE)
-
-## CLIMATE
-clim_velo_plot <- data %>%
-  ggplot(aes(x = ClimVeloTKmY_spp, y = ShiftKmY, colour = ClimVeloTKmY_spp, shape = group)) +
-  geom_point(alpha = 0.7, aes(shape = group)) +
-  geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
-             fill = "transparent", pch = 2,
-             aes(x = ClimVeloTKmY_spp, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour), group == "Birds"), colour = "black", inherit.aes = FALSE,
-             fill = "transparent", pch = 1,
-             aes(x = ClimVeloTKmY_spp, y = ShiftKmY, shape = group)) +
-  theme_bw() + 
-  scale_y_continuous(limits = c(0, 26), expand = c(0,0.5)) +
-  stat_function(colour = "grey", fun = function(x){x},
-                linetype = "dashed") + 
-  theme(panel.grid = element_blank(),
-        strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines"),
-        legend.position = "none") +
-  labs(x = "Mean rate of climate change (km/y)",
-       y = "Observed range shift rate (km/y)", 
-       colour = 'Mean\nclimate\nvelocity\n(km/y)', 
-       shape = "") +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
-                         na.value = "black") +
-  geom_ribbon(data = cbind(data, ints_lm_climvelo), aes(x = ClimVeloTKmY_spp, y = fitted(lm_climvelo),
-                                                        ymin = Q2.5, ymax = Q97.5), 
-              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_line(data = df_climvelo, aes(x = ClimVeloTKmY_spp, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
-  geom_line(data = df_climvelo, aes(x = ClimVeloTKmY_spp, y = pred_lm), colour = "black", inherit.aes = FALSE)
-
-## LIMITING RATE
-limrate_plot <- data %>%
-  ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = ClimVeloTKmY_spp, shape = group)) +
-  geom_point(alpha = 0.7, aes(shape = group)) +
-  geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
-             fill = "transparent", pch = 2,
-             aes(x = LimitingRate, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour), group == "Birds"), colour = "black", inherit.aes = FALSE,
-             fill = "transparent", pch = 1,
-             aes(x = LimitingRate, y = ShiftKmY, shape = group)) +
-  theme_bw() +
-  scale_y_continuous(limits = c(0, 26), expand = c(0,0.5)) +
-  stat_function(colour = "grey", fun = function(x){x},
-                linetype = "dashed") + 
-  theme(panel.grid = element_blank(),
-        strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines"),
-        legend.position = "none") +
-  labs(x = "Minimum of potential dispersal rate\nand rate of climate change (km/y)",
-       y = "Observed range shift rate (km/y)", 
-       colour = 'Mean\nclimate\nvelocity\n(km/y)', 
-       shape = "" ) +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
-                         na.value = "black") +
-  geom_ribbon(data = cbind(data, ints_lm_limrate), aes(x = LimitingRate, y = fitted(lm_limrate),
-                                                        ymin = Q2.5, ymax = Q97.5), 
-              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_nls), colour = "grey", 
-            inherit.aes = FALSE) +
-  geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_lm), colour = "black", 
-            inherit.aes = FALSE) 
-
-plot_grid(disp_int_plot_med, clim_velo_plot, limrate_plot, 
-         ncol = 3, align = "h")
-
-ggsave(path = "figures/model_results", filename = "model-predictions_expansions.png", 
-       width = 12.5, height = 4)
-
-
-## proxy 
-## dispersal rate
-dr_plot = data_traits %>%
-  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  geom_point(alpha = 0.7) +
-  theme_bw() +
-  theme(panel.grid = element_blank(),
-        strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines"), 
-        legend.position = "none") +
-  scale_x_log10(breaks = c(0.001, 0.01, 0.1, 1, 10, 100, 1000),
-                labels = c("0.001", "0.01", "0.1", "1", "10", "100", "1000"),
-                limits = c(0.0001, 1400)) +
-  scale_y_continuous(limits = c(-3, 26), expand = c(0,0.5)) +
-  labs(x = "Maximum potential dispersal rate (km/y)",
-       y = "Observed range shift rate (km/y)", 
-       colour = 'Mean\nclimate\nvelocity\n(km/y)') +
-  geom_ribbon(data = cbind(data_traits, ints_lm_dr), aes(x = DispersalPotentialKmY, y = Estimate,
-                                                        ymin = Q2.5, ymax = Q97.5),
-              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_line(data = cbind(data_traits, ints_lm_dr), aes(x = DispersalPotentialKmY, 
-                                                      y = Estimate), 
-            colour = "black", inherit.aes = FALSE) 
-
-## body size
-bs_plot = data_traits %>%
-  ggplot(aes(x = BodySize, y = ShiftKmY, shape = group)) +
-  geom_point(alpha = 0.7) +
-  theme_bw() +
-  theme(panel.grid = element_blank(),
-        strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines"),
-        legend.position = "none") +
-  scale_x_log10() +
-  scale_y_continuous(limits = c(-3, 26), expand = c(0,0.5)) +
-  labs(x = "Body size (mm)",
-       y = "Observed range shift rate (km/y)", 
-       colour = 'Mean\nclimate\nvelocity\n(km/y)') +
-  geom_ribbon(data = cbind(data_traits, ints_lm_bs), aes(x = BodySize, y = Estimate,
-                                                        ymin = Q2.5, ymax = Q97.5),
-              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_line(data = cbind(data_traits,ints_lm_bs), aes(x = BodySize, 
-                                                y = Estimate), 
-            colour = "black", inherit.aes = FALSE) 
-
-## range size
-rs_plot = data_traits %>%
-  ggplot(aes(x = Area_km2_range, y = ShiftKmY, shape = group)) +
-  geom_point(alpha = 0.7) +
-  theme_bw() +
-  theme(panel.grid = element_blank(),
-        strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines"),
-        legend.position = "none") +
-  scale_x_log10() +
-  scale_y_continuous(limits = c(-3, 26), expand = c(0,0.5)) +
-  labs(x = "Realized range size (km2)",
-       y = "Observed range shift rate (km/y)", 
-       colour = 'Mean\nclimate\nvelocity\n(km/y)') +
-  geom_ribbon(data = cbind(data_traits, ints_lm_rs), aes(x = Area_km2_range, y = Estimate,
-                                                                          ymin = Q2.5, ymax = Q97.5),
-              fill = "grey", alpha = 0.2, inherit.aes = FALSE)  +
-  geom_line(data = cbind(data_traits, ints_lm_rs), aes(x = Area_km2_range, 
-                                                y = Estimate), 
-            colour = "black", inherit.aes = FALSE) 
-
-plot_grid(bs_plot, rs_plot, dr_plot, 
-          ncol = 3, align = "h")
-
-ggsave(path = "figures/model_results", filename = "model-predictions_proxy-trait_expansions.png", 
-       width = 12.5, height = 4)
-
-
-#####################################
-##       ACCOUNTING FOR ERROR      ##
-#####################################
-## range contractions at the leading edge likely happen for ecological reasons other than climate (e.g., habitat loss)
-## but small contractions might be expansions that are measured as contractions due to measurement error 
-## to be sure that the bounding of the response variable (range shift rate) at 0 doesn't have an effect on the results, refit models keeping range contractions that are slower than 10km/y
-
-## get rid of range contractions that are father than 1 sd from the mean shift 
-data <- filter(dd, Rate >= (mean(dd$ShiftKmY) - sd(dd$ShiftKmY)))
-
-## save data
-write.csv(data, "data-processed/model-data_error.csv", row.names = FALSE)
-
-## make version where all observations have traits 
-data_traits <- filter(data, !is.na(BodySize), !is.na(Area_km2_range))
-
-## look at distribution of response variable 
-hist(data$ShiftKmY)
-
-## fit models without slope parameter 
-nls_disp_error <- nls(formula = ShiftKmY ~ DispersalPotentialKmY + int,
-                data = data, 
-                start = list(int = 0),
-                algorithm = "port")
-
-nls_climvelo_error <- nls(formula = ShiftKmY ~ ClimVeloTKmY_spp + int,
-                    data = data, 
-                    start = list(int = 0),
-                    algorithm = "port")
-
-nls_limrate_error <- nls(formula = ShiftKmY ~ LimitingRate + int,
-                   data = data, 
-                   start = list(int = 0),
-                   algorithm = "port")
-
-## fit models with estimated slope parameter 
-lm_disp_error <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + int,
-               data = data, 
-               start = list(int = 0, m = 1),
-               algorithm = "port")
-
-lm_climvelo_error <- nls(formula = ShiftKmY ~ m*ClimVeloTKmY_spp + int,
-                   data = data, 
-                   start = list(int = 0, m = 1),
-                   algorithm = "port")
-
-lm_limrate_error <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
-                  data = data, 
-                  start = list(int = 0, m = 1),
-                  algorithm = "port")
-
-## fit model where dispersal interacts with climate velocity 
-lm_disp_int_error <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + m_cv*ClimVeloTKmY_spp +
-                     m_int*ClimVeloTKmY_spp*DispersalPotentialKmY + int,
-                   data = data, 
-                   start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
-                   algorithm = "port")
-
-## trait models
-lm_dr_error <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + m_cv*ClimVeloTKmY_spp +
-               m_int*ClimVeloTKmY_spp*DispersalPotentialKmY + int,
-             data = data_traits, 
-             start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
-             algorithm = "port")
-lm_bs_error <- nls(formula = ShiftKmY ~ m*BodySize + m_cv*ClimVeloTKmY_spp +
-               m_int*ClimVeloTKmY_spp*BodySize + int,
-             data = data_traits, 
-             start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
-             algorithm = "port")
-lm_rs_error <- nls(formula = ShiftKmY ~ m*Area_km2_range + m_cv*ClimVeloTKmY_spp +
-               m_int*ClimVeloTKmY_spp*Area_km2_range + int,
-             data = data_traits, 
-             start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
-             algorithm = "port")
-
-## save models 
-error_models <- list(nls_disp_error, nls_climvelo_error, nls_limrate_error,
-                         lm_disp_error, lm_climvelo_error, lm_limrate_error,
-                     lm_disp_int_error,
-                         lm_dr_error, lm_bs_error, lm_rs_error)
-names(error_models) <- c("nls_disp_error", "nls_climvelo_error", "nls_limrate_error",
-                             "lm_disp_error", "lm_climvelo_error", "lm_limrate_error",
-                         "lm_disp_int_error",
-                             "lm_dr_error", "lm_bs_error", "lm_rs_error")
-
-saveRDS(error_models, "data-processed/modelfits_error.rds")
-
-## predict using each model
-df_disp <- data.frame(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY),
-                                                  by = 0.001))
-
-df_disp$pred_nls <- predict(nls_disp_error, se.fit = T, newdata = df_disp)
-df_disp$pred_lm <- predict(lm_disp_error, se.fit = FALSE, newdata = df_disp)
-
-df_climvelo <- data.frame(ClimVeloTKmY_spp = seq(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp),
-                                                 by = 0.001))
-
-df_climvelo$pred_nls <- predict(nls_climvelo_error, se.fit = FALSE, newdata = df_climvelo)
-df_climvelo$pred_lm <- predict(lm_climvelo_error, se.fit = FALSE, newdata = df_climvelo)
-
-df_limrate <- data.frame(LimitingRate = seq(min(data$LimitingRate), max(data$LimitingRate),
-                                            by = 0.001))
-
-df_limrate$pred_nls <- predict(nls_limrate_error, se.fit = FALSE, newdata = df_limrate)
-df_limrate$pred_lm <- predict(lm_limrate_error, se.fit = FALSE, newdata = df_limrate)
 
 ## for models with interactions, predict across all climate velocites:
 df_disp_int <- expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY),
@@ -647,7 +242,7 @@ df_disp_int <- expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPote
                            ClimVeloTKmY_spp = seq(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp),
                                                   by = 0.1))
 
-df_disp_int$pred_lm <- predict(lm_disp_int_error, se.fit = FALSE, newdata = df_disp_int)
+df_disp_int$pred_lm <- predict(lm_disp_int, se.fit = FALSE, newdata = df_disp_int)
 
 
 df_dr <- expand.grid(DispersalPotentialKmY = seq(0.0001, max(data$DispersalPotentialKmY),
@@ -665,24 +260,24 @@ df_rs <- expand.grid(Area_km2_range = seq(min(data$Area_km2_range, na.rm = TRUE)
                      ClimVeloTKmY_spp = seq(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp),
                                             by = 0.1))
 
-df_dr$pred <- predict(lm_dr_error, se.fit = FALSE, newdata = df_dr)
-df_bs$pred <- predict(lm_bs_error, se.fit = FALSE, newdata = df_bs)
-df_rs$pred <- predict(lm_rs_error, se.fit = FALSE, newdata = df_rs)
+df_dr$pred <- predict(lm_dr, se.fit = FALSE, newdata = df_dr)
+df_bs$pred <- predict(lm_bs, se.fit = FALSE, newdata = df_bs)
+df_rs$pred <- predict(lm_rs, se.fit = FALSE, newdata = df_rs)
 
 ## bootstrap 95% confidence intervals for linear models
-ints_lm_disp <- predict2_nls(lm_disp_error, interval = "conf")
-ints_lm_climvelo <- predict2_nls(lm_climvelo_error, interval = "conf")
-ints_lm_limrate <- predict2_nls(lm_limrate_error, interval = "conf")
+ints_lm_disp <- predict2_nls(lm_disp, interval = "conf")
+ints_lm_climvelo <- predict2_nls(lm_climvelo, interval = "conf")
+ints_lm_limrate <- predict2_nls(lm_limrate, interval = "conf")
 
-ints_lm_dr <- predict2_nls(lm_dr_error, interval = "conf")
-ints_lm_bs <- predict2_nls(lm_bs_error, interval = "conf")
-ints_lm_rs <- predict2_nls(lm_rs_error, interval = "conf")
+ints_lm_dr <- predict2_nls(lm_dr, interval = "conf")
+ints_lm_bs <- predict2_nls(lm_bs, interval = "conf")
+ints_lm_rs <- predict2_nls(lm_rs, interval = "conf")
 
 ## ones with continuous interactions 
-ints_lm_disp_int <- do.call(rbind, lapply(data$DispersalPotentialKmY, fun_disp, mod = lm_disp_int_error))
-ints_lm_dr <- do.call(rbind, lapply(data_traits$DispersalPotentialKmY, fun_disp, mod = lm_dr_error))
-ints_lm_bs <- do.call(rbind, lapply(data_traits$BodySize, fun_bs, mod = lm_bs_error))
-ints_lm_rs <- do.call(rbind, lapply(data_traits$Area_km2_range, fun_rs, mod = lm_rs_error))
+ints_lm_disp_int <- do.call(rbind, lapply(data$DispersalPotentialKmY, fun_disp, mod = lm_disp_int))
+ints_lm_dr <- do.call(rbind, lapply(data_traits$DispersalPotentialKmY, fun_disp, mod = lm_dr))
+ints_lm_bs <- do.call(rbind, lapply(data_traits$BodySize, fun_bs, mod = lm_bs))
+ints_lm_rs <- do.call(rbind, lapply(data_traits$Area_km2_range, fun_rs, mod = lm_rs))
 
 
 ## plot
@@ -708,7 +303,7 @@ ints_lm_rs <- do.call(rbind, lapply(data_traits$Area_km2_range, fun_rs, mod = lm
 #        y = "Observed range shift rate (km/y)", 
 #        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
 #   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-#   geom_ribbon(data = cbind(data, ints_lm_disp), aes(x = DispersalPotentialKmY, y = fitted(lm_disp_error),
+#   geom_ribbon(data = cbind(data, ints_lm_disp), aes(x = DispersalPotentialKmY, y = fitted(lm_disp),
 #                                                     ymin = Q2.5, ymax = Q97.5), 
 #               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
 #   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_nls), colour = "grey", 
@@ -819,7 +414,7 @@ clim_velo_plot = data %>%
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
                          na.value = "black") +
-  geom_ribbon(data = cbind(data, ints_lm_climvelo), aes(x = ClimVeloTKmY_spp, y = fitted(lm_climvelo_error),
+  geom_ribbon(data = cbind(data, ints_lm_climvelo), aes(x = ClimVeloTKmY_spp, y = fitted(lm_climvelo),
                                                     ymin = Q2.5, ymax = Q97.5), 
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_climvelo, aes(x = ClimVeloTKmY_spp, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
@@ -849,7 +444,7 @@ limrate_plot = data %>%
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
                          na.value = "black") +
-  geom_ribbon(data = cbind(data, ints_lm_limrate), aes(x = LimitingRate, y = fitted(lm_limrate_error),
+  geom_ribbon(data = cbind(data, ints_lm_limrate), aes(x = LimitingRate, y = fitted(lm_limrate),
                                                         ymin = Q2.5, ymax = Q97.5), 
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
@@ -858,7 +453,7 @@ limrate_plot = data %>%
 plot_grid(disp_int_plot_med, clim_velo_plot, limrate_plot, 
           ncol = 3, align = "h")
 
-ggsave(path = "figures/model_results", filename = "model-predictions_expansions-with error.png", 
+ggsave(path = "figures/model_results", filename = "model-predictions_expansions.png", 
        width = 12.5, height = 4)
 
 ## proxy 
@@ -928,30 +523,31 @@ rs_plot = data_traits %>%
 plot_grid(bs_plot, rs_plot, dr_plot, 
           ncol = 3, align = "h")
 
-ggsave(path = "figures/model_results", filename = "model-predictions_proxy-trait_expansions-with-error.png", 
+ggsave(path = "figures/model_results", filename = "model-predictions_proxy-trait_expansions.png", 
        width = 12.5, height = 4)
+
 
 ###############################################################################
 ####      analyzing influence of outliers / points with high leverage      ####
 ###############################################################################
 ## Cook's distance can be used to calculate influence on all parameters at once 
-error <- data
+exps <- data
 
 ## get predictions from full model
-preds_full <- predict(lm_limrate_error, newdata = data.frame(LimitingRate = error$LimitingRate))
+preds_full <- predict(lm_limrate, newdata = data.frame(LimitingRate = exps$LimitingRate))
 
 ## calculate cook's distance
-MSE = mean(residuals(lm_limrate_error)^2)
-p = 2
+MSE = mean(residuals(lm_limrate)^2) ## mean squared error
+p = 2 ## number of estimated parameters in model
 
 ## loop through points, removing one by one, fitting model, and getting prediction for point that is removed
 
 ## note: must assign new data frame to old 'lat' object, or else weird error occurs 
 ## so must refresh data each time 
-cooks <- c()
+cooks <- c() 
 x = 1
-while(x <= nrow(error)) {
-  data = error
+while(x <= nrow(exps)) {
+  data = exps
   
   ## remove point x
   data <- data[-x,]
@@ -963,7 +559,7 @@ while(x <= nrow(error)) {
                  algorithm = "port") 
   
   ## get model predictions
-  preds <- predict(mod_sub, newdata = data.frame(LimitingRate = error$LimitingRate))
+  preds <- predict(mod_sub, newdata = data.frame(LimitingRate = exps$LimitingRate))
   
   ## calculate cook' distance 
   cook <- sum((preds - preds_full)^2)/p*MSE
@@ -976,13 +572,15 @@ while(x <= nrow(error)) {
   x = x + 1
 }
 
+data <- exps
+
 hist(cooks)
 
-## add cook's distance to dataset 
-error$cooks_dist = cooks
+## add cook's distance + coefficients to dataset 
+exps$cooks_dist = cooks
 
 ## plot
-error %>%
+exps_influential <- exps %>%
   mutate(is_bigger = cooks_dist >= 1) %>%
   ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = is_bigger, shape = group)) +
   geom_point(alpha = 0.7) +
@@ -993,7 +591,54 @@ error %>%
              fill = "transparent", pch = 1,
              aes(x = LimitingRate, y = ShiftKmY, shape = group)) +
   theme_bw() +
-  stat_function(colour = "grey", fun = function(x){-x},
+  # stat_function(colour = "grey", fun = function(x){x},
+  #               linetype = "dashed") + 
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank(),
+        panel.spacing = unit(2 , "lines")) +
+  scale_y_continuous(limits = c(-6, 25), expand = c(0,0.5)) +
+  labs(x = "Minimum of potential dispersal rate\nand rate of climate change (km/y)",
+       y = "Observed range shift rate (km/y)", 
+       colour = "Cook's distance > 1", 
+       shape = "") 
+
+## run model without high influence points 
+data_sub <- exps[exps$cooks_dist < 1, ]
+
+mod_lowlev <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
+                  data = data_sub, 
+                  start = list(int = 0, m = 1),
+                  algorithm = "port") 
+summary(mod_lowlev)
+
+## make predictions from model
+df_limrate_lowlev <- data.frame(LimitingRate = seq(min(data_sub$LimitingRate), max(data_sub$LimitingRate),
+                                                   by = 0.001))
+
+df_limrate_lowlev$pred_lm <- predict(mod_lowlev, se.fit = FALSE, newdata = df_limrate_lowlev)
+df_limrate_lowlev$facet = "Without influential points"
+
+ints_lm_limrate_lowlev <- predict2_nls(mod_lowlev, interval = "conf")
+
+df_limrate$facet = "With influential points"
+ints_lm_limrate_lowlev$facet = "Without influential points"
+ints_lm_limrate$facet = "With influential points"
+
+## plot predictions from model with and without the high leverage points 
+facet <- data_sub %>%
+  select(-cooks_dist) %>%
+  mutate(facet = "Without influential points") %>%
+  rbind(., mutate(data, facet = "With influential points")) %>%
+  ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = ClimVeloTKmY_spp, shape = group)) +
+  geom_point(alpha = 0.7) +
+  geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
+             fill = "transparent", pch = 2,
+             aes(x = LimitingRate, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(data, is.na(colour), group == "Birds"), colour = "black", inherit.aes = FALSE,
+             fill = "transparent", pch = 1,
+             aes(x = LimitingRate, y = ShiftKmY, shape = group)) +
+  theme_bw() +
+  stat_function(colour = "grey", fun = function(x){x},
                 linetype = "dashed") + 
   theme(panel.grid = element_blank(),
         strip.background = element_blank(),
@@ -1003,16 +648,22 @@ error %>%
   labs(x = "Minimum of potential dispersal rate\nand rate of climate change (km/y)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)', 
-       shape = "") 
+       shape = "") +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
+                         na.value = "black") +
+  geom_ribbon(data = cbind(data, ints_lm_limrate), aes(x = LimitingRate, y = fitted(lm_limrate),
+                                                       ymin = Q2.5, ymax = Q97.5),
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
+  geom_ribbon(data = cbind(data_sub, ints_lm_limrate_lowlev), aes(x = LimitingRate, y = fitted(mod_lowlev),
+                                                                  ymin = Q2.5, ymax = Q97.5),
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
+  geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_lm), colour = "black", inherit.aes = FALSE) +
+  geom_line(data = df_limrate_lowlev, aes(x = LimitingRate, y = pred_lm), 
+            colour = "black", inherit.aes = FALSE) +
+  facet_wrap(~facet)
 
-## run model without high leverage points 
-data_sub <- error[error$cooks_dist < 1, ]
-
-mod_lowlev <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
-                  data = data_sub, 
-                  start = list(int = 0, m = 1),
-                  algorithm = "port") 
-summary(mod_lowlev)
+ggsave(facet, path = "figures/model_results", filename = "model-predictions_influence_expansions.png", 
+       width = 8, height = 4)
 
 
 ################################################
@@ -1023,6 +674,7 @@ summary(mod_lowlev)
 ## randomize the dependent variable (range shift rate) 1000 times
 ## fit the model and extract model coefficients 
 ## compare to observed coefficients 
+data <- exps
 
 ## randomize range shift rate 
 coeffs <- c()
@@ -1066,18 +718,23 @@ for(i in 1:10000) {
 
 ## extract coefficients from real models and add to database
 coeffs <- coeffs %>%
-  mutate(real_slope = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate_error)[2],
-                             ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo_error)[2],
-                                    coefficients(lm_disp_error)[2])),
-         real_intercept = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate_error)[1],
-                                 ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo_error)[1],
-                                        coefficients(lm_disp_error)[1])),
-         real_r_squ = ifelse(mod_type == "LimitingRate", summary(lm(ShiftKmY ~ predict(lm_limrate_error), 
+  mutate(real_slope = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate)[2],
+                             ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo)[2],
+                                    coefficients(lm_disp)[2])),
+         real_slope_influential = ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev)[2],NA),
+         real_intercept = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate)[1],
+                                 ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo)[1],
+                                        coefficients(lm_disp)[1])),
+         real_intercept_influential = ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev)[1],NA),
+         real_r_squ = ifelse(mod_type == "LimitingRate", summary(lm(ShiftKmY ~ predict(lm_limrate), 
                                                                     data = data))$r.squared,
                              ifelse(mod_type == "ClimVeloTKmY_spp", 
-                                    summary(lm(ShiftKmY ~ predict(lm_climvelo_error),
+                                    summary(lm(ShiftKmY ~ predict(lm_climvelo),
                                                                                data = data))$r.squared,
-                                    summary(lm(ShiftKmY ~ predict(lm_disp_error), data = data))$r.squared)))
+                                    summary(lm(ShiftKmY ~ predict(lm_disp), data = data))$r.squared)),
+         real_r_squ_influential = ifelse(mod_type == "LimitingRate", summary(lm(ShiftKmY ~ predict(mod_lowlev), 
+                                                                                data = data_sub))$r.squared,
+                                         NA),)
 
 ## slope
 rando_slope <- coeffs %>%
@@ -1089,8 +746,9 @@ rando_slope <- coeffs %>%
   ggplot(aes(x = slope)) +
   geom_histogram() +
   geom_vline(aes(xintercept = real_slope), colour = "red") +
+  geom_vline(aes(xintercept = real_slope_influential), colour = "red", linetype = "longdash") +
   facet_wrap(~mod_type) +
-  labs(x = "Estimated slope", y = "Count")
+  labs(x = "Estimated slope", y = "Count") 
 
 ## intercept
 rando_int <- coeffs %>%
@@ -1102,6 +760,7 @@ rando_int <- coeffs %>%
   ggplot(aes(x = intercept)) +
   geom_histogram() +
   geom_vline(aes(xintercept = real_intercept), colour = "red") +
+  geom_vline(aes(xintercept = real_intercept_influential), colour = "red", linetype = "longdash") +
   facet_wrap(~mod_type) +
   labs(x = "Estimated intercept", y = "Count")
 
@@ -1115,13 +774,14 @@ rando_r2 <- coeffs %>%
   ggplot(aes(x = r_squared)) +
   geom_histogram() +
   geom_vline(aes(xintercept = real_r_squ), colour = "red") +
+  geom_vline(aes(xintercept = real_r_squ_influential), colour = "red", linetype = "longdash") +
   facet_wrap(~mod_type) +
   labs(x = "Regression coefficient", y = "Count")
 
 plot_grid(rando_slope, rando_int, rando_r2, 
           nrow = 3, align = "v")
 
-ggsave(path = "figures/model_results", filename = "randomization-histograms_expansions-with-error.png", 
+ggsave(path = "figures/model_results", filename = "randomization-histograms_expansions.png", 
        width = 8, height = 6)
 
 
@@ -1576,6 +1236,7 @@ while(x <= nrow(cont)) {
   
   x = x + 1
 }
+data <- cont
 
 hist(cooks)
 
@@ -1584,9 +1245,57 @@ cont$cooks_dist = cooks
 
 ## Cook's distance of > 1 = high influence 
 ## plot
-cont %>%
+cont_influential <- cont %>%
   mutate(is_bigger = cooks_dist >= 1) %>%
   ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = is_bigger, shape = group)) +
+  geom_point(alpha = 0.7) +
+  geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
+             fill = "transparent", pch = 2,
+             aes(x = LimitingRate, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(data, is.na(colour), group == "Birds"), colour = "black", inherit.aes = FALSE,
+             fill = "transparent", pch = 1,
+             aes(x = LimitingRate, y = ShiftKmY, shape = group)) +
+  theme_bw() +
+  stat_function(colour = "grey", fun = function(x){-x},
+                linetype = "dashed") + 
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank(),
+        panel.spacing = unit(2 , "lines")) +
+  scale_y_continuous(limits = c(-18, 6), expand = c(0,0.5)) +
+  labs(x = "Minimum of potential dispersal rate\nand rate of climate change (km/y)",
+       y = "Observed range shift rate (km/y)", 
+       colour = "Cook's distance > 1", 
+       shape = "") 
+
+
+## run model without high leverage points 
+data_sub <- cont[cont$cooks_dist < 1,]
+
+mod_lowlev <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
+               data = data_sub, 
+               start = list(int = 0, m = 1),
+               algorithm = "port") 
+summary(mod_lowlev)
+
+## make predictions from model
+df_limrate_lowlev <- data.frame(LimitingRate = seq(min(data_sub$LimitingRate), max(data_sub$LimitingRate),
+                                            by = 0.001))
+
+df_limrate_lowlev$pred_lm <- predict(mod_lowlev, se.fit = FALSE, newdata = df_limrate_lowlev)
+df_limrate_lowlev$facet = "Without influential points"
+
+ints_lm_limrate_lowlev <- predict2_nls(mod_lowlev, interval = "conf")
+
+df_limrate$facet = "With influential points"
+ints_lm_limrate_lowlev$facet = "Without influential points"
+ints_lm_limrate$facet = "With influential points"
+
+## plot predictions from model with and without the high leverage points 
+facet <- data_sub %>%
+  select(-cooks_dist) %>%
+  mutate(facet = "Without influential points") %>%
+  rbind(., mutate(data, facet = "With influential points")) %>%
+  ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = ClimVeloTKmY_spp, shape = group)) +
   geom_point(alpha = 0.7) +
   geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 2,
@@ -1605,16 +1314,23 @@ cont %>%
   labs(x = "Minimum of potential dispersal rate\nand rate of climate change (km/y)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)', 
-       shape = "") 
+       shape = "") +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
+                         na.value = "black") +
+  geom_ribbon(data = cbind(data, ints_lm_limrate), aes(x = LimitingRate, y = fitted(lm_limrate_cont),
+                                                       ymin = Q2.5, ymax = Q97.5),
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
+  geom_ribbon(data = cbind(data_sub, ints_lm_limrate_lowlev), aes(x = LimitingRate, y = fitted(mod_lowlev),
+                                                                  ymin = Q2.5, ymax = Q97.5),
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
+  geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_lm), colour = "black", inherit.aes = FALSE) +
+  geom_line(data = df_limrate_lowlev, aes(x = LimitingRate, y = pred_lm), 
+            colour = "black", inherit.aes = FALSE) +
+  facet_wrap(~facet)
 
-## run model without high leverage points 
-data_sub <- cont[cont$cooks_dist < 1,]
-
-mod_lowlev <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
-               data = data_sub, 
-               start = list(int = 0, m = 1),
-               algorithm = "port") 
-summary(mod_lowlev)
+## save 
+ggsave(facet, path = "figures/model_results", filename = "model-predictions_influence_contractions.png", 
+       width = 8, height = 4)
 
 
 ##################################################
@@ -1625,6 +1341,7 @@ summary(mod_lowlev)
 ## randomize the dependent variable (range shift rate) 1000 times
 ## fit the model and extract model coefficients 
 ## compare to observed coefficients
+
 
 ## randomize range shift rate 
 coeffs <- c()
@@ -1671,15 +1388,21 @@ coeffs <- coeffs %>%
   mutate(real_slope = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate_cont)[2],
                              ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo_cont)[2],
                                     coefficients(lm_disp_cont)[2])),
+         real_slope_influential =  ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev)[2], NA),
          real_intercept = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate_cont)[1],
                                  ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo_cont)[1],
                                         coefficients(lm_disp_cont)[1])),
+         real_intercept_influential =  ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev)[1], NA),
          real_r_squ = ifelse(mod_type == "LimitingRate", summary(lm(ShiftKmY ~ predict(lm_limrate_cont), 
                                                                     data = data))$r.squared,
                              ifelse(mod_type == "ClimVeloTKmY_spp",
                                     summary(lm(ShiftKmY ~ predict(lm_climvelo_cont),
                                                                                data = data))$r.squared,
-                                    summary(lm(ShiftKmY ~ predict(lm_disp_cont), data = data))$r.squared)))
+                                    summary(lm(ShiftKmY ~ predict(lm_disp_cont), data = data))$r.squared)),
+         real_r_squ_influential = ifelse(mod_type == "LimitingRate", 
+                                         summary(lm(ShiftKmY ~ predict(mod_lowlev), 
+                                                    data = data_sub))$r.squared,
+                                         NA))
 
 ## slope
 rando_slope <- coeffs %>%
@@ -1691,6 +1414,7 @@ rando_slope <- coeffs %>%
   ggplot(aes(x = slope)) +
   geom_histogram() +
   geom_vline(aes(xintercept = real_slope), colour = "red") +
+  geom_vline(aes(xintercept = real_slope_influential), colour = "red", linetype = "longdash") +
   facet_wrap(~mod_type) +
   labs(x = "Estimated slope", y = "Count")
 
@@ -1704,6 +1428,7 @@ rando_int <- coeffs %>%
   ggplot(aes(x = intercept)) +
   geom_histogram() +
   geom_vline(aes(xintercept = real_intercept), colour = "red") +
+  geom_vline(aes(xintercept = real_intercept_influential), colour = "red", linetype = "longdash") +
   facet_wrap(~mod_type) +
   labs(x = "Estimated intercept", y = "Count")
 
@@ -1717,6 +1442,7 @@ rando_r2 <- coeffs %>%
   ggplot(aes(x = r_squared)) +
   geom_histogram() +
   geom_vline(aes(xintercept = real_r_squ), colour = "red") +
+  geom_vline(aes(xintercept = real_r_squ_influential), colour = "red", linetype = "longdash") +
   facet_wrap(~mod_type) +
   labs(x = "Regression coefficient", y = "Count")
 
@@ -1747,7 +1473,7 @@ climvelo_nls = dwplot(nls_climvelo) +
   theme(panel.grid = element_blank()) +
   geom_vline(xintercept = 1, linetype = "dashed") +
   scale_y_discrete(labels = c("Intercept"))  +
-  scale_x_continuous(limits = c(0,3)) +
+  scale_x_continuous(limits = c(-1,3)) +
   labs(subtitle = "Mean rate of climate change (km/y)") +
   scale_colour_manual(values = c("skyblue1"))
 
@@ -1785,82 +1511,6 @@ plot_grid(disp_nls, climvelo_nls, limrate_nls,
           disp, climvelo, limrate, ncol = 1, align = "v")
 
 ggsave(path = "figures/model_results", filename = "dwplot_expansions.png", 
-       width = 6, height = 7)
-
-dwplot(list(lm_disp, lm_climvelo, lm_limrate)) +
-  theme(panel.grid = element_blank(), legend.position = "bottom") +
-  geom_vline(xintercept = 1, linetype = "dashed") +
-  scale_y_discrete(labels = c("Slope", 
-                              "Intercept")) +
-  scale_x_continuous(limits = c(0,3)) +
-  scale_color_discrete(labels = c("Maximum potential dispersal rate (km/y)", 
-                                  "Mean rate of climate change (km/y)", 
-                                  "Minimum of potential dispersal rate and climate velocity (km/y)")) +
-  labs(colour = "Model") +
-  guides(colour = guide_legend(nrow = 3, byrow = TRUE))
-
-dwplot(list(nls_disp, nls_climvelo, nls_limrate)) +
-  theme(panel.grid = element_blank(), legend.position = "bottom") +
-  geom_vline(xintercept = 1, linetype = "dashed") +
-  scale_y_discrete(labels = c("Intercept")) +
-  scale_x_continuous(limits = c(-44,3)) +
-  scale_color_discrete(labels = c("Maximum potential dispersal rate (km/y)", 
-                                  "Mean rate of climate change (km/y)", 
-                                  "Minimum of potential dispersal rate and climate velocity (km/y)")) +
-  labs(colour = "Model") +
-  guides(colour = guide_legend(nrow = 3, byrow = TRUE))
-
-## accounting for error
-disp_nls = dwplot(nls_disp_error) +
-  theme(panel.grid = element_blank()) +
-  geom_vline(xintercept = 1, linetype = "dashed") +
-  scale_y_discrete(labels = c("Intercept")) +
-  scale_x_continuous(limits = c(-44,3)) +
-  labs(subtitle = "Maximum potential dispersal rate (km/y)") +
-  scale_colour_manual(values = c("skyblue1"))
-
-climvelo_nls = dwplot(nls_climvelo_error) +
-  theme(panel.grid = element_blank()) +
-  geom_vline(xintercept = 1, linetype = "dashed") +
-  scale_y_discrete(labels = c("Intercept"))  +
-  scale_x_continuous(limits = c(-1,3)) +
-  labs(subtitle = "Mean rate of climate change (km/y)") +
-  scale_colour_manual(values = c("skyblue1"))
-
-limrate_nls = dwplot(nls_limrate_error) +
-  theme(panel.grid = element_blank()) +
-  geom_vline(xintercept = 1, linetype = "dashed") +
-  scale_y_discrete(labels = c("Intercept")) +
-  scale_x_continuous(limits = c(0,3)) +
-  labs(subtitle = "Minimum of potential dispersal rate and climate velocity (km/y)") +
-  scale_colour_manual(values = c("skyblue1"))
-
-disp = dwplot(lm_disp_error) +
-  theme(panel.grid = element_blank()) +
-  geom_vline(xintercept = 1, linetype = "dashed") +
-  scale_y_discrete(labels = c("Slope", "Intercept")) +
-  scale_x_continuous(limits = c(0,3)) +
-  labs(subtitle = "Maximum potential dispersal rate (km/y)")
-
-climvelo = dwplot(lm_climvelo_error) +
-  theme(panel.grid = element_blank()) +
-  geom_vline(xintercept = 1, linetype = "dashed") +
-  scale_y_discrete(labels = c("Slope", "Intercept"))  +
-  scale_x_continuous(limits = c(0,3)) +
-  labs(subtitle = "Mean rate of climate change (km/y)")
-
-limrate = dwplot(lm_limrate_error) +
-  theme(panel.grid = element_blank()) +
-  geom_vline(xintercept = 1, linetype = "dashed") +
-  scale_y_discrete(labels = c("Slope", 
-                              "Intercept")) +
-  scale_x_continuous(limits = c(0,3)) +
-  labs(subtitle = "Minimum of potential dispersal rate and climate velocity (km/y)")
-
-plot_grid(disp_nls, climvelo_nls, limrate_nls, 
-          disp, climvelo, limrate, ncol = 1, align = "v")
-
-ggsave(path = "figures/model_results", filename = "dwplot_expansions-with-error.png", 
        width = 6, height = 7)
 
 ## contractions
@@ -1916,7 +1566,6 @@ plot_grid(disp_nls, climvelo_nls, limrate_nls,
 ggsave(path = "figures/model_results", filename = "dwplot_contractions.png", 
        width = 6, height = 7)
 
-
 ## proxy traits models
 ################################
 ## expansions
@@ -1948,5 +1597,3 @@ dwplot(list(lm_dr_cont, lm_bs_cont, lm_rs_cont)) +
 
 ggsave(path = "figures/model_results", filename = "dwplot_proxy-trait_contractions.png", 
        width = 6, height = 3)
-
-
