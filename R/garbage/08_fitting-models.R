@@ -36,6 +36,17 @@ fun_rs = function(x, mod) {
                                     int = coefficients(mod)[1]))
 }
 
+fun_cv = function(x, mod) {
+  predict2_nls(mod, interval = "conf", 
+               newdata = data.frame(DispersalPotentialKmY = median(data$DispersalPotentialKmY), 
+                                    ClimVeloTKmY_spp = x,
+                                    m = coefficients(mod)[2], 
+                                    m_cv = coefficients(mod)[3], 
+                                    m_int = coefficients(mod)[4],
+                                    int = coefficients(mod)[1]))
+}
+
+
 ## TESTING EXPANSIONS
 ## filter to leading edge range shifts with positive climate velocity (expect expansion)
 ## filter to only expansions + contractions that are < 1sd from the mean
@@ -60,16 +71,18 @@ fun_rs = function(x, mod) {
 ##    - under hyp 1 (proxy traits poorly estimate dispersal): dispersal rate model has slope of 1 and is better fit than proxy trait models 
 ##    - under hyp 2 (some spp not dispersal limited): limiting rate model has slope of 1 & is better fit than climate velocity or dispersal rate alone
 
-## ROBUSTNESS TO RANDOMIZATION
-##    - randomization
-##      - sample range shift expansions randomly without replacement 1000 times 
-##      - fit all models and compare the distribution of their coefficients to the real ones
-
 ## TESTING CONTRACTIONS
 ##  - fit models to range contractions and compare 
 ##       expect:
 ##       - hyp 1 (traits poorly estimate dispersal): dispersal rate model is not a good fit
 ##       - hyp 2 (some spp not dispersal limited): limiting rate model does not have a slope of 1 (although.. it might because of climate velocity) and is not better fit than climate velocity alone
+
+## ROBUSTNESS TO RANDOMIZATION
+##    - randomization
+##      - sample range shift expansions randomly without replacement 1000 times 
+##      - fit all models and compare the distribution of their coefficients to the real ones
+
+## ROBUSTNESS TO INFLUENTIAL PTS
 
 ## OTHER THINGS
 ##    - error in climate velocity
@@ -109,7 +122,7 @@ bodysize <- read.csv("data-processed/dispersal-proxy-trait-compilation.csv")
 rangesize <- read.csv("data-raw/BIOSHIFTSv3/polygon_areas.csv")
 
 ## filter to species in dispersal dataset 
-rangesize <- filter(rangesize, rangesize$binomial %in% dd$scientificName) %>%
+rangesize <- filter(rangesize, rangesize$binomial %in% dd$scientificName_checked) %>%
   select(ID, binomial, range_source, Area_m2_ID, Area_m2_range) %>%
   distinct()
 
@@ -127,8 +140,10 @@ rangesize <- rangesize %>%
 ## join traits to dd 
 dd <- dd %>%
   select(-range_source) %>%
-  left_join(., rangesize, by = c("ID", "scientificName" = "binomial")) %>%
-  left_join(., select(bodysize, scientificName, class, kingdom, BodySize))
+  left_join(., rangesize, by = c("ID", "scientificName_checked" = "binomial")) %>%
+  left_join(., select(bodysize, scientificName_checked, class, kingdom, BodySize))
+
+write.csv(dd, "data-processed/model-data_all.csv", row.names = FALSE)
 
 ###################################
 ##       TESTING EXPANSIONS      ##
@@ -182,10 +197,9 @@ lm_limrate <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
                   algorithm = "port")
 
 ## fit model where dispersal interacts with climate velocity 
-lm_disp_int <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + m_cv*ClimVeloTKmY_spp +
-                     m_int*ClimVeloTKmY_spp*DispersalPotentialKmY + int,
+lm_disp_int <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + m_cv*ClimVeloTKmY_spp + int,
                    data = data, 
-                   start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
+                   start = list(int = 0, m = 1, m_cv = 1),
                    algorithm = "port")
 
 ## trait models
@@ -205,17 +219,68 @@ lm_rs <- nls(formula = ShiftKmY ~ m*Area_km2_range + m_cv*ClimVeloTKmY_spp +
              start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
              algorithm = "port")
 
+## plot residuals 
+plot(nls_disp) ## not good
+plot(nls_climvelo)
+plot(nls_limrate)
+
+plot(lm_disp) 
+plot(lm_climvelo)
+plot(lm_limrate)
+plot(lm_disp_int)
+
+plot(lm_dr)
+plot(lm_bs)
+plot(lm_rs)
+## appear to be some outlier/high leverage points 
+
+hist(residuals(nls_disp)) ## not normal
+hist(residuals(nls_climvelo))
+hist(residuals(nls_limrate))
+
+hist(residuals(lm_disp))
+hist(residuals(lm_climvelo))
+hist(residuals(lm_limrate))
+hist(residuals(lm_disp_int))
+
+hist(residuals(lm_dr))
+hist(residuals(lm_bs))
+hist(residuals(lm_rs))
+## all are right skewed
+
 ## save models 
 exp_models <- list(nls_disp, nls_climvelo, nls_limrate,
-                         lm_disp, lm_climvelo, lm_limrate,
-                     lm_disp_int,
+                         lm_disp, lm_climvelo, lm_limrate, lm_disp_int,
                          lm_dr, lm_bs, lm_rs)
 names(exp_models) <- c("nls_disp", "nls_climvelo", "nls_limrate",
-                             "lm_disp", "lm_climvelo", "lm_limrate",
-                         "lm_disp_int",
+                             "lm_disp", "lm_climvelo", "lm_limrate", "lm_disp_int",
                              "lm_dr", "lm_bs", "lm_rs")
 
 saveRDS(exp_models, "data-processed/modelfits_expansions.rds")
+
+## see if logging trait values improves model residuals 
+# lm_dr_log <- nls(formula = ShiftKmY ~ m*log(DispersalPotentialKmY) + m_cv*ClimVeloTKmY_spp +
+#                m_int*ClimVeloTKmY_spp*log(DispersalPotentialKmY) + int,
+#              data = data_traits, 
+#              start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
+#              algorithm = "port")
+# lm_bs_log <- nls(formula = ShiftKmY ~ m*log(BodySize) + m_cv*ClimVeloTKmY_spp +
+#                m_int*ClimVeloTKmY_spp*log(BodySize) + int,
+#              data = data_traits, 
+#              start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
+#              algorithm = "port")
+# lm_rs_log <- nls(formula = ShiftKmY ~ m*log(Area_km2_range) + m_cv*ClimVeloTKmY_spp +
+#                m_int*ClimVeloTKmY_spp*log(Area_km2_range) + int,
+#              data = data_traits, 
+#              start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
+#              algorithm = "port")
+# plot(lm_dr)
+# plot(lm_dr_log)
+# plot(lm_bs)
+# plot(lm_bs_log)
+# plot(lm_rs)
+# plot(lm_rs_log)
+## not really
 
 ## predict using each model
 df_disp <- data.frame(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY),
@@ -237,10 +302,9 @@ df_limrate$pred_nls <- predict(nls_limrate, se.fit = FALSE, newdata = df_limrate
 df_limrate$pred_lm <- predict(lm_limrate, se.fit = FALSE, newdata = df_limrate)
 
 ## for models with interactions, predict across all climate velocites:
-df_disp_int <- expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY),
-                                                       by = 0.1),
-                           ClimVeloTKmY_spp = seq(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp),
-                                                  by = 0.1))
+df_disp_int <- expand.grid(DispersalPotentialKmY = seq(min(data$DispersalPotentialKmY), max(data$DispersalPotentialKmY),
+                                                       by = 1),
+                           ClimVeloTKmY_spp = c(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp)))
 
 df_disp_int$pred_lm <- predict(lm_disp_int, se.fit = FALSE, newdata = df_disp_int)
 
@@ -337,8 +401,9 @@ ints_lm_rs <- do.call(rbind, lapply(data_traits$Area_km2_range, fun_rs, mod = lm
 ## DISPERSAL x CLIMATE
 disp_int_plot <- data %>%
   ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
-  geom_line(data = df_disp_int, aes(x = DispersalPotentialKmY, y = pred_lm, colour = ClimVeloTKmY_spp), 
-            inherit.aes = FALSE, alpha = 0.1) +
+  geom_line(data = df_disp_int, aes(x = DispersalPotentialKmY, y = pred_lm, colour = ClimVeloTKmY_spp,
+                                    group = ClimVeloTKmY_spp),
+            inherit.aes = FALSE, alpha = 0.5) +
   geom_point(alpha = 0.7, aes(shape = group)) +
   geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 2,
@@ -351,13 +416,24 @@ disp_int_plot <- data %>%
                 linetype = "dashed") + 
   theme(panel.grid = element_blank(),
         strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines"),
-        legend.position = "none") +
+        panel.spacing = unit(2 , "lines")) +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Maximum potential dispersal rate (km/y)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
-  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
+  geom_ribbon(data = cbind(data, ints_lm_disp_int), aes(x = DispersalPotentialKmY, 
+                                                        y = Estimate,
+                                                        ymin = Q2.5, ymax = Q97.5), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
+  geom_line(data = cbind(data, ints_lm_disp_int), aes(x = DispersalPotentialKmY, 
+                                                      y = Estimate), 
+            colour = "black", inherit.aes = FALSE) 
+
+## save 
+ggsave(disp_int_plot, path = "figures/model_results", 
+       filename = "model-predictions_expansions_cv-disp-interaction.png",
+       width = 5.5, height = 4)
 
 disp_int_plot_med <- data %>%
   ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
@@ -534,10 +610,14 @@ ggsave(path = "figures/model_results", filename = "model-predictions_proxy-trait
 exps <- data
 
 ## get predictions from full model
-preds_full <- predict(lm_limrate, newdata = data.frame(LimitingRate = exps$LimitingRate))
+preds_disp_full <- predict(lm_disp, newdata = data.frame(DispersalPotentialKmY = exps$DispersalPotentialKmY))
+preds_climvelo_full <- predict(lm_climvelo, newdata = data.frame(ClimVeloTKmY_spp = exps$ClimVeloTKmY_spp))
+preds_limrate_full <- predict(lm_limrate, newdata = data.frame(LimitingRate = exps$LimitingRate))
 
 ## calculate cook's distance
-MSE = mean(residuals(lm_limrate)^2) ## mean squared error
+MSE_disp = mean(residuals(lm_disp)^2) ## mean squared error
+MSE_climvelo = mean(residuals(lm_climvelo)^2) ## mean squared error
+MSE_limrate = mean(residuals(lm_limrate)^2) ## mean squared error
 p = 2 ## number of estimated parameters in model
 
 ## loop through points, removing one by one, fitting model, and getting prediction for point that is removed
@@ -552,20 +632,36 @@ while(x <= nrow(exps)) {
   ## remove point x
   data <- data[-x,]
   
-  ##  fit model to data without the point:
-  mod_sub <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
+  ##  fit models to data without the point:
+  lm_disp_sub <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + int,
                  data = data, 
                  start = list(int = 0, m = 1),
-                 algorithm = "port") 
+                 algorithm = "port")
+  
+  lm_climvelo_sub <- nls(formula = ShiftKmY ~ m*ClimVeloTKmY_spp + int,
+                     data = data, 
+                     start = list(int = 0, m = 1),
+                     algorithm = "port")
+  
+  lm_limrate_sub <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
+                    data = data, 
+                    start = list(int = 0, m = 1),
+                    algorithm = "port")
   
   ## get model predictions
-  preds <- predict(mod_sub, newdata = data.frame(LimitingRate = exps$LimitingRate))
+  preds_disp <- predict(lm_disp_sub, newdata = data.frame(DispersalPotentialKmY = exps$DispersalPotentialKmY))
+  preds_climvelo <- predict(lm_climvelo_sub, newdata = data.frame(ClimVeloTKmY_spp = exps$ClimVeloTKmY_spp))
+  preds_limrate <- predict(lm_limrate_sub, newdata = data.frame(LimitingRate = exps$LimitingRate))
   
   ## calculate cook' distance 
-  cook <- sum((preds - preds_full)^2)/p*MSE
+  cooks_disp <- sum((preds_disp - preds_disp_full)^2)/p*MSE_disp
+  cooks_climvelo <- sum((preds_climvelo - preds_climvelo_full)^2)/p*MSE_climvelo
+  cooks_limrate <- sum((preds_limrate - preds_limrate_full)^2)/p*MSE_limrate
   
   ## save 
-  cooks <- append(cooks, cook)
+  cooks <- rbind(cooks, data.frame(cooks_disp = cooks_disp,
+                                   cooks_climvelo = cooks_climvelo,
+                                   cooks_limrate = cooks_limrate))
   
   print(paste0("On obs. number: ", x))
   
@@ -574,14 +670,16 @@ while(x <= nrow(exps)) {
 
 data <- exps
 
-hist(cooks)
+hist(cooks$cooks_disp)
+hist(cooks$cooks_climvelo)
+hist(cooks$cooks_limrate)
 
 ## add cook's distance + coefficients to dataset 
-exps$cooks_dist = cooks
+exps <- cbind(exps, cooks)
 
 ## plot
 exps_influential <- exps %>%
-  mutate(is_bigger = cooks_dist >= 1) %>%
+  mutate(is_bigger = cooks_limrate >= 1) %>%
   ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = is_bigger, shape = group)) +
   geom_point(alpha = 0.7) +
   geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
@@ -602,31 +700,44 @@ exps_influential <- exps %>%
        colour = "Cook's distance > 1", 
        shape = "") 
 
-## run model without high influence points 
-data_sub <- exps[exps$cooks_dist < 1, ]
+## run models without high influence points 
+data_disp_sub <- exps[exps$cooks_disp < 1, ]
+data_climvelo_sub <- exps[exps$cooks_climvelo < 1, ]
+data_limrate_sub <- exps[exps$cooks_limrate < 1, ]
 
-mod_lowlev <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
-                  data = data_sub, 
+mod_lowlev_disp <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + int,
+                  data = data_disp_sub, 
                   start = list(int = 0, m = 1),
                   algorithm = "port") 
-summary(mod_lowlev)
+
+mod_lowlev_climvelo <- nls(formula = ShiftKmY ~ m*ClimVeloTKmY_spp + int,
+                  data = data_climvelo_sub, 
+                  start = list(int = 0, m = 1),
+                  algorithm = "port") 
+
+mod_lowlev_limrate <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
+                  data = data_limrate_sub, 
+                  start = list(int = 0, m = 1),
+                  algorithm = "port") 
+summary(mod_lowlev_limrate)
 
 ## make predictions from model
-df_limrate_lowlev <- data.frame(LimitingRate = seq(min(data_sub$LimitingRate), max(data_sub$LimitingRate),
+df_limrate_lowlev <- data.frame(LimitingRate = seq(min(data_limrate_sub$LimitingRate), 
+                                                   max(data_limrate_sub$LimitingRate),
                                                    by = 0.001))
 
-df_limrate_lowlev$pred_lm <- predict(mod_lowlev, se.fit = FALSE, newdata = df_limrate_lowlev)
+df_limrate_lowlev$pred_lm <- predict(mod_lowlev_limrate, se.fit = FALSE, newdata = df_limrate_lowlev)
 df_limrate_lowlev$facet = "Without influential points"
 
-ints_lm_limrate_lowlev <- predict2_nls(mod_lowlev, interval = "conf")
+ints_lm_limrate_lowlev <- predict2_nls(mod_lowlev_limrate, interval = "conf")
 
 df_limrate$facet = "With influential points"
 ints_lm_limrate_lowlev$facet = "Without influential points"
 ints_lm_limrate$facet = "With influential points"
 
 ## plot predictions from model with and without the high leverage points 
-facet <- data_sub %>%
-  select(-cooks_dist) %>%
+facet <- data_disp_sub %>%
+  select(-c(cooks_limrate,cooks_disp,cooks_climvelo)) %>%
   mutate(facet = "Without influential points") %>%
   rbind(., mutate(data, facet = "With influential points")) %>%
   ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = ClimVeloTKmY_spp, shape = group)) +
@@ -654,7 +765,7 @@ facet <- data_sub %>%
   geom_ribbon(data = cbind(data, ints_lm_limrate), aes(x = LimitingRate, y = fitted(lm_limrate),
                                                        ymin = Q2.5, ymax = Q97.5),
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_ribbon(data = cbind(data_sub, ints_lm_limrate_lowlev), aes(x = LimitingRate, y = fitted(mod_lowlev),
+  geom_ribbon(data = cbind(data_limrate_sub, ints_lm_limrate_lowlev), aes(x = LimitingRate, y = fitted(mod_lowlev_limrate),
                                                                   ymin = Q2.5, ymax = Q97.5),
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_lm), colour = "black", inherit.aes = FALSE) +
@@ -666,37 +777,179 @@ ggsave(facet, path = "figures/model_results", filename = "model-predictions_infl
        width = 8, height = 4)
 
 
+# ################################################
+# ##         RANDOMIZATION - EXPANSIONS         ##
+# ################################################
+# ## randomization test
+# #########################
+# ## randomize the dependent variable (range shift rate) 1000 times
+# ## fit the model and extract model coefficients 
+# ## compare to observed coefficients 
+# data <- exps
+# 
+# ## randomize range shift rate 
+# coeffs <- c()
+# for(i in 1:10000) {
+#   
+#   ## randomize shifts 
+#   rando_df <- data.frame(LimitingRate = data$LimitingRate,
+#                          ClimVeloTKmY_spp = data$ClimVeloTKmY_spp, 
+#                          DispersalPotentialKmY = data$DispersalPotentialKmY, 
+#                          rando_shifts = sample(data$ShiftKmY, size = nrow(data), replace = FALSE))
+#   
+#   ## fit linear model
+#   lm1 <- lm(rando_shifts ~ DispersalPotentialKmY,
+#             data = rando_df)
+#   lm2 <- lm(rando_shifts ~ ClimVeloTKmY_spp,
+#             data = rando_df)
+#   lm3 <- lm(rando_shifts ~ LimitingRate,
+#             data = rando_df)
+#   
+#   mod_summary1 = summary(lm1)
+#   mod_summary2 = summary(lm2)
+#   mod_summary3 = summary(lm3)
+#   
+#   ## extract info
+#   slopes = c(mod_summary1$coefficients[2,1], mod_summary2$coefficients[2,1], mod_summary3$coefficients[2,1])
+#   intercepts = c(mod_summary1$coefficients[1,1], mod_summary2$coefficients[1,1], mod_summary3$coefficients[1,1])
+#   r_squ = c(mod_summary1$r.squared, mod_summary2$r.squared, mod_summary3$r.squared)
+#   adj_r_squ = c(mod_summary1$adj.r.squared, mod_summary2$adj.r.squared, mod_summary3$adj.r.squared)
+#   
+#   ## get and save coeffs
+#   coeffs <- rbind(coeffs, 
+#                   data.frame(mod_num = rep(i, 3),
+#                              mod_type = c("DispersalPotentialKmY", "ClimVeloTKmY_spp", "LimitingRate"),
+#                              slope = slopes,
+#                              intercept = intercepts,
+#                              r_squared = r_squ,
+#                              adj_r_squared = adj_r_squ))
+#   print(i)
+# }
+# 
+# 
+# ## extract coefficients from real models and add to database
+# coeffs <- coeffs %>%
+#   mutate(real_slope = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate)[2],
+#                              ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo)[2],
+#                                     coefficients(lm_disp)[2])),
+#          real_slope_influential = ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev_limrate)[2],
+#                                          ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                                                 coefficients(mod_lowlev_climvelo)[2],
+#                                                 coefficients(mod_lowlev_disp)[2])),
+#          real_intercept = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate)[1],
+#                                  ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo)[1],
+#                                         coefficients(lm_disp)[1])),
+#          real_intercept_influential = ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev)[1],
+#                                              ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                                                     coefficients(mod_lowlev_climvelo)[1],
+#                                                     coefficients(mod_lowlev_disp)[1])),
+#          real_r_squ = ifelse(mod_type == "LimitingRate", summary(lm(ShiftKmY ~ predict(lm_limrate), 
+#                                                                     data = data))$r.squared,
+#                              ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                                     summary(lm(ShiftKmY ~ predict(lm_climvelo),
+#                                                                                data = data))$r.squared,
+#                                     summary(lm(ShiftKmY ~ predict(lm_disp), data = data))$r.squared)),
+#          real_r_squ_influential = ifelse(mod_type == "LimitingRate", 
+#                                          summary(lm(ShiftKmY ~ 
+#                                                       predict(mod_lowlev_limrate), data = data_limrate_sub))$r.squared,
+#                                          ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                                                 summary(lm(ShiftKmY ~ predict(mod_lowlev_climvelo), 
+#                                                            data = data_climvelo_sub))$r.squared,
+#                                                 summary(lm(ShiftKmY ~ predict(mod_lowlev_disp), 
+#                                                            data = data_disp_sub))$r.squared)))
+# 
+# ## slope
+# rando_slope <- coeffs %>%
+#   mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                            "Mean rate of climate change (km/y)", 
+#                            ifelse(mod_type == "DispersalPotentialKmY",
+#                                   "Maximum potential dispersal rate (km/y)",
+#                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
+#   ggplot(aes(x = slope)) +
+#   geom_histogram() +
+#   geom_vline(aes(xintercept = real_slope), colour = "red") +
+#   geom_vline(aes(xintercept = real_slope_influential), colour = "red", linetype = "longdash") +
+#   facet_wrap(~mod_type) +
+#   labs(x = "Estimated slope", y = "Count") 
+# 
+# ## intercept
+# rando_int <- coeffs %>%
+#   mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                            "Mean rate of climate change (km/y)", 
+#                            ifelse(mod_type == "DispersalPotentialKmY",
+#                                   "Maximum potential dispersal rate (km/y)",
+#                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
+#   ggplot(aes(x = intercept)) +
+#   geom_histogram() +
+#   geom_vline(aes(xintercept = real_intercept), colour = "red") +
+#   geom_vline(aes(xintercept = real_intercept_influential), colour = "red", linetype = "longdash") +
+#   facet_wrap(~mod_type) +
+#   labs(x = "Estimated intercept", y = "Count")
+# 
+# ## r squared
+# rando_r2 <- coeffs %>%
+#   mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                            "Mean rate of climate change (km/y)", 
+#                            ifelse(mod_type == "DispersalPotentialKmY",
+#                                   "Maximum potential dispersal rate (km/y)",
+#                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
+#   ggplot(aes(x = r_squared)) +
+#   geom_histogram() +
+#   geom_vline(aes(xintercept = real_r_squ), colour = "red") +
+#   geom_vline(aes(xintercept = real_r_squ_influential), colour = "red", linetype = "longdash") +
+#   facet_wrap(~mod_type) +
+#   labs(x = "Regression coefficient", y = "Count")
+# 
+# plot_grid(rando_slope, rando_int, rando_r2, 
+#           nrow = 3, align = "v")
+# 
+# ggsave(path = "figures/model_results", filename = "randomization-histograms_expansions.png", 
+#        width = 8, height = 6)
+# 
+# ## get 5th and 95th percentile of slope estimates for limiting rate model
+# lr_data <- coeffs %>%
+#   filter(mod_type == "LimitingRate") 
+# quants <-quantile(lr_data$slope, c(0.05, 0.95))
+# 
+# 
+# coefficients(lm_limrate)[2] <= quants[2] ## slope with influential pts not within quantile
+# 
+# coefficients(mod_lowlev_limrate)[2] <= quants[2] ## slope without influential pts also not within quantile
+
+
 ################################################
-##         RANDOMIZATION - EXPANSIONS         ##
+##         NEW RANDOMIZATION - EXPANSIONS         ##
 ################################################
-## randomization test
-#########################
-## randomize the dependent variable (range shift rate) 1000 times
-## fit the model and extract model coefficients 
-## compare to observed coefficients 
 data <- exps
 
-## randomize range shift rate 
+## randomize dispersal rate + climate velocity
+## calculate limiting rate
+## fit models
 coeffs <- c()
+aic <- c()
 for(i in 1:10000) {
   
   ## randomize shifts 
-  rando_df <- data.frame(LimitingRate = data$LimitingRate,
-                         ClimVeloTKmY_spp = data$ClimVeloTKmY_spp, 
-                         DispersalPotentialKmY = data$DispersalPotentialKmY, 
-                         rando_shifts = sample(data$ShiftKmY, size = nrow(data), replace = FALSE))
-  
+  rando_df <- data.frame(rando_ClimVeloTKmY_spp = sample(data$ClimVeloTKmY_spp, size = nrow(data), replace = FALSE),
+                         rando_DispersalPotentialKmY = sample(data$DispersalPotentialKmY, size = nrow(data), replace = FALSE),
+                         ShiftKmY = data$ShiftKmY) %>%
+    mutate(rando_LimitingRate = ifelse(rando_ClimVeloTKmY_spp <= rando_DispersalPotentialKmY, 
+                                       rando_ClimVeloTKmY_spp,
+                                       rando_DispersalPotentialKmY))
+
   ## fit linear model
-  lm1 <- lm(rando_shifts ~ DispersalPotentialKmY,
+  lm1 <- lm(ShiftKmY ~ rando_DispersalPotentialKmY,
             data = rando_df)
-  lm2 <- lm(rando_shifts ~ ClimVeloTKmY_spp,
+  lm2 <- lm(ShiftKmY ~ rando_ClimVeloTKmY_spp,
             data = rando_df)
-  lm3 <- lm(rando_shifts ~ LimitingRate,
+  lm3 <- lm(ShiftKmY ~ rando_LimitingRate,
             data = rando_df)
   
   mod_summary1 = summary(lm1)
   mod_summary2 = summary(lm2)
   mod_summary3 = summary(lm3)
+  
+  aic <- rbind(aic, data.frame(aictab(list(lm1, lm2, lm3))))
   
   ## extract info
   slopes = c(mod_summary1$coefficients[2,1], mod_summary2$coefficients[2,1], mod_summary3$coefficients[2,1])
@@ -707,7 +960,7 @@ for(i in 1:10000) {
   ## get and save coeffs
   coeffs <- rbind(coeffs, 
                   data.frame(mod_num = rep(i, 3),
-                             mod_type = c("DispersalPotentialKmY", "ClimVeloTKmY_spp", "LimitingRate"),
+                             mod_type = c("rando_DispersalPotentialKmY", "rando_ClimVeloTKmY_spp", "rando_LimitingRate"),
                              slope = slopes,
                              intercept = intercepts,
                              r_squared = r_squ,
@@ -715,32 +968,42 @@ for(i in 1:10000) {
   print(i)
 }
 
-
 ## extract coefficients from real models and add to database
 coeffs <- coeffs %>%
-  mutate(real_slope = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate)[2],
-                             ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo)[2],
+  mutate(real_slope = ifelse(mod_type == "rando_LimitingRate", coefficients(lm_limrate)[2],
+                             ifelse(mod_type == "rando_ClimVeloTKmY_spp", coefficients(lm_climvelo)[2],
                                     coefficients(lm_disp)[2])),
-         real_slope_influential = ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev)[2],NA),
-         real_intercept = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate)[1],
-                                 ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo)[1],
+         real_slope_influential = ifelse(mod_type == "rando_LimitingRate", coefficients(mod_lowlev_limrate)[2],
+                                         ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
+                                                coefficients(mod_lowlev_climvelo)[2],
+                                                coefficients(mod_lowlev_disp)[2])),
+         real_intercept = ifelse(mod_type == "rando_LimitingRate", coefficients(lm_limrate)[1],
+                                 ifelse(mod_type == "rando_ClimVeloTKmY_spp", coefficients(lm_climvelo)[1],
                                         coefficients(lm_disp)[1])),
-         real_intercept_influential = ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev)[1],NA),
-         real_r_squ = ifelse(mod_type == "LimitingRate", summary(lm(ShiftKmY ~ predict(lm_limrate), 
+         real_intercept_influential = ifelse(mod_type == "rando_LimitingRate", coefficients(mod_lowlev_limrate)[1],
+                                             ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
+                                                    coefficients(mod_lowlev_climvelo)[1],
+                                                    coefficients(mod_lowlev_disp)[1])),
+         real_r_squ = ifelse(mod_type == "rando_LimitingRate", summary(lm(ShiftKmY ~ predict(lm_limrate), 
                                                                     data = data))$r.squared,
-                             ifelse(mod_type == "ClimVeloTKmY_spp", 
+                             ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
                                     summary(lm(ShiftKmY ~ predict(lm_climvelo),
-                                                                               data = data))$r.squared,
+                                               data = data))$r.squared,
                                     summary(lm(ShiftKmY ~ predict(lm_disp), data = data))$r.squared)),
-         real_r_squ_influential = ifelse(mod_type == "LimitingRate", summary(lm(ShiftKmY ~ predict(mod_lowlev), 
-                                                                                data = data_sub))$r.squared,
-                                         NA),)
+         real_r_squ_influential = ifelse(mod_type == "rando_LimitingRate", 
+                                         summary(lm(ShiftKmY ~ 
+                                                      predict(mod_lowlev_limrate), data = data_limrate_sub))$r.squared,
+                                         ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
+                                                summary(lm(ShiftKmY ~ predict(mod_lowlev_climvelo), 
+                                                           data = data_climvelo_sub))$r.squared,
+                                                summary(lm(ShiftKmY ~ predict(mod_lowlev_disp), 
+                                                           data = data_disp_sub))$r.squared)))
 
 ## slope
 rando_slope <- coeffs %>%
-  mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+  mutate(mod_type = ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
                            "Mean rate of climate change (km/y)", 
-                           ifelse(mod_type == "DispersalPotentialKmY",
+                           ifelse(mod_type == "rando_DispersalPotentialKmY",
                                   "Maximum potential dispersal rate (km/y)",
                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
   ggplot(aes(x = slope)) +
@@ -752,9 +1015,9 @@ rando_slope <- coeffs %>%
 
 ## intercept
 rando_int <- coeffs %>%
-  mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+  mutate(mod_type = ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
                            "Mean rate of climate change (km/y)", 
-                           ifelse(mod_type == "DispersalPotentialKmY",
+                           ifelse(mod_type == "rando_DispersalPotentialKmY",
                                   "Maximum potential dispersal rate (km/y)",
                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
   ggplot(aes(x = intercept)) +
@@ -766,9 +1029,9 @@ rando_int <- coeffs %>%
 
 ## r squared
 rando_r2 <- coeffs %>%
-  mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+  mutate(mod_type = ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
                            "Mean rate of climate change (km/y)", 
-                           ifelse(mod_type == "DispersalPotentialKmY",
+                           ifelse(mod_type == "rando_DispersalPotentialKmY",
                                   "Maximum potential dispersal rate (km/y)",
                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
   ggplot(aes(x = r_squared)) +
@@ -784,6 +1047,21 @@ plot_grid(rando_slope, rando_int, rando_r2,
 ggsave(path = "figures/model_results", filename = "randomization-histograms_expansions.png", 
        width = 8, height = 6)
 
+## get 5th and 95th percentile of slope estimates for limiting rate model
+lr_data <- coeffs %>%
+  filter(mod_type == "rando_LimitingRate") 
+quants <-quantile(lr_data$slope, c(0.05, 0.95))
+
+coefficients(lm_limrate)[2] <= quants[2] ## slope with influential pts not within quantile
+
+coefficients(mod_lowlev_limrate)[2] <= quants[2] ## slope without influential pts also not within quantile
+
+## see if lim rate null models are always better fit than cv and disp
+aic %>%
+  filter(Delta_AICc == 0) %>% ## filter to top model from each set
+  ggplot(aes(x = Modnames)) + 
+  geom_bar() 
+## all are very equal - means that all models perform about the same by chance
 
 #####################################
 ##       TESTING CONTRACTIONS      ##
@@ -827,7 +1105,7 @@ cont <- cont %>%
 cont <- cont %>%
   select(-range_source) %>%
   left_join(., rangesize, by = c("ID", "scientificName" = "binomial")) %>%
-  left_join(., select(bodysize, scientificName, class, kingdom, BodySize))
+  left_join(., select(bodysize, scientificName_checked, class, kingdom, BodySize))
 
 data <- cont
 
@@ -858,9 +1136,9 @@ nls_limrate_cont <- nls(formula = ShiftKmY ~ -1*LimitingRate + int,
 
 ## fit models with estimated slope parameter 
 lm_disp_cont <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + int,
-                     data = data, 
-                     start = list(int = 0, m = 1),
-                     algorithm = "port")
+                    data = data, 
+                    start = list(int = 0, m = 1),
+                    algorithm = "port")
 
 lm_climvelo_cont <- nls(formula = ShiftKmY ~ m*ClimVeloTKmY_spp + int,
                          data = data, 
@@ -873,11 +1151,10 @@ lm_limrate_cont <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
                         algorithm = "port")
 
 ## fit model where dispersal interacts with climate velocity 
-lm_disp_int_cont <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + m_cv*ClimVeloTKmY_spp +
-                           m_int*ClimVeloTKmY_spp*DispersalPotentialKmY + int,
-                         data = data, 
-                         start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
-                         algorithm = "port")
+lm_disp_int_cont <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + m_cv*ClimVeloTKmY_spp + int,
+                        data = data, 
+                        start = list(int = 0, m = 1, m_cv = 1),
+                        algorithm = "port")
 
 ## trait models
 lm_dr_cont <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + m_cv*ClimVeloTKmY_spp +
@@ -895,17 +1172,69 @@ lm_rs_cont <- nls(formula = ShiftKmY ~ m*Area_km2_range + m_cv*ClimVeloTKmY_spp 
                    data = data_traits, 
                    start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
                    algorithm = "port")
+
+## plot residuals 
+plot(nls_disp_cont) ## not good
+plot(nls_climvelo_cont)
+plot(nls_limrate_cont)
+
+plot(lm_disp_cont) 
+plot(lm_climvelo_cont)
+plot(lm_limrate_cont)
+plot(lm_disp_int_cont)
+
+plot(lm_dr_cont) 
+plot(lm_bs_cont)
+plot(lm_rs_cont)
+## appear to be more influential points than for expansions
+
+hist(residuals(nls_disp_cont))
+hist(residuals(nls_climvelo_cont))
+hist(residuals(nls_limrate_cont))
+
+hist(residuals(lm_disp_cont))
+hist(residuals(lm_climvelo_cont))
+hist(residuals(lm_limrate_cont))
+hist(residuals(lm_disp_int_cont))
+
+hist(residuals(lm_dr_cont))
+hist(residuals(lm_bs_cont))
+hist(residuals(lm_rs_cont))
+## most are left skewed 
+
 ## save models
 cont_models <- list(nls_disp_cont, nls_climvelo_cont, nls_limrate_cont,
-                     lm_disp_cont, lm_climvelo_cont, lm_limrate_cont,
-                    lm_disp_int_cont,
+                     lm_disp_cont, lm_climvelo_cont, lm_limrate_cont,lm_disp_int_cont,
                      lm_dr_cont, lm_bs_cont, lm_rs_cont)
 names(cont_models) <- c("nls_disp_cont", "nls_climvelo_cont", "nls_limrate_cont",
-                         "lm_disp_cont", "lm_climvelo_cont", "lm_limrate_cont",
-                        "lm_disp_int_cont",
+                         "lm_disp_cont", "lm_climvelo_cont", "lm_limrate_cont", "lm_disp_int_cont",
                          "lm_dr_cont", "lm_bs_cont", "lm_rs_cont")
 
 saveRDS(cont_models, "data-processed/modelfits_contractions.rds")
+
+## see if logging trait values improves model residuals 
+# lm_dr_cont_log <- nls(formula = ShiftKmY ~ m*log(DispersalPotentialKmY) + m_cv*ClimVeloTKmY_spp +
+#                    m_int*ClimVeloTKmY_spp*log(DispersalPotentialKmY) + int,
+#                  data = data_traits, 
+#                  start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
+#                  algorithm = "port")
+# lm_bs_cont_log <- nls(formula = ShiftKmY ~ m*log(BodySize) + m_cv*ClimVeloTKmY_spp +
+#                    m_int*ClimVeloTKmY_spp*log(BodySize) + int,
+#                  data = data_traits, 
+#                  start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
+#                  algorithm = "port")
+# lm_rs_cont_log <- nls(formula = ShiftKmY ~ m*log(Area_km2_range) + m_cv*ClimVeloTKmY_spp +
+#                    m_int*ClimVeloTKmY_spp*log(Area_km2_range) + int,
+#                  data = data_traits, 
+#                  start = list(int = 0, m = 1, m_cv = 1, m_int = 1),
+#                  algorithm = "port")
+# plot(lm_dr_cont)
+# plot(lm_dr_cont_log)
+# plot(lm_cont_bs)
+# plot(lm_bs_cont_log)
+# plot(lm_rs_cont)
+# plot(lm_rs_cont_log)
+## not really
 
 
 ## predict using each model
@@ -928,10 +1257,9 @@ df_limrate$pred_nls <- predict(nls_limrate_cont, se.fit = FALSE, newdata = df_li
 df_limrate$pred_lm <- predict(lm_limrate_cont, se.fit = FALSE, newdata = df_limrate)
 
 ## for models with interactions, predict across all climate velocites:
-df_disp_int <- expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY),
-                                                       by = 0.1),
-                           ClimVeloTKmY_spp = seq(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp),
-                                                  by = 0.1))
+df_disp_int <- expand.grid(DispersalPotentialKmY = seq(min(data$DispersalPotentialKmY), max(data$DispersalPotentialKmY),
+                                                       by = 1),
+                           ClimVeloTKmY_spp = c(min(data$ClimVeloTKmY_spp), max(data$ClimVeloTKmY_spp)))
 
 df_disp_int$pred_lm <- predict(lm_disp_int_cont, se.fit = FALSE, newdata = df_disp_int)
 
@@ -1002,8 +1330,9 @@ ints_lm_rs <- do.call(rbind, lapply(data_traits$Area_km2_range, fun_rs, mod = lm
 ## DISPERSAL x CLIMATE
 disp_int_plot <- data %>%
   ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
-  geom_line(data = df_disp_int, aes(x = DispersalPotentialKmY, y = pred_lm, colour = ClimVeloTKmY_spp), 
-            inherit.aes = FALSE, alpha = 0.1) +
+  geom_line(data = df_disp_int, aes(x = DispersalPotentialKmY, y = pred_lm, colour = ClimVeloTKmY_spp,
+                                    group = ClimVeloTKmY_spp),
+            inherit.aes = FALSE, alpha = 0.5) +
   geom_point(alpha = 0.7, aes(shape = group)) +
   geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 2,
@@ -1016,13 +1345,17 @@ disp_int_plot <- data %>%
                 linetype = "dashed") + 
   theme(panel.grid = element_blank(),
         strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines"),
-        legend.position = "none") +
+        panel.spacing = unit(2 , "lines")) +
   scale_y_continuous(limits = c(-18, 6), expand = c(0,0.5)) +
   labs(x = "Maximum potential dispersal rate (km/y)",
        y = "Observed range shift rate (km/y)", 
        colour = 'Mean\nclimate\nvelocity\n(km/y)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) 
+
+## save 
+ggsave(disp_int_plot, 
+       path = "figures/model_results", filename = "model-predictions_contractions_cv-disp-interaction.png", 
+       width = 5.5, height = 4)
 
 disp_int_plot_med <- data %>%
   ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = ClimVeloTKmY_spp)) +
@@ -1122,6 +1455,57 @@ plot_grid(disp_int_plot_med, clim_velo_plot, limrate_plot,
 ggsave(path = "figures/model_results", filename = "model-predictions_contractions.png", 
        width = 12.5, height = 4)
 
+# data %>%
+#   ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = ClimVeloTKmY_spp, shape = group)) +
+#   geom_point(alpha = 0.7) +
+#   geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
+#              fill = "transparent", pch = 2,
+#              aes(x = LimitingRate, y = ShiftKmY, shape = group)) +
+#   geom_point(data = filter(data, is.na(colour), group == "Birds"), colour = "black", inherit.aes = FALSE,
+#              fill = "transparent", pch = 1,
+#              aes(x = LimitingRate, y = ShiftKmY, shape = group)) +
+#   theme_bw() +
+#   stat_function(colour = "grey", fun = function(x){-x},
+#                 linetype = "dashed") + 
+#   theme(panel.grid = element_blank(),
+#         strip.background = element_blank(),
+#         panel.spacing = unit(2 , "lines"),
+#         legend.position = "none") +
+#   scale_y_continuous(limits = c(-18, 6), expand = c(0,0.5)) +
+#   labs(x = "Minimum of potential dispersal rate\nand rate of climate change (km/y)",
+#        y = "Observed range shift rate (km/y)", 
+#        colour = 'Mean\nclimate\nvelocity\n(km/y)', 
+#        shape = "") +
+#   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5,
+#                          na.value = "black") +
+#   geom_ribbon(data = cbind(data, ints_lm_limrate), aes(x = LimitingRate, y = fitted(lm_limrate_cont),
+#                                                        ymin = Q2.5, ymax = Q97.5), 
+#               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
+#   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_nls), colour = "grey", inherit.aes = FALSE) +
+#   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_lm), colour = "black", inherit.aes = FALSE) + 
+#   facet_wrap(~Param)
+# 
+# cont %>%
+#   select(what_is_limiting, ClimVeloTKmY_spp, DispersalPotentialKmY, group, everything()) %>% View
+# 
+# ## plot contractions by latitude
+# cont %>% 
+#   ggplot(aes(x = abs(LatCentDeg), y = ShiftKmY, colour = what_is_limiting)) +
+#   geom_point()
+# 
+# data %>%
+#   filter(ID != "A138_P1") %>% ## get rid of scotland study that has the wrong polygon
+#   ggplot(aes(x = ClimVeloTKmY_spp, y = ShiftKmY, colour = abs(LatCentDeg), shape = group)) +
+#   geom_point(alpha = 0.7) +
+#   # geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
+#   #            fill = "transparent", pch = 2,
+#   #            aes(x = ClimVeloTKmY_spp, y = ShiftKmY, shape = group)) +
+#   # geom_point(data = filter(data, is.na(colour), group == "Birds"), colour = "black", inherit.aes = FALSE,
+#   #            fill = "transparent", pch = 1,
+#   #            aes(x = ClimVeloTKmY_spp, y = ShiftKmY, shape = group)) +
+#   facet_wrap(~Param)
+
+
 
 ## proxy 
 ## dispersal rate
@@ -1199,54 +1583,77 @@ ggsave(path = "figures/model_results", filename = "model-predictions_proxy-trait
 ## Cook's distance can be used to calculate influence on all parameters at once 
 
 ## get predictions from full model
-preds_full <- predict(lm_limrate_cont, newdata = data.frame(LimitingRate = cont$LimitingRate))
+preds_disp_full <- predict(lm_disp_cont, newdata = data.frame(DispersalPotentialKmY = cont$DispersalPotentialKmY))
+preds_climvelo_full <- predict(lm_climvelo_cont, newdata = data.frame(ClimVeloTKmY_spp = cont$ClimVeloTKmY_spp))
+preds_limrate_full <- predict(lm_limrate_cont, newdata = data.frame(LimitingRate = cont$LimitingRate))
 
 ## calculate cook's distance
-MSE = mean(residuals(lm_limrate_cont)^2)
-p = 2
+MSE_disp = mean(residuals(lm_disp_cont)^2) ## mean squared error
+MSE_climvelo = mean(residuals(lm_climvelo_cont)^2) ## mean squared error
+MSE_limrate = mean(residuals(lm_limrate_cont)^2) ## mean squared error
+p = 2 ## number of estimated parameters in model
 
 ## loop through points, removing one by one, fitting model, and getting prediction for point that is removed
 
 ## note: must assign new data frame to old 'lat' object, or else weird error occurs 
 ## so must refresh data each time 
-cooks <- c()
+cooks <- c() 
 x = 1
 while(x <= nrow(cont)) {
   data = cont
-
+  
   ## remove point x
   data <- data[-x,]
   
-  ##  fit model to data without the point:
-  mod_sub <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
+  ##  fit models to data without the point:
+  lm_disp_sub <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + int,
+                     data = data, 
+                     start = list(int = 0, m = 1),
+                     algorithm = "port")
+  
+  lm_climvelo_sub <- nls(formula = ShiftKmY ~ m*ClimVeloTKmY_spp + int,
                          data = data, 
                          start = list(int = 0, m = 1),
-                         algorithm = "port") 
+                         algorithm = "port")
+  
+  lm_limrate_sub <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
+                        data = data, 
+                        start = list(int = 0, m = 1),
+                        algorithm = "port")
   
   ## get model predictions
-  preds <- predict(mod_sub, newdata = data.frame(LimitingRate = cont$LimitingRate))
+  preds_disp <- predict(lm_disp_sub, newdata = data.frame(DispersalPotentialKmY = cont$DispersalPotentialKmY))
+  preds_climvelo <- predict(lm_climvelo_sub, newdata = data.frame(ClimVeloTKmY_spp = cont$ClimVeloTKmY_spp))
+  preds_limrate <- predict(lm_limrate_sub, newdata = data.frame(LimitingRate = cont$LimitingRate))
   
   ## calculate cook' distance 
-  cook <- sum((preds - preds_full)^2)/p*MSE
-    
+  cooks_disp <- sum((preds_disp - preds_disp_full)^2)/p*MSE_disp
+  cooks_climvelo <- sum((preds_climvelo - preds_climvelo_full)^2)/p*MSE_climvelo
+  cooks_limrate <- sum((preds_limrate - preds_limrate_full)^2)/p*MSE_limrate
+  
   ## save 
-  cooks <- append(cooks, cook)
+  cooks <- rbind(cooks, data.frame(cooks_disp = cooks_disp,
+                                   cooks_climvelo = cooks_climvelo,
+                                   cooks_limrate = cooks_limrate))
   
   print(paste0("On obs. number: ", x))
   
   x = x + 1
 }
+
 data <- cont
 
-hist(cooks)
+hist(cooks$cooks_disp)
+hist(cooks$cooks_climvelo)
+hist(cooks$cooks_limrate)
 
-## add cook's distance to dataset 
-cont$cooks_dist = cooks
+## add cook's distance + coefficients to dataset 
+cont <- cbind(cont, cooks)
 
 ## Cook's distance of > 1 = high influence 
 ## plot
 cont_influential <- cont %>%
-  mutate(is_bigger = cooks_dist >= 1) %>%
+  mutate(is_bigger = cooks_limrate >= 1) %>%
   ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = is_bigger, shape = group)) +
   geom_point(alpha = 0.7) +
   geom_point(data = filter(data, is.na(colour), group == "Plants"), colour = "black", inherit.aes = FALSE,
@@ -1267,32 +1674,43 @@ cont_influential <- cont %>%
        colour = "Cook's distance > 1", 
        shape = "") 
 
-
 ## run model without high leverage points 
-data_sub <- cont[cont$cooks_dist < 1,]
+data_disp_sub <- cont[cont$cooks_disp < 1, ]
+data_climvelo_sub <- cont[cont$cooks_climvelo < 1, ]
+data_limrate_sub <- cont[cont$cooks_limrate < 1, ]
 
-mod_lowlev <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
-               data = data_sub, 
-               start = list(int = 0, m = 1),
-               algorithm = "port") 
-summary(mod_lowlev)
+mod_lowlev_disp <- nls(formula = ShiftKmY ~ m*DispersalPotentialKmY + int,
+                       data = data_disp_sub, 
+                       start = list(int = 0, m = 1),
+                       algorithm = "port") 
+
+mod_lowlev_climvelo <- nls(formula = ShiftKmY ~ m*ClimVeloTKmY_spp + int,
+                           data = data_climvelo_sub, 
+                           start = list(int = 0, m = 1),
+                           algorithm = "port") 
+
+mod_lowlev_limrate <- nls(formula = ShiftKmY ~ m*LimitingRate + int,
+                          data = data_limrate_sub, 
+                          start = list(int = 0, m = 1),
+                          algorithm = "port") 
+summary(mod_lowlev_limrate)
 
 ## make predictions from model
-df_limrate_lowlev <- data.frame(LimitingRate = seq(min(data_sub$LimitingRate), max(data_sub$LimitingRate),
+df_limrate_lowlev <- data.frame(LimitingRate = seq(min(data_limrate_sub$LimitingRate), max(data_limrate_sub$LimitingRate),
                                             by = 0.001))
 
-df_limrate_lowlev$pred_lm <- predict(mod_lowlev, se.fit = FALSE, newdata = df_limrate_lowlev)
+df_limrate_lowlev$pred_lm <- predict(mod_lowlev_limrate, se.fit = FALSE, newdata = df_limrate_lowlev)
 df_limrate_lowlev$facet = "Without influential points"
 
-ints_lm_limrate_lowlev <- predict2_nls(mod_lowlev, interval = "conf")
+ints_lm_limrate_lowlev <- predict2_nls(mod_lowlev_limrate, interval = "conf")
 
 df_limrate$facet = "With influential points"
 ints_lm_limrate_lowlev$facet = "Without influential points"
 ints_lm_limrate$facet = "With influential points"
 
 ## plot predictions from model with and without the high leverage points 
-facet <- data_sub %>%
-  select(-cooks_dist) %>%
+facet <- data_limrate_sub %>%
+  select(-cooks_limrate, -cooks_climvelo, -cooks_disp) %>%
   mutate(facet = "Without influential points") %>%
   rbind(., mutate(data, facet = "With influential points")) %>%
   ggplot(aes(x = LimitingRate, y = ShiftKmY, colour = ClimVeloTKmY_spp, shape = group)) +
@@ -1320,7 +1738,7 @@ facet <- data_sub %>%
   geom_ribbon(data = cbind(data, ints_lm_limrate), aes(x = LimitingRate, y = fitted(lm_limrate_cont),
                                                        ymin = Q2.5, ymax = Q97.5),
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_ribbon(data = cbind(data_sub, ints_lm_limrate_lowlev), aes(x = LimitingRate, y = fitted(mod_lowlev),
+  geom_ribbon(data = cbind(data_limrate_sub, ints_lm_limrate_lowlev), aes(x = LimitingRate, y = fitted(mod_lowlev_limrate),
                                                                   ymin = Q2.5, ymax = Q97.5),
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
   geom_line(data = df_limrate, aes(x = LimitingRate, y = pred_lm), colour = "black", inherit.aes = FALSE) +
@@ -1333,37 +1751,180 @@ ggsave(facet, path = "figures/model_results", filename = "model-predictions_infl
        width = 8, height = 4)
 
 
-##################################################
-##         RANDOMIZATION - CONTRACTIONS         ##
-##################################################
-## randomization test
-#########################
-## randomize the dependent variable (range shift rate) 1000 times
-## fit the model and extract model coefficients 
-## compare to observed coefficients
+# ##################################################
+# ##         RANDOMIZATION - CONTRACTIONS         ##
+# ##################################################
+# ## randomization test
+# #########################
+# ## randomize the dependent variable (range shift rate) 1000 times
+# ## fit the model and extract model coefficients 
+# ## compare to observed coefficients
+# 
+# 
+# ## randomize range shift rate 
+# coeffs <- c()
+# for(i in 1:10000) {
+#   
+#   ## randomize shifts 
+#   rando_df <- data.frame(LimitingRate = data$LimitingRate,
+#                          ClimVeloTKmY_spp = data$ClimVeloTKmY_spp, 
+#                          DispersalPotentialKmY = data$DispersalPotentialKmY, 
+#                          rando_shifts = sample(data$ShiftKmY, size = nrow(data), replace = FALSE))
+#   
+#   ## fit linear model
+#   lm1 <- lm(rando_shifts ~ DispersalPotentialKmY,
+#             data = rando_df)
+#   lm2 <- lm(rando_shifts ~ ClimVeloTKmY_spp,
+#             data = rando_df)
+#   lm3 <- lm(rando_shifts ~ LimitingRate,
+#             data = rando_df)
+#   
+#   mod_summary1 = summary(lm1)
+#   mod_summary2 = summary(lm2)
+#   mod_summary3 = summary(lm3)
+#   
+#   ## extract info
+#   slopes = c(mod_summary1$coefficients[2,1], mod_summary2$coefficients[2,1], mod_summary3$coefficients[2,1])
+#   intercepts = c(mod_summary1$coefficients[1,1], mod_summary2$coefficients[1,1], mod_summary3$coefficients[1,1])
+#   r_squ = c(mod_summary1$r.squared, mod_summary2$r.squared, mod_summary3$r.squared)
+#   adj_r_squ = c(mod_summary1$adj.r.squared, mod_summary2$adj.r.squared, mod_summary3$adj.r.squared)
+#   
+#   ## get and save coeffs
+#   coeffs <- rbind(coeffs, 
+#                   data.frame(mod_num = rep(i, 3),
+#                              mod_type = c("DispersalPotentialKmY", "ClimVeloTKmY_spp", "LimitingRate"),
+#                              slope = slopes,
+#                              intercept = intercepts,
+#                              r_squared = r_squ,
+#                              adj_r_squared = adj_r_squ))
+#   print(i)
+# }
+# 
+# 
+# ## extract coefficients from real models and add to database
+# coeffs <- coeffs %>%
+#   mutate(real_slope = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate_cont)[2],
+#                              ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo_cont)[2],
+#                                     coefficients(lm_disp_cont)[2])),
+#          real_slope_influential =  ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev_limrate)[2], 
+#                                           ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                                                  coefficients(mod_lowlev_climvelo)[2],
+#                                           coefficients(mod_lowlev_disp)[2])),
+#          real_intercept = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate_cont)[1],
+#                                  ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo_cont)[1],
+#                                         coefficients(lm_disp_cont)[1])),
+#          real_intercept_influential =  ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev_limrate)[1], 
+#                                               ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                                                      coefficients(mod_lowlev_climvelo)[1],
+#                                               coefficients(mod_lowlev_disp)[1])),
+#          real_r_squ = ifelse(mod_type == "LimitingRate", summary(lm(ShiftKmY ~ predict(lm_limrate_cont), 
+#                                                                     data = data))$r.squared,
+#                              ifelse(mod_type == "ClimVeloTKmY_spp",
+#                                     summary(lm(ShiftKmY ~ predict(lm_climvelo_cont),
+#                                                                                data = data))$r.squared,
+#                                     summary(lm(ShiftKmY ~ predict(lm_disp_cont), data = data))$r.squared)),
+#          real_r_squ_influential = ifelse(mod_type == "LimitingRate", 
+#                                          summary(lm(ShiftKmY ~ predict(mod_lowlev_limrate), 
+#                                                     data = data_limrate_sub))$r.squared,
+#                                          ifelse(mod_type == "ClimVeloTKmY_spp",
+#                                                 summary(lm(ShiftKmY ~ predict(mod_lowlev_climvelo), 
+#                                                            data = data_climvelo_sub))$r.squared,
+#                                                 summary(lm(ShiftKmY ~ predict(mod_lowlev_disp), 
+#                                                            data = data_disp_sub))$r.squared)))
+# 
+# ## slope
+# rando_slope <- coeffs %>%
+#   mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                            "Mean rate of climate change (km/y)", 
+#                            ifelse(mod_type == "DispersalPotentialKmY",
+#                                   "Maximum potential dispersal rate (km/y)",
+#                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
+#   ggplot(aes(x = slope)) +
+#   geom_histogram() +
+#   geom_vline(aes(xintercept = real_slope), colour = "red") +
+#   geom_vline(aes(xintercept = real_slope_influential), colour = "red", linetype = "longdash") +
+#   facet_wrap(~mod_type) +
+#   labs(x = "Estimated slope", y = "Count")
+# 
+# ## intercept
+# rando_int <- coeffs %>%
+#   mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                            "Mean rate of climate change (km/y)", 
+#                            ifelse(mod_type == "DispersalPotentialKmY",
+#                                   "Maximum potential dispersal rate (km/y)",
+#                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
+#   ggplot(aes(x = intercept)) +
+#   geom_histogram() +
+#   geom_vline(aes(xintercept = real_intercept), colour = "red") +
+#   geom_vline(aes(xintercept = real_intercept_influential), colour = "red", linetype = "longdash") +
+#   facet_wrap(~mod_type) +
+#   labs(x = "Estimated intercept", y = "Count")
+# 
+# ## r squared
+# rando_r2 <- coeffs %>%
+#   mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+#                            "Mean rate of climate change (km/y)", 
+#                            ifelse(mod_type == "DispersalPotentialKmY",
+#                                   "Maximum potential dispersal rate (km/y)",
+#                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
+#   ggplot(aes(x = r_squared)) +
+#   geom_histogram() +
+#   geom_vline(aes(xintercept = real_r_squ), colour = "red") +
+#   geom_vline(aes(xintercept = real_r_squ_influential), colour = "red", linetype = "longdash") +
+#   facet_wrap(~mod_type) +
+#   labs(x = "Regression coefficient", y = "Count")
+# 
+# plot_grid(rando_slope, rando_int, rando_r2, 
+#           nrow = 3, align = "v")
+# 
+# ggsave(path = "figures/model_results", filename = "randomization-histograms_contractions.png",
+#        width = 8, height = 6)
+# 
+# ## get 5th and 95th percentile of slope estimates for limiting rate model
+# lr_data <- coeffs %>%
+#   filter(mod_type == "LimitingRate") 
+# quants <-quantile(lr_data$slope, c(0.05, 0.95))
+# 
+# 
+# coefficients(lm_limrate_cont)[2] >= quants[1] ## slope with influential pts not within quantile
+# 
+# coefficients(mod_lowlev)[2] >= quants[1] ## slope without influential pts within quantile
+# coefficients(mod_lowlev)[2] <= quants[2]
 
 
-## randomize range shift rate 
+################################################
+##         NEW RANDOMIZATION - CONTRACTIONS         ##
+################################################
+data <- cont
+
+## randomize dispersal rate + climate velocity
+## calculate limiting rate
+## fit models
 coeffs <- c()
+aic <- c()
 for(i in 1:10000) {
   
   ## randomize shifts 
-  rando_df <- data.frame(LimitingRate = data$LimitingRate,
-                         ClimVeloTKmY_spp = data$ClimVeloTKmY_spp, 
-                         DispersalPotentialKmY = data$DispersalPotentialKmY, 
-                         rando_shifts = sample(data$ShiftKmY, size = nrow(data), replace = FALSE))
+  rando_df <- data.frame(rando_ClimVeloTKmY_spp = sample(data$ClimVeloTKmY_spp, size = nrow(data), replace = FALSE),
+                         rando_DispersalPotentialKmY = sample(data$DispersalPotentialKmY, size = nrow(data), replace = FALSE),
+                         ShiftKmY = data$ShiftKmY) %>%
+    mutate(rando_LimitingRate = ifelse(rando_ClimVeloTKmY_spp <= rando_DispersalPotentialKmY, 
+                                       rando_ClimVeloTKmY_spp,
+                                       rando_DispersalPotentialKmY))
   
   ## fit linear model
-  lm1 <- lm(rando_shifts ~ DispersalPotentialKmY,
+  lm1 <- lm(ShiftKmY ~ rando_DispersalPotentialKmY,
             data = rando_df)
-  lm2 <- lm(rando_shifts ~ ClimVeloTKmY_spp,
+  lm2 <- lm(ShiftKmY ~ rando_ClimVeloTKmY_spp,
             data = rando_df)
-  lm3 <- lm(rando_shifts ~ LimitingRate,
+  lm3 <- lm(ShiftKmY ~ rando_LimitingRate,
             data = rando_df)
   
   mod_summary1 = summary(lm1)
   mod_summary2 = summary(lm2)
   mod_summary3 = summary(lm3)
+  
+  aic <- rbind(aic, data.frame(aictab(list(lm1, lm2, lm3))))
   
   ## extract info
   slopes = c(mod_summary1$coefficients[2,1], mod_summary2$coefficients[2,1], mod_summary3$coefficients[2,1])
@@ -1374,7 +1935,7 @@ for(i in 1:10000) {
   ## get and save coeffs
   coeffs <- rbind(coeffs, 
                   data.frame(mod_num = rep(i, 3),
-                             mod_type = c("DispersalPotentialKmY", "ClimVeloTKmY_spp", "LimitingRate"),
+                             mod_type = c("rando_DispersalPotentialKmY", "rando_ClimVeloTKmY_spp", "rando_LimitingRate"),
                              slope = slopes,
                              intercept = intercepts,
                              r_squared = r_squ,
@@ -1382,33 +1943,42 @@ for(i in 1:10000) {
   print(i)
 }
 
-
 ## extract coefficients from real models and add to database
 coeffs <- coeffs %>%
-  mutate(real_slope = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate_cont)[2],
-                             ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo_cont)[2],
+  mutate(real_slope = ifelse(mod_type == "rando_LimitingRate", coefficients(lm_limrate_cont)[2],
+                             ifelse(mod_type == "rando_ClimVeloTKmY_spp", coefficients(lm_climvelo_cont)[2],
                                     coefficients(lm_disp_cont)[2])),
-         real_slope_influential =  ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev)[2], NA),
-         real_intercept = ifelse(mod_type == "LimitingRate", coefficients(lm_limrate_cont)[1],
-                                 ifelse(mod_type == "ClimVeloTKmY_spp", coefficients(lm_climvelo_cont)[1],
+         real_slope_influential = ifelse(mod_type == "rando_LimitingRate", coefficients(mod_lowlev_limrate)[2],
+                                         ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
+                                                coefficients(mod_lowlev_climvelo)[2],
+                                                coefficients(mod_lowlev_disp)[2])),
+         real_intercept = ifelse(mod_type == "rando_LimitingRate", coefficients(lm_limrate_cont)[1],
+                                 ifelse(mod_type == "rando_ClimVeloTKmY_spp", coefficients(lm_climvelo_cont)[1],
                                         coefficients(lm_disp_cont)[1])),
-         real_intercept_influential =  ifelse(mod_type == "LimitingRate", coefficients(mod_lowlev)[1], NA),
-         real_r_squ = ifelse(mod_type == "LimitingRate", summary(lm(ShiftKmY ~ predict(lm_limrate_cont), 
-                                                                    data = data))$r.squared,
-                             ifelse(mod_type == "ClimVeloTKmY_spp",
+         real_intercept_influential = ifelse(mod_type == "rando_LimitingRate", coefficients(mod_lowlev_limrate)[1],
+                                             ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
+                                                    coefficients(mod_lowlev_climvelo)[1],
+                                                    coefficients(mod_lowlev_disp)[1])),
+         real_r_squ = ifelse(mod_type == "rando_LimitingRate", summary(lm(ShiftKmY ~ predict(lm_limrate_cont), 
+                                                                          data = data))$r.squared,
+                             ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
                                     summary(lm(ShiftKmY ~ predict(lm_climvelo_cont),
-                                                                               data = data))$r.squared,
+                                               data = data))$r.squared,
                                     summary(lm(ShiftKmY ~ predict(lm_disp_cont), data = data))$r.squared)),
-         real_r_squ_influential = ifelse(mod_type == "LimitingRate", 
-                                         summary(lm(ShiftKmY ~ predict(mod_lowlev), 
-                                                    data = data_sub))$r.squared,
-                                         NA))
+         real_r_squ_influential = ifelse(mod_type == "rando_LimitingRate", 
+                                         summary(lm(ShiftKmY ~ 
+                                                      predict(mod_lowlev_limrate), data = data_limrate_sub))$r.squared,
+                                         ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
+                                                summary(lm(ShiftKmY ~ predict(mod_lowlev_climvelo), 
+                                                           data = data_climvelo_sub))$r.squared,
+                                                summary(lm(ShiftKmY ~ predict(mod_lowlev_disp), 
+                                                           data = data_disp_sub))$r.squared)))
 
 ## slope
 rando_slope <- coeffs %>%
-  mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+  mutate(mod_type = ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
                            "Mean rate of climate change (km/y)", 
-                           ifelse(mod_type == "DispersalPotentialKmY",
+                           ifelse(mod_type == "rando_DispersalPotentialKmY",
                                   "Maximum potential dispersal rate (km/y)",
                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
   ggplot(aes(x = slope)) +
@@ -1416,13 +1986,13 @@ rando_slope <- coeffs %>%
   geom_vline(aes(xintercept = real_slope), colour = "red") +
   geom_vline(aes(xintercept = real_slope_influential), colour = "red", linetype = "longdash") +
   facet_wrap(~mod_type) +
-  labs(x = "Estimated slope", y = "Count")
+  labs(x = "Estimated slope", y = "Count") 
 
 ## intercept
 rando_int <- coeffs %>%
-  mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+  mutate(mod_type = ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
                            "Mean rate of climate change (km/y)", 
-                           ifelse(mod_type == "DispersalPotentialKmY",
+                           ifelse(mod_type == "rando_DispersalPotentialKmY",
                                   "Maximum potential dispersal rate (km/y)",
                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
   ggplot(aes(x = intercept)) +
@@ -1434,9 +2004,9 @@ rando_int <- coeffs %>%
 
 ## r squared
 rando_r2 <- coeffs %>%
-  mutate(mod_type = ifelse(mod_type == "ClimVeloTKmY_spp", 
+  mutate(mod_type = ifelse(mod_type == "rando_ClimVeloTKmY_spp", 
                            "Mean rate of climate change (km/y)", 
-                           ifelse(mod_type == "DispersalPotentialKmY",
+                           ifelse(mod_type == "rando_DispersalPotentialKmY",
                                   "Maximum potential dispersal rate (km/y)",
                                   "Minimum of potential dispersal rate\nand climate velocity (km/y)"))) %>%
   ggplot(aes(x = r_squared)) +
@@ -1449,8 +2019,25 @@ rando_r2 <- coeffs %>%
 plot_grid(rando_slope, rando_int, rando_r2, 
           nrow = 3, align = "v")
 
-ggsave(path = "figures/model_results", filename = "randomization-histograms_contractions.png", 
+ggsave(path = "figures/model_results", filename = "randomization-histograms_contractions.png",
        width = 8, height = 6)
+
+## get 5th and 95th percentile of slope estimates for limiting rate model
+lr_data <- coeffs %>%
+  filter(mod_type == "rando_LimitingRate") 
+quants <-quantile(lr_data$slope, c(0.05, 0.95))
+
+coefficients(lm_limrate_cont)[2] >= quants[1] ## slope with influential pts not within quantile
+
+coefficients(mod_lowlev_limrate)[2] >= quants[1] ## slope without influential pts within quantile
+coefficients(mod_lowlev_limrate)[2] <= quants[2]
+
+## see if lim rate null models are always better fit than cv and disp
+aic %>%
+  filter(Delta_AICc == 0) %>% ## filter to top model
+  ggplot(aes(x = Modnames)) + 
+  geom_bar() 
+## model 2 is most often likely to be the best fit model by chance 
 
 
 ##################################
@@ -1597,3 +2184,4 @@ dwplot(list(lm_dr_cont, lm_bs_cont, lm_rs_cont)) +
 
 ggsave(path = "figures/model_results", filename = "dwplot_proxy-trait_contractions.png", 
        width = 6, height = 3)
+

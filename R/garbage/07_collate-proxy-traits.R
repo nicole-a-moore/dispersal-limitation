@@ -18,6 +18,8 @@ cols_to_keep <- c("reported_name","reported_name_fixed", "scientificName", "king
 ## read in dispersal data
 dd <- read.csv("data-processed/dispersal-distance-collated.csv")
 
+key <- select(dd, scientificName, scientificName_checked) %>% unique()
+
 #---------------------
 # PLANTS 
 #---------------------
@@ -52,9 +54,9 @@ try <- try_bs %>%
          Code = "MeanBodySize",
          Unit = "mm",
          Field = "VegetativeHeight") %>%
-  filter(scientificName %in% dd$scientificName)
+  filter(scientificName %in% dd$scientificName_checked)
 
-length(unique(try$scientificName)) #343
+length(unique(try$scientificName)) #344
 nrow(try)
 
 ## for later
@@ -73,7 +75,7 @@ tamme <- tamme %>%
          "SeedWeightmg" = Seed_weight_.mg., 
          "SeedReleaseHeightm" = Seed_release_height_.m.) %>%
   mutate(Database = "Tamme et al.") %>%
-  filter(scientificName %in% dd$scientificName)
+  filter(scientificName %in% dd$scientificName_checked)
 
 write.csv(tamme, "data-processed/dispersal-proxy-trait-compilation_tamme.csv", row.names = FALSE)
 
@@ -113,9 +115,9 @@ avo_bs <- avonet %>%
          Code = "BodySize",
          Unit = "mm",
          Field = "TarsusLength") %>%
-  filter(scientificName %in% dd$scientificName)
+  filter(scientificName %in% dd$scientificName_checked)
 
-length(unique(avo_bs$scientificName)) #180
+length(unique(avo_bs$scientificName)) #170
 nrow(avo_bs)
 ## some have multiple measures
 ## take mean for now
@@ -134,7 +136,7 @@ avonet <- avonet %>%
          "KippsDistance" = Kipps.Distance) %>%
   mutate(Database = "AVONET",
          Unit = "mm") %>%
-  filter(scientificName %in% dd$scientificName)
+  filter(scientificName %in% dd$scientificName_checked)
 
 
 write.csv(avonet, "data-processed/dispersal-proxy-trait-compilation_avonet.csv", row.names = FALSE)
@@ -144,6 +146,9 @@ write.csv(avonet, "data-processed/dispersal-proxy-trait-compilation_avonet.csv",
 bodysize <- rbind(avo_bs, try) %>%
   select(-reported_name, -reported_name_fixed, -db_code) %>%
   distinct()
+
+bodysize <- left_join(bodysize, key, by = c("scientificName" = "scientificName_checked")) %>%
+  rename("scientificName_checked" = scientificName)
 
 ## write
 write.csv(bodysize, "data-processed/dispersal-proxy-trait-compilation.csv", row.names = FALSE)

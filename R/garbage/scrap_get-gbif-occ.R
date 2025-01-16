@@ -49,7 +49,7 @@ missing <- filter(missing, !str_detect(missing$db_code, "\\:"))
 ## request occurrence downloads for each species 
 requests <- data.frame()
 inforequest <- list()
-for(i in 199:nrow(missing)){ 
+for(i in 96:nrow(missing)){ 
   
   print(paste0("Requesting species ", i))
   
@@ -85,7 +85,7 @@ for(i in 199:nrow(missing)){
   occ_download_wait(inforequest[[i]])
 }
 
- ## check  
+## check  
 library(purrr)
 df <-
   inforequest %>%
