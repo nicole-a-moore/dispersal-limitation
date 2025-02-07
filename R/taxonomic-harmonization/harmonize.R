@@ -1,7 +1,7 @@
 ## function to harmonize taxonomy 
 harmonize <- function(sp_names){
   
-  library(taxadb)
+  #library(taxadb)
   library(bdc)
   library(parallel)
   library(traitdataform)

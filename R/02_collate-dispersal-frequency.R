@@ -75,9 +75,9 @@ write.csv(try_am, "data-processed/TRY_age-at-maturity_harmonized.csv", row.names
 ## subset to bioshifts species with dispersal distance
 try_am_bs <- filter(try_am, scientificName %in% dd_collated$scientificName)
 
-length(unique(try_am_bs$scientificName)) # 267 species 
+length(unique(try_am_bs$scientificName)) # 264 species 
 
-length(unique(dd_collated$scientificName[which(dd_collated$group == "Plants")])) # out of the 397 plants - nice!!! 
+length(unique(dd_collated$scientificName[which(dd_collated$group == "Plants")])) # out of the 394 plants - nice!!! 
 
 ## clean the data 
 unique(try_am_bs$OriglName)
@@ -155,11 +155,11 @@ unique(lifespan$Database)
 
 ## filter to species with dispersal distance
 lifespan <- filter(lifespan, SpeciesChecked %in% dd_collated$scientificName)
-length(unique(lifespan$SpeciesChecked)) ## 471 of our species 
+length(unique(lifespan$SpeciesChecked)) ## 468 of our species 
 
 ## how many are plants?
 lifespan = filter(lifespan, phylum %in% c("Streptophyta", "Tracheophyta"))
-length(unique(lifespan$SpeciesChecked)) ## 290 of our species 
+length(unique(lifespan$SpeciesChecked)) ## 287 of our species 
 
 ## harmonize names 
 lifespan_harm <- harmonize(lifespan$SpeciesChecked)
@@ -268,7 +268,7 @@ brot_am <- brot_sub %>%
   select(-Data)
 
 length(unique(brot_am$scientificName))# 1 more
-LifeSpan
+
 #-----------------
 # BIRDS/MAMMALS
 #------------------
@@ -500,7 +500,7 @@ all_am <- rbind(all_am, amniota_am)
 
 all_am$GenerationLength = NA
 
-length(unique(all_am$scientificName)) ## 468 spp
+length(unique(all_am$scientificName)) ## 465 spp
 
 all_am <- left_join(all_am, key) %>%
   select(reported_name, reported_name_fixed, scientificName, scientificName_checked, everything())

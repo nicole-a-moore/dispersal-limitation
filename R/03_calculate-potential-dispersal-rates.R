@@ -58,7 +58,7 @@ dups = dscale %>%
          ObservationTypeSpecific = ifelse(Source == "Chu 2021", "geometric/arithmetic mean natal dispersal distance",
                                           ObservationTypeSpecific)) %>%
   filter(Source != "unpub.") %>%
-  filter(Database != "Vittoz & Engler 2007") %>% ## get rid of vittoz duplicates 
+  filter(!(length(scientificName_checked) >= 2 & Database == "Vittoz & Engler 2007")) %>% ## get rid of vittoz duplicates 
   ungroup() %>%
   distinct()
 
@@ -88,7 +88,7 @@ v3 = read.csv("data-processed/v3_shifts.csv")
 
 ## subset v3 to only species with dispersal distance  
 v3 <- filter(v3, scientificName_checked %in% dscale$scientificName_checked)
-length(unique(v3$scientificName_checked)) #602 species 
+length(unique(v3$scientificName_checked)) #600 species 
 
 
 #########################################################
@@ -107,7 +107,7 @@ dscale <- rename(dscale, "DispersalSource"= Source, "DispersalUnit"= Unit)
 v3 = left_join(v3, dscale, by = "scientificName_checked") 
 
 ## check on merge
-length(unique(v3$scientificName_checked[which(!is.na(v3$MaxDispersalDistanceKm))])) # 602 species have max dispersal distance
+length(unique(v3$scientificName_checked[which(!is.na(v3$MaxDispersalDistanceKm))])) # 600 species have max dispersal distance
 length(which(is.na(v3$MaxDispersalDistanceKm))) # 0 missing max dispersal distance
 
 
@@ -125,13 +125,13 @@ am %>%
 
 ## if multiple estimates of age at maturity per species, keep the lowest 
 am_join <- am %>%
-  group_by(scientificName_checked) %>%
   mutate(AgeAtMaturity = as.numeric(as.character(AgeAtMaturity))) %>%
   mutate(AgeAtMaturityDays = ifelse(Unit == "yrs", 
                                     AgeAtMaturity*365,
                                     ifelse(Unit == "weeks",
                                            AgeAtMaturity*7,
                                            AgeAtMaturity))) %>% # convert all to days 
+  group_by(scientificName_checked) %>%
   mutate(AgeAtMaturityDays = min(AgeAtMaturityDays)) %>% # select minimum per species 
   ungroup() %>%
   select(scientificName_checked, AgeAtMaturityDays) %>%
@@ -143,7 +143,7 @@ v3 <- left_join(v3, am_join, by = "scientificName_checked")
 
 length(unique(v3$scientificName_checked)) ## still have all the species
 length(unique(v3$scientificName_checked[which(is.na(v3$AgeAtMaturityDays))])) 
-## 136 / 602 species with dispersal estimates do not have age at maturity data 
+## 136 / 600 species with dispersal estimates do not have age at maturity data 
 
 unique(v3$scientificName[which(is.na(v3$AgeAtMaturityDays))])
 
@@ -170,8 +170,8 @@ v3$ShiftKmY <- ifelse(v3$Type == "ELE", v3$Rate / 1000,
 ## colour pal
 mycolours <- colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(10)
 
-nrow(v3) # 3957 range shifts
-length(unique(v3$scientificName_checked)) # 466 species 
+nrow(v3) # 3958 range shifts
+length(unique(v3$scientificName_checked)) # 464 species 
 unique(v3$Param)
 
 v3 %>%
@@ -202,8 +202,8 @@ v3 <- read.csv("data-processed/v3_potential-dispersal-rate.csv")
 lat <- v3  %>%
   filter(Type != "ELE")
   
-nrow(lat) # 2764 shifts
-length(unique(lat$scientificName_checked)) # 401 species 
+nrow(lat) # 2755 shifts
+length(unique(lat$scientificName_checked)) # 398 species 
   
 ## how many are centroid vs. leading edge 
 lat %>% 

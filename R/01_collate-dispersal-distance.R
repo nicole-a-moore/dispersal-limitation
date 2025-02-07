@@ -574,10 +574,11 @@ try_dd_dd <- try_dd %>%
   mutate(Sex = NA, ObservationTypeSpecific = "seed/plant dispersal (unknown)",  
          Database = "TRY database") %>% 
   filter(!is.na(Unit)) %>%
-  filter(!is.na(scientificName))
+  filter(!is.na(scientificName)) %>%
+  filter(Source != "unpub.") ## get rid of unpub. observations
 
 ## check how many species in bioshifts 
-length(which(unique(try_dd_dd$scientificName) %in% unique(sp$scientificName))) ## 50
+length(which(unique(try_dd_dd$scientificName) %in% unique(sp$scientificName))) ## 38
 try_dd_sp <- unique(try_dd_dd$scientificName)[which(unique(try_dd_dd$scientificName) %in% unique(sp$scientificName))]
 
 
@@ -616,7 +617,6 @@ chu_dd <- chu %>%
 ## check how many species in bioshifts 
 length(which(unique(chu_dd$scientificName) %in% unique(sp$scientificName))) ## 81
 chu_sp <- unique(chu_dd$scientificName)[which(unique(chu_dd$scientificName) %in% unique(sp$scientificName))]
-
 
 #---------------------
 # Vittoz and Engler 2007
@@ -695,7 +695,7 @@ species_with_dd <- append(tamme_sp, jenkins_sp) %>%
   append(., chu_sp) %>%
   append(., vitt_sp)
 
-length(unique(species_with_dd)) # 618 species 
+length(unique(species_with_dd)) # 615 species 
 
 ## now: make subsets of each database with only bioshifts species 
 tamme_sub = filter(tamme_dd, scientificName %in% tamme_sp)
@@ -721,7 +721,7 @@ dd_collated <- rbind(tamme_sub, suth_bird_sub) %>%
   rbind(., vitt_sub) %>%
   unique()
 
-length(unique(dd_collated$scientificName)) # 618
+length(unique(dd_collated$scientificName)) # 615
 
 length(which(!dd_collated$scientificName %in% sp$scientificName))
 
@@ -771,10 +771,11 @@ dd_collated <- dd_collated %>%
                                           "arithmetic mean natal dispersal distance",
                                           ifelse(Field %in% c("geom", "GeometricMeanNatalDispersal"), 
                                                               "geometric mean natal dispersal distance",
-                                                 ObservationTypeSpecific))) 
+                                                 ObservationTypeSpecific))) %>%
+  filter(type != "Min")
 
 
-length(unique(dd_collated$scientificName)) #607 species
+length(unique(dd_collated$scientificName)) #604 species
 
 ## make general observation type column 
 ## general types of studies:
