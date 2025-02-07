@@ -1,0 +1,226 @@
+Dispersal_syndrome_general,Dispersal_syndrome_specific,Species,Distance_m,Type_of_measurement,Reference,
+Autochory,Ballochory,Cardamine amara,1.4,Maximum,Schneider 1935,
+Autochory,Ballochory,Cardamine impatiens,2,Maximum,Schneider 1935,
+Autochory,Ballochory,Cardamine pratensis,2.4,Maximum,Schneider 1935,
+Autochory,Ballochory,Cardamine resedifolia,1.04,Maximum,Schneider 1935,
+Autochory,Ballochory,Cardamine resedifolia,<1,Maximum,Stöcklin & Bäumler 1996,
+Autochory,Ballochory,Geranium maculatum,1.4 / 6.2,Mode and maximum,Stamp & Lucas 1983 and unpubl. in Willson 1993,
+Autochory,Ballochory,Geranium maculatum,4.6 / 5.6,Mode and maximum,Stamp & Lucas 1983 and unpubl. in Willson 1993,
+Autochory,Ballochory,Geranium molle,1.78 / 2.8,Mean and maximum,Stamp & Lucas 1983 in Cain et al. 1998,
+Autochory,Ballochory,Geranium robertianum,6,Maximum,Ridley 1930 in Müller-Schneider 1983,
+Autochory,Ballochory,Geranium rotundifolium,1.8,Maximum,Müller-Schneider 1933 in Müller-Schneider 1983,
+Autochory,Ballochory,Geranium sylvaticum,2.7,Maximum,Müller-Schneider 1983,
+Autochory,Ballochory,Impatiens parviflora,3.4,Maximum,Schneider 1935,
+Autochory,Ballochory,Lathraea clandestina,4,Maximum,Guttenberg 1926 in Müller-Schneider 1983,
+Autochory,Ballochory,Lathyrus vernus,1.5,Maximum,Müller-Schneider 1986,
+Autochory,Ballochory,Mercurialis annua,2.9,Maximum,Müller-Schneider 1983,
+Autochory,Ballochory,Mercurialis perennis,4,Maximum,Ridley 1930 in Müller-Schneider 1983,
+Autochory,Ballochory,Mercurialis perennis,0.89,Maximum,Müller-Schneider 1986,
+Autochory,Ballochory,Oxalis acetosella,2.3,Maximum,Moor 1940 in Müller-Schneider 1983,
+Autochory,Ballochory,Oxalis acetosella,5,Maximum,Berg 2000,
+Autochory,Ballochory,Viola arvensis,2.4,Maximum,Stapf 1887 in Müller-Schneider 1983,
+Autochory,Ballochory,Viola canina,4.7,Maximum,Ulbrich 1928 in Müller-Schneider 1983,
+Autochory,Ballochory,Viola riviniana,4.6,Maximum,Ulbrich 1928 in Müller-Schneider 1983,
+Autochory,Ballochory,Viola stricta,0.5 / 3.4,Mode and maximum,Stamp & Lucas 1983 in Willson 1993,
+Anemochory,Cystometeorochory,Calluna vulgaris,1 / 80*,90% of the seeds and maximum,Bullock & Clarke 2000,
+Anemochory,Cystometeorochory,Calluna vulgaris,0.35 / 2,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Cystometeorochory,Erica cinerea,1 / 80*,90% of the seeds and maximum,Bullock & Clarke 2000,
+Anemochory,Cystometeorochory,Sanguisorba minor,0.03 / 0.17,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Cystometeorochory,Cephalanthera damasonium,0.95 / 14.7,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Anthoxanthum odoratum,0.3 / 2,Mode and maximum,Antonovics & Ellstrand 1985 in Willson 1993,
+Anemochory,Trichometeorochory,Carex frigida,<1,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Carlina vulgaris,0.22 / 1.7,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Carlina vulgaris,1.47,Maximum with a 16.4 km/h wind,Sheldom & Burrows 1973 in Cain et al. 1998,
+Anemochory,Trichometeorochory,Crepis paludosa,0.31 / 2.2,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Geum reptans,4,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Hieracium aurantiacum,0.1 / 1.9,Mode an maximum,Stergios 1976 in Willson 1993,
+Anemochory,Trichometeorochory,Hieracium murorum aggr.,0.27 / 1.9,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Hieracium murorum aggr.,10,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Hieracium pilosella,0.21 / 1.7,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Hieracium sabaudum,1.5 / 15.7,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Leontodon autumnalis,0.12 / 0.81,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Picris hieracioides,0.40 / 3.54,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Pulsatilla sp.,80*,Maximum,Hegi 1906-1938 in Müller-Schneider 1986,
+Anemochory,Trichometeorochory,Senecio jacobea,0.49 / 4.1,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Senecio jacobea,14 / 36,Mode and maximum,McEvoy & Cox 1987 in Willson 1993,
+Anemochory,Trichometeorochory,Senecio vulgaris,0.27 / 3.4,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Senecio vulgaris,0.34 / 2,Mean and maximum,Bergelson et al. 1993,
+Anemochory,Trichometeorochory,Tragopogon pratensis,0.41 / 3.4,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Mycelis muralis,0.99 / 14.3,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Solidago virgaurea,0.58 / 5.6,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Adenostyles leucophylla,85,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Carduus nutans,0.83 / 9.6,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Carduus nutans,10 / 40-100,Mode and maximum of different measures,Smith & Kok 1984 in Willson 1993,
+Anemochory,Trichometeorochory,Cirsium arvense,2.0 / 53.4,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Cirsium arvense,11.4,Maximum with a 16.4 km/h wind,Sheldom & Burrows 1973 in Cain et al. 1998,
+Anemochory,Trichometeorochory,Cirsium spinosissimum,30,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Cirsium vulgare,1.8 / 31.6,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Cirsium vulgare,1 / 32,Mean and maximum,Klinkhammer et al. 1988 in Cain et al. 1998,
+Anemochory,Trichometeorochory,Clematis sp.,100,Maximum,Müller-Schneider 1986,
+Anemochory,Trichometeorochory,Clematis vitalba,10.2 / 100,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Epilobium angustifolium,7.48 / 2112,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Epilobium ciliatum,3.65 / 179,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Epilobium fleischeri,50,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Epilobium hirsutum,4 / 136,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Epilobium montanum,1.6 / 49.6,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Erigeron acer s.l.,75,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Erigeron annuus,1.6 / 35.4,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Eriophorum angustifolium,1.1 / 24.2,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Eupatorium cannabinum,1.6 / 23.7,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Hieracium staticifolium,75,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Myricaria germanica,100,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Phragmites australis,13.9 / 1714,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Poa nemoralis,50,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Salix sp.,100,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Solidago gigantea,4.2 / 136,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Solidago virgaurea subsp. Minuta,4,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Taraxacum officinale,0.22 / 2.2,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Taraxacum officinale,50,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Tussilago farfara,20,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Trichometeorochory,Tussilago farfara,10 / > 4000*,Mode and maximum,Bakker 1961 in Willson 1993,
+Anemochory,Trichometeorochory,Typha angustifolia,11.3 / 2194,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Trichometeorochory,Typha latifolia,14.7 / 3673,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Pterometeorochory,Agrostis rupestris,<1,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Pterometeorochory,Angelica sylvestris,2.29,Median with a 5.3 m/s wind,Jongejans & Telenius 2001,
+Anemochory,Pterometeorochory,Angelica sylvestris,0.31 / 1.91,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Pterometeorochory,Bromus inermis,1.72 / 7,Mean and maximum,Hume & Archbold 1986 in Cain et al. 1998,
+Anemochory,Pterometeorochory,Bromus sterilis,20,Maximum,Howard et al. 1992 in Bullock & Clarke 2000,
+Anemochory,Pterometeorochory,Heracleum sphondylium,0.38 / 2.11,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Pterometeorochory,Heracleum sphondylium,3.12,Median with a 4.7 m/s wind,Jongejans & Telenius 2001,
+Anemochory,Pterometeorochory,Laserpitium latifolium,1.9,Median with a 4.3 m/s wind,Jongejans & Telenius 2001,
+Anemochory,Pterometeorochory,Oxyria digyna,1,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Pterometeorochory,Pastinaca sativa,3.05,Median with a 4.7 m/s wind,Jongejans & Telenius 2001,
+Anemochory,Pterometeorochory,Peucedanum palustre,0.25 / 1.49,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Pterometeorochory,Peucedanum palustre,1.31,Median with a 3.4 m/s wind,Jongejans & Telenius 2001,
+Anemochory,Pterometeorochory,Rumex acetosa,0.18 / 0.99,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Pterometeorochory,Rumex scutatus,12,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Pterometeorochory,Scabiosa columbaria,1.9,Maximum,Verkaar et al. 1983,
+Anemochory,Pterometeorochory,Selinum carvifolia,0.1 / 0.5,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Pterometeorochory,Selinum carvifolia,0.79,Median with a wind of 2.6 m/s,Jongejans & Telenius 2001,
+Anemochory,Pterometeorochory,Trifolium badium,10,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Pterometeorochory,Trifolium pallescens,6,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Pterometeorochory,Abies alba,7000*,Maximum,Bouget & Davy de Virville 1926 in Müller-Schneider 1983,
+Anemochory,Pterometeorochory,Acer pseudoplatanus,5000*,Maximum,Braun-Blanquet 1913 in Müller-Schneider 1986,
+Anemochory,Pterometeorochory,Acer pseudoplatanus,400-500*,Maximum,Firbas 1935 in Müller-Schneider 1986,
+Anemochory,Pterometeorochory,Acer rubrum,83 / 314 / 11'371*,"Calculated median, 99-percentile et maximum",Higgins et al. 2003,
+Anemochory,Pterometeorochory,Alnus viridis,70,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Pterometeorochory,Betula sp.,40 / 100,Limit for the majority and maximum,Greene & Calogeropoulos 2002,
+Anemochory,Pterometeorochory,Carpinus betulus,130,Maximum,Müller-Schneider 1986,
+Anemochory,Pterometeorochory,Fraxinus excelsior,725*,Maximum,Geiger 1960 in Müller-Schneider 1986,
+Anemochory,Pterometeorochory,Fraxinus sp.,40 / 100,Limit for the majority and maximum,Greene & Calogeropoulos 2002,
+Anemochory,Pterometeorochory,Larix decidua,15,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Pterometeorochory,Picea abies,1500* / 800*,Maximum horizontal and vertical dispersion,Braun-Blanquet 1913 in Müller-Schneider 1986,
+Anemochory,Pterometeorochory,Picea glauca,475*,Maximum,Greene & Johnson 1995 in Cain et al. 1998,
+Anemochory,Pterometeorochory,Pinus sp.,40 / 100,Limit for the majority and maximum,Greene & Calogeropoulos 2002,
+Anemochory,Pterometeorochory,Pinus sylvestris,2000*,Maximum,Firbas 1935 in Müller-Schneider 1983,
+Anemochory,Pterometeorochory,Tilia platyphyllos,80,Maximum observed,Müller-Schneider 1986,
+Anemochory,Chamaechory,Betula alleghaniensis,85 / 200,Optimum and maximum,Greene & Johnson 1997,
+Anemochory,Boleochory,Achillea erba-rotta subsp. Moschata,<1,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Boleochory,Achillea millefolium,0.07 / 0.39,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Achillea nana,4*,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Boleochory,Arabis alpina,<1,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Boleochory,Arabis hirsuta,0.09 / 0.47,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Arenaria serpyllifolia,0.03 / 0.13,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Bellis perennis,0.02 / 0.09,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Campanula rotundifolia,0.07 / 0.35,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Capsella bursa-pastoris,0.05 / 0.23,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Cerastium fontanum subsp. Vulgare,0.03 / 0.16,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Cerastium arvense,<1,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Boleochory,Cerastium pedunculatum,<1,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Boleochory,Eranthis hiemalis,0.32 / 1.23,Median and maximum in natural wind,Emig et al. 1999,
+Anemochory,Boleochory,Gentiana germanica,1.2,Maximum,Verkaar et al. 1983,
+Anemochory,Boleochory,Linaria alpina,12*,Maximum,Stöcklin & Bäumler 1998,
+Anemochory,Boleochory,Linum catharticum,0.02 / 0.13,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Linum catharticum,0.41 / 0.63,Maximum in dense vegetation or open micro-sites,Verkaar et al. 1983,
+Anemochory,Boleochory,Primula veris,0.03 / 0.12,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Sagina saginoides,10*,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Boleochory,Saxifraga sp.,40*,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Boleochory,Saxifraga tridactylites,0.02 / 0.11,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Sempervivum sp.,<1,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Boleochory,Silene rupestris,10*,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Boleochory,Aquilegia vulgaris,0.07 / 0.41,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Campanula trachelium,0.25 / 1.45,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Daucus carotta,0.15 / 0.93,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Oenothera biennis,0.15 / 0.98,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Oenothera biennis,1.6 / 5,Mode an maximum,Platt & Weis 1977 in Willson 1993,
+Anemochory,Boleochory,Papaver argemone,0.6 / 3.1,Mode an maximum,Salisbury 1942 in Willson 1993,
+Anemochory,Boleochory,Papaver dubium,0.9 / 2.1,Mode an maximum,Salisbury 1942 in Willson 1993,
+Anemochory,Boleochory,Papaver rhoeas,0.1 / 0.5,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Papaver somniferum,2,Maximum with limited wind,Müller-Schneider 1983,
+Anemochory,Boleochory,Rhododendron ferrugineum,25*,Maximum,Stöcklin & Bäumler 1996,
+Anemochory,Boleochory,Silene pratensis,0.1 / 0.57,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Anemochory,Boleochory,Verbascum thapsus,0.15 / 0.87,Calculated median and 99-percentile,Soons & Ozinga 2005,
+Hydrochory,Ombrochory,Eranthis hiemalis,0.4,Maximum,Müller-Schneider 1936 in Müller-Schneider 1983,
+Hydrochory,Ombrochory,Eranthis hiemalis,0.17 / 1.17,Median and maximum dispersion under the rain,Emig et al. 1999,
+Hydrochory,Ombrochory,Thlaspi perfoliatum,0.8,Maximum,Müller-Schneider 1936 in Müller-Schneider 1983,
+Zoochory,Dyszoochory,Fagus sylvatica,4.13 / 13,Mean and maximum by rodents (Clethrionomys sp. and Apodemus sp.),Jensen 1985 in Cain et al. 1998,
+Zoochory,Dyszoochory,Helianthus annuus,20,Mean by nuthatch (Sitta europaea),Müller-Schneider 1949,
+Zoochory,Dyszoochory,Juglans nigra,15 / 38.1 / 151,"Minimum, mean and maximum by fox squirrels (Sciurus niger)","Stapanian & Smith 1978, 1986",
+Zoochory,Dyszoochory,Picea abies,60,By great spotted woodpecker (Dendrocopos major) to open the cones,Müller-Schneider 1983,
+Zoochory,Dyszoochory,Pinus strobus,15 / 30,70 % and maximum by rodents (Peromyscus sp. and Clethrionomys sp.)Abbott & Quink 1970,,
+Zoochory,Dyszoochory,Pinus jeffreyi,21 / 69,"Mean and maximim by rodents (chipmunk, Tamias sp.)",,Vander Wall 1993 in Cain et al. 1998
+Zoochory,Dyszoochory,Pinus sp.,1800*,Maximal dispersion by red squirrels (Sciurus vulgaris orientis),,Hayashida 1988
+Zoochory,Dyszoochory,Quercus serrata,10 / 28.5,80% of the seeds and maximum by small rodents (mice and rats),,Xiao et al. 2004
+Zoochory,Dyszoochory,Quercus macrocarpa,10 / 52,Mean and maximum by fox squirrels (Sciurus niger),,Stapanian & Smith 1986
+Zoochory,Dyszoochory,Quercus petraea,18,Maximum by rodents (Apodemus sp.),,Kollmann & Schill 1996
+Zoochory,Dyszoochory,Quercus sp.,15.3 / 34,Mean and maximum by rodents (Apodemus sp.,and,Jensen & Nielsen 1986
+Zoochory,Dyszoochory,Corylus avellana,15000*,Maximum dispersion by nutcrackers (Nucifraga caryocatactes),,Mattes 1982
+Zoochory,Dyszoochory,Fagus grandifolia,4000*,Maximum dispersion by blue jays (Cianocitta cristata),,Johnsonn & Adkinson 1985 in Clark et al. 1998
+Zoochory,Dyszoochory,Fagus sylvatica,32,Dispersion by jay (Garrulus glandarius),,Müller-Schneider 1949
+Zoochory,Dyszoochory,Juglans regia,200,By carrion crow (Corvus corone) to break the nut,,Müller-Schneider 1983
+Zoochory,Dyszoochory,Pinus albicaulis,100 / 3500,Mean and maximum by birds,,Hutchins & Lanner 1982 in Cain et al. 1998
+Zoochory,Dyszoochory,Pinus cembra,12'000*,Maximum dispersion by nutcrackers (Nucifraga caryocatactes),,Sutter & Ammann 1953 in Müller-Schneider 1986
+Zoochory,Dyszoochory,Quercus palustris,1100 / 1900,Mean and maximum dispersion by birds,,Darley-Hill & Johnson 1981 in Cain et al. 1998
+Zoochory,Dyszoochory,Quercus sp.,4000*,Maximum dispersion by jay (Garrulus glandarius),,Müller-Schneider 1983
+Zoochory,Dyszoochory,Quercus petraea,300,Maximum by jay (Garrulus glandarius),,Kollmann & Schill 1996
+Zoochory,Myrmecochory,Allium ursinum,1.52-4.61,Different observations with Formica rufa,,Müller-Schneider 1971
+Zoochory,Myrmecochory,Allium ursinum,0.95,One observation with Formica cinerea,,Müller-Schneider 1971
+Zoochory,Myrmecochory,Asarum canadense,1.54 / 35,Mean and maximum,,Cain et al. 1998
+Zoochory,Myrmecochory,Carex pilulifera,0.75 / 1.4,Mean and maximum dispersed by Myrmica ruginodis,,Kjellsson 1985 in Ness et al. 2004
+Zoochory,Myrmecochory,Chelidonium majus,80*,Maximum,,Senander 1906 in Bonn & Poschold 1998
+Zoochory,Myrmecochory,Daphne striata,6.38,One observation with Formica lugubris,,Müller-Schneider 1963
+Zoochory,Myrmecochory,Euphorbia characias,2.1 / 4.6,Mean and maximum dispersed by Aphaenogaster senilis,,Gomez & Espadaler 1998 in Ness et al. 2004
+Zoochory,Myrmecochory,Euphorbia characias,2.1 / 9.4,Mean and maximum dispersed by Messor barbarus,,Gomez & Espadaler 1998 in Ness et al. 2004
+Zoochory,Myrmecochory,Euphorbia characias,0.79 / 1.6,Mean and maximum dispersed by Tapinoma nigerrimum,,Gomez & Espadaler 1998 in Ness et al. 2004
+Zoochory,Myrmecochory,Melica nutans,70*,Maximum,,Senander 1906 in Bonn & Poschold 1998
+Zoochory,Myrmecochory,Mercurialis annua,3.4 / 14,Mean and maximum dispersed by Messor structor,,Lisci & Pacini 1997 in Ness et al. 2004
+Zoochory,Myrmecochory,Rhamnus alaternus,1 / 5,Mean and maximum,,Gomez et al. 2003
+Zoochory,Myrmecochory,Sanguinaria canadensis,17,Maximum,,Pudlo et al. 1980 in Cain et al. 1998
+Zoochory,Myrmecochory,Sanguinaria canadensis,2.57 / 6.7,Mean and maximum dispersed by Formica subsericea,,Ness 2004 in Ness et al. 2004
+Zoochory,Myrmecochory,Viola hirta,70*,Maximum,,Senander 1906 in Bonn & Poschold 1998
+Zoochory,Myrmecochory,Viola sp.,0.75 / 1.5,Mean and maximum,,Culver & Beattie 1978 in Cain et al. 1998
+Zoochory,Myrmecochory,Various species,70*,Maximum dispersion by Formica rufa,,Sernander 1906 in Müller-Schneider 1983
+Zoochory,Myrmecochory,Various species,15,Maximum dispersion by Lasius niger,,Sernander 1906 in Müller-Schneider 1983
+Zoochory,Myrmecochory,Various species,0.96 / 77*,Mean and maximum in world literature,,Gomez & Espadaler 1998
+Zoochory,Myrmecochory,Various species,0.64 / 2.7,Mean and maximum in mesic deciduous forest in Japan,,Higashi et al. 1989 in Ness et al. 2004
+Zoochory,Myrmecochory,Various species,0.91 / 4.5,Mean and maximum in Oak–Pine temperate woodlands in USA,,Gibson 1993 in Ness et al. 2004
+Zoochory,Myrmecochory,Various species,0.53 / 5.2,Mean and maximum in temperate deciduous forest in USA,,Kalisz et al. 1999 in Ness et al. 2004
+Zoochory,Myrmecochory,Various species,2.4 / 10,Mean and maximum in temperate deciduous forest,,Kalisz et al. 1999 in Ness et al. 2004
+Zoochory,Endozoochory,Prunus avium,> 1000*,Altitudinal shift by fox,,"Vittoz, unpublished observation"
+Zoochory,Endozoochory,Prunus avium,30 / 100,Mean and maximum by birds,,Turcek 1968 in Bonn & Poschold 1998
+Zoochory,Endozoochory,Prunus serotina,7.1 / 35,Mean and maximum by birds,,Smith 1975 in Cain et al. 1998
+Zoochory,Endozoochory,Rubus idaeus,> 900*,Altitudinal shift by alpine chough (Pyrrhocorax graculus),,Müller-Schneider 1983
+Zoochory,Endozoochory,Parthenocissus quinquefolia,9 / 24,Mean and maximum by birds,,Hoppes 1988 in Cain et al. 1998
+Zoochory,Endozoochory,Phytolacca americana,33,Maximum by birds,,Hoppes 1988 in Cain et al. 1998
+Zoochory,Endozoochory,Trillium grandiflorum,700 / 2500 / 3750*,"Median, 99-percentile and maximum by deer (Odocoileus virginianus)",,Vellend et al. 2003
+Zoochory,Endozoochory,Vaccinium sp.,500,Median by marten (Martes americana),,Hickey et al. 1999
+Zoochory,Endozoochory,Vitis vulpina,24,Maximum by birds,,Hoppes 1988 in Cain et al. 1998
+Zoochory,Endozoochory,Various species,50 / 180,Maximum and extrem by blackbird (Turdus merula),,Müller-Schneider & Lenggenhager 1959 in Bonn &
+Zoochory,Epizoochory,Agrimonia eupatoria,11,Maximum by wood mouse (Apodemum flavicollis),,Kiviniemi & Telenius 1998
+Zoochory,Epizoochory,Daucus carotta,17,Maximum by wood mouse (Apodemum flavicollis),,Kiviniemi & Telenius 1998
+Zoochory,Epizoochory,Geum rivale,26,Maximum by wood mouse (Apodemum flavicollis),,Kiviniemi & Telenius 1998
+Zoochory,Epizoochory,Sanicula europaea,15,Maximum by wood mouse (Apodemum flavicollis),,Kiviniemi & Telenius 1998
+Zoochory,Epizoochory,Torilis japonica,15,Maximum by wood mouse (Apodemum flavicollis),,Kiviniemi & Telenius 1998
+Zoochory,Epizoochory,Triglochin palustris,3,Maximum by wood mouse (Apodemum flavicollis),,Kiviniemi & Telenius 1998
+Zoochory,Epizoochory,Various species,12,99-percentile by wood mouse (Apodemum flavicollis),,Mouissie et al. 2005a
+Zoochory,Epizoochory,Agrimonia eupatoria,932,Maximum by fallow deer (Dama dama),,Kiviniemi 1996 in Kiviniemi & Telenius 1998
+Zoochory,Epizoochory,Agrimonia eupatoria,780,Maximum by cattle,,Kivieniemi & Eriksson in Kiviniemi & Telenius 1998
+Zoochory,Epizoochory,Bidens sp.,109,Mean,,Bullock & Primack 1977 in Cain et al. 1998
+Zoochory,Epizoochory,Geum rivale,660,Maximum by cattle,,Kivieniemi & Eriksson in Kiviniemi & Telenius 1998
+Zoochory,Epizoochory,Jurinea cyanoides,10 / 17,99-percentile and maximum,,Eichberg et al. 2005
+Zoochory,Epizoochory,Triglochin palustris,1242,Maximum by fallow deer (Dama dama),,Kiviniemi & Telenius 1998
+Zoochory,Epizoochory,Various species,380 / 2900,Mode and 99-percentile by sheep,,Mouissie et al. 2005a
+Zoochory,Epizoochory,Various species,65 / 435,Mode and 99-percentile by fallow deer (Dama dama),,Mouissie et al. 2005a
+Zoochory,Epizoochory,Various species,125 / 850,Mode and 99-percentile by cattle,,Mouissie et al. 2005a
+Anthropochory,Agochory,Bromus tectorum,6300,Calculated annual migration rate,,Mack 1986 in Malcolm et al. 2002
+Anthropochory,Agochory,Veronica filliformis,4700,Calculated annual migration rate,,Williamson et al. 2003 in Pyšek & Hulme 2005

@@ -1,0 +1,514 @@
+﻿Ref no,Species,Sex,Value,Units,Measure
+1,Vulpes vulpes,Female,302,km - Linear,Maximum
+1,Vulpes vulpes,Male,153,km - Linear,Maximum
+1,Vulpes vulpes,Female,25.33,km - Linear,Mean
+1,Vulpes vulpes,Male,35,km - Linear,Mean
+1,Vulpes vulpes,Female,5.67,km - Linear,Median
+1,Vulpes vulpes,Male,19.67,km - Linear,Median
+2,Odocoileus hemionus,Female,180,km - Linear,Maximum
+3,Aplodontia rufa,Both,326,Metres - Linear,Maximum
+3,Aplodontia rufa,Both,152.5,Metres - Linear,Mean
+3,Aplodontia rufa,Male,142.7,Metres - Linear,Mean
+3,Aplodontia rufa,Both,130.5,Metres - Linear,Median
+4,Marmota flaviventris,Female,6.4,km - Linear,Maximum
+4,Marmota flaviventris,Male,15.5,km - Linear,Maximum
+4,Marmota flaviventris,Female,0.4,km - Linear,Median
+4,Marmota flaviventris,Male,1.5,km - Linear,Median
+5,Martes pennanti,Female,22.6,km - Linear,Maximum
+5,Martes pennanti,Male,23,km - Linear,Maximum
+5,Martes pennanti,Female,14.92,km - Linear,Mean
+5,Martes pennanti,Male,17.3,km - Linear,Mean
+5,Martes pennanti,Female,15.1,km - Linear,Median
+5,Martes pennanti,Male,17.7,km - Linear,Median
+6,Castor canadensis,Both,31,Miles - Linear,Maximum
+6,Castor canadensis,Both,11.29,Miles - Linear,Mean
+6,Castor canadensis,Both,4.75,Miles - Linear,Median
+7,Mellivora capensis,Female,53,km - Linear,Maximum
+8,Puma concolor,Female,48,km - Linear,Maximum
+8,Puma concolor,Male,77,km - Linear,Maximum
+8,Puma concolor,Male,63.25,km - Linear,Mean
+8,Puma concolor,Male,69,km - Linear,Median
+9,Canis lupus,Female,79,km - Linear,Maximum
+9,Canis lupus,Male,432,km - Linear,Maximum
+9,Canis lupus,Female,58,km - Linear,Mean
+9,Canis lupus,Male,183.4,km - Linear,Mean
+9,Canis lupus,Female,58,km - Linear,Median
+9,Canis lupus,Male,146,km - Linear,Median
+10,Canis lupus,Female,45,km - Linear,Maximum
+10,Canis lupus,Male,50,km - Linear,Maximum
+10,Canis lupus,Female,32.5,km - Linear,Mean
+10,Canis lupus,Male,31.5,km - Linear,Mean
+10,Canis lupus,Female,36,km - Linear,Median
+10,Canis lupus,Male,31,km - Linear,Median
+11,Canis mesomelas,Unspecified,103,km - Linear,Maximum
+11,Canis mesomelas,Unspecified,55.5,km - Linear,Mean
+11,Canis mesomelas,Unspecified,55.5,km - Linear,Median
+12,Microtus arvalis,Female,101.6,Metres - Linear,Maximum
+13,Canis lupus,Both,254.9,km - Linear,Maximum
+13,Canis lupus,Both,96.3,km - Linear,Mean
+14,Crocuta crocuta,Male,40,km - Linear,Maximum
+14,Crocuta crocuta,Male,6.8,km - Linear,Mean
+15,Lepus europaeus,Both,17353,Metres - Linear,Maximum
+15,Lepus europaeus,Both,1615,Metres - Linear,Median
+16,Hylobates lar,Female,1400,Metres - Linear,Maximum
+16,Hylobates lar,Male,1000,Metres - Linear,Maximum
+16,Hylobates lar,Male,620,Metres - Linear,Mean
+16,Hylobates lar,Male,500,Metres - Linear,Median
+17,Chlorocebus aethiops,Male,0.5,km-Linear,Maximum
+18,Ursus americanus,Female,5,km-Linear,Maximum
+18,Ursus americanus,Male,62,km-Linear,Maximum
+18,Ursus americanus,Female,3,km-Linear,Mean
+18,Ursus americanus,Male,38,km-Linear,Mean
+19,Trichosurus vulpecula,Both,11.5,km - Linear,Maximum
+19,Trichosurus vulpecula,Both,5.54,km - Linear,Mean
+19,Trichosurus vulpecula,Both,4.5,km - Linear,Median
+20,Thomomys bottae,Both,300,Metres - Linear,Maximum
+21,Castor canadensis,Both,8,km - Linear,Maximum
+21,Castor canadensis,Both,3.5,km - Linear,Mean
+22,Peromyscus maniculatus,Female,1005.84,Metres - Linear,Maximum
+22,Peromyscus maniculatus,Male,883.92,Metres - Linear,Maximum
+22,Peromyscus maniculatus,Female,132.87,Metres - Linear,Mean
+22,Peromyscus maniculatus,Male,188.6,Metres - Linear,Mean
+22,Peromyscus maniculatus,Female,776.2,Metres - Linear,Median
+22,Peromyscus maniculatus,Male,137.16,Metres - Linear,Median
+23,Phascolarctos cinereus,Female,10.6,km-Linear,Maximum
+23,Phascolarctos cinereus,Male,9.7,km-Linear,Maximum
+23,Phascolarctos cinereus,Female,3.4,km-Linear,Mean
+23,Phascolarctos cinereus,Male,3.5,km-Linear,Mean
+23,Phascolarctos cinereus,Female,1.7,km-Linear,Median
+23,Phascolarctos cinereus,Male,2,km-Linear,Median
+24,Mustela erminea,Female,1.01,km - Linear,Maximum
+24,Mustela erminea,Male,5.51,km - Linear,Maximum
+24,Mustela erminea,Female,0.51,km - Linear,Mean
+24,Mustela erminea,Male,2.73,km - Linear,Mean
+24,Mustela erminea,Female,0.49,km - Linear,Median
+24,Mustela erminea,Male,1.81,km - Linear,Median
+25,Brachylagus idahoensis,Female,11.9,km-Linear,Maximum
+25,Brachylagus idahoensis,Male,6.5,km-Linear,Maximum
+25,Brachylagus idahoensis,Female,2.9,km-Linear,Median
+25,Brachylagus idahoensis,Male,1,km-Linear,Median
+26,Spermophilus beecheyi,Female,1.14,km - Linear,Maximum
+26,Spermophilus beecheyi,Male,1.14,km - Linear,Maximum
+26,Spermophilus beecheyi,Female,0.43,km - Linear,Mean
+26,Spermophilus beecheyi,Male,0.48,km - Linear,Mean
+26,Spermophilus beecheyi,Female,0.41,km - Linear,Median
+26,Spermophilus beecheyi,Male,0.41,km - Linear,Median
+27,Aotus azarae,Female,962,Metres - Linear,Maximum
+27,Aotus azarae,Male,2243,Metres - Linear,Maximum
+27,Aotus azarae,Female,587.71,Metres - Linear,Mean
+27,Aotus azarae,Male,790.44,Metres - Linear,Mean
+27,Aotus azarae,Female,593,Metres - Linear,Median
+27,Aotus azarae,Male,656,Metres - Linear,Median
+28,Antechinus stuartii,Female,270,Metres - Linear,Maximum
+28,Antechinus stuartii,Male,1230,Metres - Linear,Maximum
+29,Panthera leo,Male,21.9,km - Linear,Maximum
+29,Panthera leo,Male,12.3,km - Linear,Mean
+29,Panthera leo,Male,13.85,km - Linear,Median
+30,Gulo gulo,Male,378,km - Linear,Maximum
+31,Cynomys ludovicianus,Female,3.9,km - Linear,Maximum
+31,Cynomys ludovicianus,Male,5.5,km - Linear,Maximum
+31,Cynomys ludovicianus,Female,1.66,km - Linear,Mean
+31,Cynomys ludovicianus,Male,3.05,km - Linear,Mean
+31,Cynomys ludovicianus,Female,1.3,km - Linear,Median
+31,Cynomys ludovicianus,Male,3.55,km - Linear,Median
+32,Procyon lotor,Male,33,km - Linear,Maximum
+32,Procyon lotor,Male,9.7,km - Linear,Mean
+33,Neovison vison,Male,45,km - Linear,Maximum
+33,Neovison vison,Male,33,km - Linear,Mean
+33,Neovison vison,Male,33,km - Linear,Median
+34,Canis lupus,Both,354,km - Linear,Maximum
+34,Canis lupus,Both,77,km - Linear,Mean
+34,Canis lupus,Both,35,km - Linear,Median
+35,Scapanus townsendii,Female,0.856,km-Linear,Maximum
+35,Scapanus townsendii,Male,0.722,km-Linear,Maximum
+35,Scapanus townsendii,Female,0.181,km-Linear,Mean
+35,Scapanus townsendii,Male,0.166,km-Linear,Mean
+36,Lepus americanus,Female,16.5,km - Linear,Maximum
+36,Lepus americanus,Male,6.75,km - Linear,Maximum
+36,Lepus americanus,Female,3.1,km - Linear,Mean
+36,Lepus americanus,Male,1.63,km - Linear,Mean
+36,Lepus americanus,Female,0.275,km - Linear,Median
+36,Lepus americanus,Male,1.1,km - Linear,Median
+37,Alouatta palliata,Female,3000,Metres - Linear,Maximum
+37,Alouatta palliata,Female,1300,Metres - Linear,Mean
+38,Pteromys volans,Female,8720,Metres - Linear,Maximum
+38,Pteromys volans,Male,5940,Metres - Linear,Maximum
+38,Pteromys volans,Female,2400,Metres - Linear,Mean
+38,Pteromys volans,Male,1130,Metres - Linear,Mean
+39,Vulpes vulpes,Female,2.2,km - Linear,Maximum
+39,Vulpes vulpes,Male,3.4,km - Linear,Maximum
+39,Vulpes vulpes,Female,1.73,km - Linear,Mean
+39,Vulpes vulpes,Male,2.42,km - Linear,Mean
+39,Vulpes vulpes,Female,1.7,km - Linear,Median
+39,Vulpes vulpes,Male,2.3,km - Linear,Median
+40,Canis latrans,Female,342,km - Linear,Maximum
+40,Canis latrans,Male,308,km - Linear,Maximum
+40,Canis latrans,Female,93.82,km - Linear,Mean
+40,Canis latrans,Male,112.89,km - Linear,Mean
+40,Canis latrans,Female,61,km - Linear,Median
+40,Canis latrans,Male,90,km - Linear,Median
+41,Odocoileus hemionus,Male,70,Miles - Linear,Maximum
+41,Odocoileus hemionus,Male,41.25,Miles - Linear,Mean
+41,Odocoileus hemionus,Male,37.5,Miles - Linear,Median
+42,Puma concolor,Female,120,km - Linear,Maximum
+42,Puma concolor,Male,118,km - Linear,Maximum
+43,Cynomys gunnisoni,Female,221,Metres - Linear,Maximum
+43,Cynomys gunnisoni,Male,575,Metres - Linear,Maximum
+43,Cynomys gunnisoni,Female,126,Metres - Linear,Mean
+43,Cynomys gunnisoni,Male,198,Metres - Linear,Mean
+44,Antilocapra americana,Female,41.2,km - Linear,Maximum
+44,Antilocapra americana,Female,75.8,km - Linear,Maximum
+44,Antilocapra americana,Male,267.3,km - Linear,Maximum
+44,Antilocapra americana,Male,132.6,km - Linear,Maximum
+44,Antilocapra americana,Female,25.08,km - Linear,Mean
+44,Antilocapra americana,Female,28.25,km - Linear,Mean
+44,Antilocapra americana,Male,30.48,km - Linear,Mean
+44,Antilocapra americana,Male,101.67,km - Linear,Mean
+44,Antilocapra americana,Female,15.6,km - Linear,Median
+44,Antilocapra americana,Female,28.4,km - Linear,Median
+44,Antilocapra americana,Male,10.5,km - Linear,Median
+44,Antilocapra americana,Male,26.2,km - Linear,Median
+45,Peromyscus leucopus,Female,129,Metres - Linear,Maximum
+45,Peromyscus leucopus,Male,183,Metres - Linear,Maximum
+45,Peromyscus leucopus,Female,25,Metres - Linear,Median
+45,Peromyscus leucopus,Male,85,Metres - Linear,Median
+46,Vulpes vulpes,Female,140,km - Linear,Maximum
+46,Vulpes vulpes,Male,110,km - Linear,Maximum
+47,Bettongia tropica,Both,1300,Metres - Linear,Maximum
+47,Aepyprymnus rufescens,Female,600,Metres - Linear,Maximum
+48,Dipodomys spectabilis,Both,87,Metres - Linear,Maximum
+48,Dipodomys spectabilis,Both,16,Metres - Linear,Maximum
+49,Lynx rufus,Both,85,km - Linear,Maximum
+49,Lynx rufus,Both,71.3,km - Linear,Mean
+49,Lynx rufus,Both,84,km - Linear,Median
+50,Peromyscus leucopus,Female,282,Metres - Linear,Maximum
+50,Peromyscus leucopus,Male,201,Metres - Linear,Maximum
+50,Peromyscus leucopus,Female,88,Metres - Linear,Mean
+50,Peromyscus leucopus,Male,109,Metres - Linear,Mean
+51,Lynx rufus,Female,56,km - Linear,Maximum
+51,Lynx rufus,Female,22.1,km - Linear,Mean
+52,Canis lupus,Female,390,km - Linear,Maximum
+52,Canis lupus,Male,445,km - Linear,Maximum
+52,Canis lupus,Female,99,km - Linear,Median
+52,Canis lupus,Male,109,km - Linear,Median
+53,Vulpes macrotis,Both,32.3,km - Linear,Maximum
+53,Vulpes macrotis,Both,7.8,km - Linear,Mean
+54,Sciurus carolinensis,Unspecified,100,km - Linear,Maximum
+55,Sciurus niger,Unspecified,64.4,km - Linear,Maximum
+56,Sciurus carolinensis,Female,0.32,km - Linear,Maximum
+56,Sciurus carolinensis,Male,3.23,km - Linear,Maximum
+56,Sciurus carolinensis,Male,1.1,km - Linear,Mean
+57,Peromyscus leucopus,Unspecified,1000,Metres - Linear,Maximum
+57,Peromyscus leucopus,Unspecified,100,Metres - Linear,Mean
+58,Vulpes rueppellii,Unspecified,48,km - Linear,Maximum
+58,Vulpes rueppellii,Unspecified,32,km - Linear,Mean
+59,Castor canadensis,Both,11,Miles - Linear,Maximum
+59,Castor canadensis,Both,5.6,Miles - Linear,Mean
+60,Puma concolor,Female,66,km - Linear,Maximum
+60,Puma concolor,Male,241,km - Linear,Maximum
+60,Puma concolor,Female,56.5,km - Linear,Mean
+60,Puma concolor,Male,123,km - Linear,Mean
+60,Puma concolor,Female,56.5,km - Linear,Median
+61,Equus caballus,Female,1.99,km-Linear,Maximum
+61,Equus caballus,Female,0.848,km-Linear,Mean
+61,Equus caballus,Female,0.745,km-Linear,Median
+62,Puma concolor,Female,14,km - Linear,Maximum
+62,Puma concolor,Male,274,km - Linear,Maximum
+62,Puma concolor,Female,11.5,km - Linear,Mean
+62,Puma concolor,Male,175.67,km - Linear,Mean
+62,Puma concolor,Female,11.5,km - Linear,Median
+62,Puma concolor,Male,193,km - Linear,Median
+63,Rupicapra rupicapra,Male,17,km - Linear,Maximum
+63,Rupicapra pyrenaica,Male,32,km - Linear,Maximum
+63,Rupicapra pyrenaica,Male,10.6,km - Linear,Mean
+63,Rupicapra rupicapra,Male,5.95,km - Linear,Mean
+63,Rupicapra pyrenaica,Male,6,km - Linear,Median
+63,Rupicapra rupicapra,Male,4.1,km - Linear,Median
+64,Odocoileus virginianus,Male,212.6,km - Linear,Maximum
+64,Odocoileus virginianus,Male,161,km - Linear,Maximum
+64,Odocoileus virginianus,Male,56,km - Linear,Maximum
+64,Odocoileus virginianus,Male,40.6,km - Linear,Maximum
+64,Odocoileus virginianus,Male,35.8,km - Linear,Maximum
+64,Odocoileus virginianus,Male,31.5,km - Linear,Maximum
+64,Odocoileus virginianus,Male,22,km - Linear,Maximum
+64,Odocoileus virginianus,Male,7.1,km - Linear,Maximum
+64,Odocoileus virginianus,Male,3,km - Linear,Mean
+64,Odocoileus virginianus,Male,4.4,km - Linear,Mean
+64,Odocoileus virginianus,Male,6.4,km - Linear,Mean
+64,Odocoileus virginianus,Male,7,km - Linear,Mean
+64,Odocoileus virginianus,Male,8,km - Linear,Mean
+64,Odocoileus virginianus,Male,8.5,km - Linear,Mean
+64,Odocoileus virginianus,Male,10,km - Linear,Mean
+64,Odocoileus virginianus,Male,18.5,km - Linear,Mean
+64,Odocoileus virginianus,Male,19,km - Linear,Mean
+64,Odocoileus virginianus,Male,36,km - Linear,Mean
+64,Odocoileus virginianus,Male,38,km - Linear,Mean
+65,Cerdocyon thous,Both,2900,Metres - Linear,Maximum
+65,Cerdocyon thous,Both,2370,Metres - Linear,Mean
+66,Spermophilus tridecemlineatus,Female,762,Metres - Linear,Maximum
+66,Spermophilus tridecemlineatus,Male,670.56,Metres - Linear,Maximum
+66,Spermophilus tridecemlineatus,Female,190.5,Metres - Linear,Mean
+66,Spermophilus tridecemlineatus,Male,266.7,Metres - Linear,Mean
+67,Odocoileus hemionus,Male,7.3,km - Linear,Maximum
+67,Odocoileus hemionus,Male,14.9,km - Linear,Maximum
+67,Odocoileus hemionus,Male,4.25,km - Linear,Mean
+67,Odocoileus hemionus,Male,7.86,km - Linear,Mean
+68,Microtus ochrogaster,Female,127,Metres - Linear,Maximum
+68,Microtus ochrogaster,Male,136,Metres - Linear,Maximum
+68,Microtus ochrogaster,Female,28.7,Metres - Linear,Mean
+68,Microtus ochrogaster,Male,33,Metres - Linear,Mean
+68,Microtus ochrogaster,Female,18,Metres - Linear,Median
+68,Microtus ochrogaster,Male,23,Metres - Linear,Median
+69,Lycaon pictus,Female,65.3,km-Linear,Maximum
+69,Lycaon pictus,Male,169,km-Linear,Maximum
+69,Lycaon pictus,Female,19,km-Linear,Median
+69,Lycaon pictus,Male,40.7,km-Linear,Median
+70,Macaca sylvanus,Male,7.1,km-Linear,Maximum
+71,Lontra canadensis,Female,192,km - Linear,Maximum
+71,Lontra canadensis,Male,32,km - Linear,Maximum
+72,Taxidea taxus,Female,52,km - Linear,Maximum
+72,Taxidea taxus,Male,110,km - Linear,Maximum
+72,Taxidea taxus,Female,23.42,km - Linear,Mean
+72,Taxidea taxus,Male,34.1,km - Linear,Mean
+72,Taxidea taxus,Female,12.5,km - Linear,Median
+72,Taxidea taxus,Male,15,km - Linear,Median
+73,Spermophilus richardsonii,Female,525,Metres - Linear,Maximum
+73,Spermophilus richardsonii,Male,975,Metres - Linear,Maximum
+73,Spermophilus richardsonii,Female,69.75,Metres - Linear,Mean
+73,Spermophilus richardsonii,Male,108.33,Metres - Linear,Mean
+73,Spermophilus richardsonii,Female,50,Metres - Linear,Median
+73,Spermophilus richardsonii,Male,50,Metres - Linear,Median
+74,Spermophilus richardsonii,Male,10,km - Linear,Maximum
+75,Marmota menzbieri,Unspecified,3.4,km - Linear,Maximum
+75,Marmota menzbieri,Unspecified,5,km - Linear,Maximum
+75,Marmota menzbieri,Unspecified,4.5,km - Linear,Maximum
+75,Panthera pardus,Unspecified,200,km - Linear,Maximum
+76,Philantomba monticola,Female,1.5,km-Linear,Maximum
+76,Philantomba monticola,Female,1.5,km-Linear,Mean
+76,Philantomba monticola,Female,1.5,km-Linear,Median
+77,Leopardus pardalis,Male,12,km - Linear,Maximum
+77,Leopardus pardalis,Male,13,km - Linear,Maximum
+77,Leopardus pardalis,Male,8.8,km - Linear,Mean
+77,Leopardus pardalis,Male,11,km - Linear,Mean
+77,Leopardus pardalis,Male,10,km - Linear,Median
+77,Leopardus pardalis,Male,11,km - Linear,Median
+78,Aepyceros melampus,Male,3.2,km-Linear,Maximum
+78,Aepyceros melampus,Male,1.2,km-Linear,Mean
+79,Odocoileus virginianus,Female,168,km - Linear,Maximum
+79,Odocoileus virginianus,Female,58.71,km - Linear,Mean
+79,Odocoileus virginianus,Female,35.2,km - Linear,Median
+80,Urocyon cinereoargenteus,Female,3,km - Linear,Maximum
+80,Urocyon cinereoargenteus,Male,24,km - Linear,Maximum
+80,Urocyon cinereoargenteus,Female,0.75,km - Linear,Mean
+80,Urocyon cinereoargenteus,Male,16.17,km - Linear,Mean
+80,Urocyon cinereoargenteus,Female,0,km - Linear,Median
+80,Urocyon cinereoargenteus,Male,16,km - Linear,Median
+81,Caracal caracal,Male,90,km-Linear,Maximum
+82,Lepus americanus,Both,12.5,Miles - Linear,Maximum
+82,Lepus americanus,Both,3.38,Miles - Linear,Mean
+82,Lepus americanus,Both,0.4,Miles - Linear,Median
+83,Ochotona princeps,Unspecified,396,Metres - Linear,Maximum
+83,Ochotona princeps,Unspecified,91.25,Metres - Linear,Mean
+84,Vulpes vulpes,Female,52.1,Miles - Linear,Maximum
+84,Vulpes vulpes,Male,101.2,Miles - Linear,Maximum
+84,Vulpes vulpes,Female,6.2,Miles - Linear,Mean
+84,Vulpes vulpes,Male,18.4,Miles - Linear,Mean
+84,Vulpes vulpes,Female,2.2,Miles - Linear,Median
+84,Vulpes vulpes,Male,10.1,Miles - Linear,Median
+85,Dipodomys stephensi,Female,170.6,Metres - Linear,Maximum
+85,Dipodomys stephensi,Female,351.1,Metres - Linear,Maximum
+85,Dipodomys stephensi,Male,267.1,Metres - Linear,Maximum
+85,Dipodomys stephensi,Male,262.4,Metres - Linear,Maximum
+85,Dipodomys stephensi,Female,28.7,Metres - Linear,Mean
+85,Dipodomys stephensi,Female,46.2,Metres - Linear,Mean
+85,Dipodomys stephensi,Male,33.3,Metres - Linear,Mean
+85,Dipodomys stephensi,Male,61.5,Metres - Linear,Mean
+85,Dipodomys stephensi,Female,15,Metres - Linear,Median
+85,Dipodomys stephensi,Female,16.5,Metres - Linear,Median
+85,Dipodomys stephensi,Male,22.4,Metres - Linear,Median
+85,Dipodomys stephensi,Male,30,Metres - Linear,Median
+86,Calomys venustus,Female,28,Metres - Linear,Maximum
+86,Calomys venustus,Male,28,Metres - Linear,Maximum
+87,Microcebus murinus,Female,351,Metres - Linear,Maximum
+87,Microcebus murinus,Male,1000,Metres - Linear,Maximum
+87,Microcebus murinus,Female,63,Metres - Linear,Median
+87,Microcebus murinus,Male,251,Metres - Linear,Median
+88,Peromyscus californicus,Female,791,Metres - Linear,Maximum
+88,Peromyscus californicus,Male,450,Metres - Linear,Maximum
+88,Peromyscus californicus,Female,155,Metres - Linear,Mean
+88,Peromyscus californicus,Male,70,Metres - Linear,Mean
+88,Peromyscus californicus,Female,97,Metres - Linear,Median
+88,Peromyscus californicus,Male,41,Metres - Linear,Median
+89,Odocoileus hemionus,Female,51,Miles - Linear,Maximum
+89,Odocoileus hemionus,Male,42,Miles - Linear,Maximum
+89,Odocoileus hemionus,Male,150,Miles - Linear,Maximum
+89,Odocoileus hemionus,Female,3.59,Miles - Linear,Mean
+89,Odocoileus hemionus,Male,4.34,Miles - Linear,Mean
+89,Odocoileus hemionus,Female,0.5,Miles - Linear,Median
+89,Odocoileus hemionus,Male,1.55,Miles - Linear,Median
+90,Ursus americanus,Female,11,km - Linear,Maximum
+90,Ursus americanus,Male,219,km - Linear,Maximum
+90,Ursus americanus,Female,0.71,km - Linear,Mean
+90,Ursus americanus,Male,61,km - Linear,Mean
+90,Ursus americanus,Female,0,km - Linear,Median
+90,Ursus americanus,Male,49,km - Linear,Median
+91,Spermophilus tridecemlineatus,Female,144,Metres - Linear,Maximum
+91,Spermophilus tridecemlineatus,Male,239,Metres - Linear,Maximum
+91,Spermophilus tridecemlineatus,Female,53.1,Metres - Linear,Mean
+91,Spermophilus tridecemlineatus,Male,80.3,Metres - Linear,Mean
+92,Puma concolor,Both,155,km - Linear,Maximum
+92,Puma concolor,Both,86.8,km - Linear,Mean
+93,Microtus agrestis,Female,193.6,Metres - Linear,Maximum
+93,Microtus agrestis,Male,159,Metres - Linear,Maximum
+93,Microtus agrestis,Female,28.6,Metres - Linear,Mean
+93,Microtus agrestis,Male,58.5,Metres - Linear,Mean
+94,Vulpes vulpes,Female,5,Miles - Linear,Maximum
+94,Vulpes vulpes,Male,17,Miles - Linear,Maximum
+94,Vulpes vulpes,Female,2.75,Miles - Linear,Mean
+94,Vulpes vulpes,Female,2.75,Miles - Linear,Median
+95,Canis simensis,Female,7.5,km-Linear,Maximum
+96,Lycalopex griseus,Unspecified,65,km-Linear,Maximum
+96,Canis adustus,Unspecified,20,km-Linear,Maximum
+97,Ochotona princeps,Both,0.17,km-Linear,Maximum
+97,Ochotona princeps,Both,0.00556,km-Linear,Mean
+97,Ochotona princeps,Both,0,km-Linear,Median
+98,Panthera tigris,Female,33,km - Linear,Maximum
+98,Panthera tigris,Male,65.7,km - Linear,Maximum
+98,Panthera tigris,Female,11.65,km - Linear,Mean
+98,Panthera tigris,Male,33.01,km - Linear,Mean
+98,Panthera tigris,Female,6.8,km - Linear,Median
+98,Panthera tigris,Male,25.8,km - Linear,Median
+99,Ursus arctos,Female,90,km - Linear,Maximum
+99,Ursus arctos,Male,467,km - Linear,Maximum
+99,Ursus arctos,Female,28,km - Linear,Mean
+99,Ursus arctos,Male,118.9,km - Linear,Mean
+100,Vulpes vulpes,Female,107.83,km-Linear,Maximum
+100,Vulpes vulpes,Male,210.18,km-Linear,Maximum
+100,Vulpes vulpes,Female,10.78,km-Linear,Mean
+100,Vulpes vulpes,Male,31,km-Linear,Mean
+100,Vulpes vulpes,Female,3.06,km-Linear,Median
+100,Vulpes vulpes,Male,22,km-Linear,Median
+101,Tamiasciurus hudsonicus,Female,600,Metres - Linear,Maximum
+101,Tamiasciurus hudsonicus,Male,260,Metres - Linear,Maximum
+101,Tamiasciurus hudsonicus,Female,242.5,Metres - Linear,Mean
+101,Tamiasciurus hudsonicus,Male,115,Metres - Linear,Mean
+101,Tamiasciurus hudsonicus,Female,185,Metres - Linear,Median
+101,Tamiasciurus hudsonicus,Male,100,Metres - Linear,Median
+102,Panthera pardus,Male,11,km - Linear,Maximum
+102,Panthera pardus,Male,9.83,km - Linear,Mean
+102,Panthera pardus,Male,10,km - Linear,Median
+103,Sorex araneus,Both,0.869,km-Linear,Maximum
+103,Microtus pennsylvanicus,Both,0.245,km-Linear,Maximum
+103,Martes americana,Both,61,km-Linear,Maximum
+103,Ondatra zibethicus,Both,3.37,km-Linear,Maximum
+103,Alces alces,Both,118,km-Linear,Maximum
+103,Didelphis virginiana,Female,5.152,km-Linear,Maximum
+103,Mephitis mephitis,Female,21.7,km-Linear,Maximum
+103,Didelphis virginiana,Male,4.3,km-Linear,Maximum
+103,Mephitis mephitis,Male,10.1,km-Linear,Maximum
+104,Puma concolor,Female,78.5,km - Linear,Maximum
+104,Puma concolor,Male,192.5,km - Linear,Maximum
+104,Puma concolor,Female,28.3,km - Linear,Mean
+104,Puma concolor,Male,101.3,km - Linear,Mean
+105,Marmota monax,Female,685,Metres - Linear,Maximum
+105,Marmota monax,Male,768,Metres - Linear,Maximum
+106,Rattus fuscipes,Both,365,Metres - Linear,Maximum
+106,Rattus fuscipes,Female,213,Metres - Linear,Maximum
+106,Rattus fuscipes,Male,762,Metres - Linear,Maximum
+106,Rattus fuscipes,Unspecified,500,Metres - Linear,Maximum
+106,Rattus fuscipes,Unspecified,550,Metres - Linear,Maximum
+107,Vulpes vulpes,Female,5.2,km - Linear,Maximum
+107,Vulpes vulpes,Female,24,km - Linear,Maximum
+107,Vulpes vulpes,Female,140,km - Linear,Maximum
+107,Vulpes vulpes,Female,67.7,km - Linear,Maximum
+107,Vulpes vulpes,Female,4,km - Linear,Maximum
+107,Vulpes vulpes,Female,85.7,km - Linear,Maximum
+107,Vulpes vulpes,Female,60.8,km - Linear,Maximum
+107,Vulpes vulpes,Female,50,km - Linear,Maximum
+107,Vulpes vulpes,Male,13.7,km - Linear,Maximum
+107,Vulpes vulpes,Male,19,km - Linear,Maximum
+107,Vulpes vulpes,Male,52,km - Linear,Maximum
+107,Vulpes vulpes,Male,110,km - Linear,Maximum
+107,Vulpes vulpes,Male,64.9,km - Linear,Maximum
+107,Vulpes vulpes,Male,86,km - Linear,Maximum
+107,Vulpes vulpes,Male,61.4,km - Linear,Maximum
+107,Vulpes vulpes,Male,89.6,km - Linear,Maximum
+107,Vulpes vulpes,Male,122,km - Linear,Maximum
+108,Spermophilus saturatus,Female,270.5,Metres - Linear,Maximum
+108,Spermophilus saturatus,Male,197.2,Metres - Linear,Maximum
+108,Vulpes vulpes,Female,3.1,km - Linear,Mean
+108,Vulpes vulpes,Female,8.4,km - Linear,Mean
+108,Vulpes vulpes,Female,11.1,km - Linear,Mean
+108,Vulpes vulpes,Female,28.6,km - Linear,Mean
+108,Vulpes vulpes,Female,38.6,km - Linear,Mean
+108,Vulpes vulpes,Male,2.8,km - Linear,Mean
+108,Vulpes vulpes,Male,7.9,km - Linear,Mean
+108,Vulpes vulpes,Male,17.4,km - Linear,Mean
+108,Vulpes vulpes,Male,29.8,km - Linear,Mean
+108,Vulpes vulpes,Male,31.2,km - Linear,Mean
+108,Vulpes vulpes,Male,34.2,km - Linear,Mean
+109,Gulo gulo,Female,178,km - Linear,Maximum
+109,Gulo gulo,Male,101,km - Linear,Maximum
+109,Spermophilus saturatus,Female,157.5,Metres - Linear,Mean
+109,Spermophilus saturatus,Male,181.8,Metres - Linear,Mean
+110,Macropus giganteus,Male,17,km-Linear,Maximum
+110,Gulo gulo,Female,60,km - Linear,Mean
+110,Gulo gulo,Male,51,km - Linear,Mean
+111,Vulpes vulpes,Both,100,km - Linear,Maximum
+112,Lynx lynx,Female,33.3,km - Linear,Maximum
+112,Lynx lynx,Female,80.7,km - Linear,Maximum
+112,Lynx lynx,Male,56,km - Linear,Maximum
+112,Lynx lynx,Male,97.3,km - Linear,Maximum
+112,Lynx lynx,Female,18.82,km - Linear,Mean
+112,Lynx lynx,Female,35.59,km - Linear,Mean
+112,Lynx lynx,Male,27.68,km - Linear,Mean
+112,Lynx lynx,Male,51.18,km - Linear,Mean
+112,Lynx lynx,Female,20.6,km - Linear,Median
+112,Lynx lynx,Female,27.6,km - Linear,Median
+112,Lynx lynx,Male,26.6,km - Linear,Median
+112,Lynx lynx,Male,31.4,km - Linear,Median
+113,Vulpes velox,Female,9.8,km-Linear,Mean
+113,Vulpes velox,Male,11,km-Linear,Mean
+114,Tamiasciurus hudsonicus,Both,96,Metres - Linear,Mean
+114,Tamiasciurus hudsonicus,Both,60,Metres - Linear,Median
+115,Neotoma micropus,Female,61.2,Metres - Linear,Mean
+115,Neotoma micropus,Male,61.4,Metres - Linear,Mean
+116,Ondatra zibethicus,Female,40.8,Metres - Linear,Mean
+116,Ondatra zibethicus,Male,64.5,Metres - Linear,Mean
+117,Spermophilus beecheyi,Female,87.47,Metres - Linear,Mean
+117,Spermophilus beecheyi,Male,179.25,Metres - Linear,Mean
+118,Spermophilus beldingi,Female,230,Metres - Linear,Mean
+118,Spermophilus beldingi,Female,406,Metres - Linear,Mean
+118,Spermophilus beldingi,Male,239,Metres - Linear,Mean
+118,Spermophilus beldingi,Male,328,Metres - Linear,Mean
+119,Myodes rufocanus,Female,31,Metres - Linear,Mean
+119,Myodes rufocanus,Male,35,Metres - Linear,Mean
+120,Dipodomys spectabilis,Female,66,Metres - Linear,Mean
+120,Dipodomys spectabilis,Male,29,Metres - Linear,Mean
+120,Dipodomys spectabilis,Female,30,Metres - Linear,Median
+120,Dipodomys spectabilis,Male,17,Metres - Linear,Median
+121,Oryctolagus cuniculus,Female,44,Metres - Linear,Median
+121,Oryctolagus cuniculus,Male,67.3,Metres - Linear,Median
+122,Alces alces,Both,14.8,km - Linear,Mean
+122,Alces alces,Both,5.7,km - Linear,Median
+123,Microtus townsendii,Female,12.4,Metres - Linear,Mean
+123,Microtus townsendii,Male,19.4,Metres - Linear,Mean
+124,Cynictis penicillata,Both,2.5,km - Linear,Mean
+125,Canis adustus,Both,4.6,km - Linear,Mean
+125,Canis mesomelas,Both,2.8,km - Linear,Mean
+126,Acinonyx jubatus,Male,20,km-Linear,Mean
+127,Odocoileus virginianus,Male,12,km - Linear,Mean
+128,Bettongia lesueur,Female,1900,Metres - Linear,Mean
+128,Bettongia lesueur,Male,5200,Metres - Linear,Mean
+129,Canis latrans,Both,40,km - Linear,Mean
+129,Canis latrans,Both,53,km - Linear,Mean
+130,Spermophilus elegans,Female,77,Metres - Linear,Mean
+130,Spermophilus elegans,Male,90,Metres - Linear,Mean
+131,Antechinus minimus,Female,40.9,Metres - Linear,Mean
+131,Antechinus minimus,Male,41.2,Metres - Linear,Mean
+132,Phascogale tapoatafa,Female,0.66,km - Linear,Mean
+132,Phascogale tapoatafa,Male,5.03,km - Linear,Mean
+133,Peromyscus polionotus,Female,140.5,Metres - Linear,Mean
+133,Peromyscus polionotus,Male,175,Metres - Linear,Mean
+134,Setonix brachyurus,Both,750,Metres - Linear,Mean
+134,Macropus rufogriseus,Male,670,Metres - Linear,Mean

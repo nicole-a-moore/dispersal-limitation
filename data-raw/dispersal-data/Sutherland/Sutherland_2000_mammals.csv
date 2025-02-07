@@ -1,0 +1,136 @@
+﻿Species,Body mass (kg),Obs type,Natal dispersal median distance (km),Natal dispersal maximum distance (km),1,2,n,Source
+Didelphis virginianus,2.839 m,S,...,4.3 m,O,T,8,VanDruff (1969)
+,1.99 f,,,5.152 f,,,,
+Phascogale tapotafa,0.199 m,S,...,6.8 m,C,T,...,Soderquist and Lill (1995)
+,0.145 f,,,,,,,
+Trichosurus vulpecula,2.93 m/f,D,5.4 m,12.8 m,C,T,13 m,Cowan et al. (1996)
+Sorex araneus,0.004 m/f,S,...,0.869 m/f,C,N,29 m,"Hanski et al. (1991), Peltonen and Hanski (1991)"
+,,,,,,,21 f,
+Scapanus townsendii,0.148 m/f,S,...,0.722 m,O,G,44 m/f,Carraway et al. (1993)
+,,,,0.856 f,,,,
+Ursus americanus,130.0 m,S,...,225.0 m,O,T,19 m,Rogers (1987)
+,78.9 f,,,28.8 f,,,15 f,
+Ursus arctos,331.0 m/f,S,...,134.0 m,O,T,35 m,Glenn and Miller (1980)
+,,,,82.0 f,,,26 f,
+Ursus arctos,331.0 m/f,D,5.5 m,...,O,T,222 m,Pearson (1972)
+,,,9.5 f,,,,343 f,
+Procyon lotor,8.1 m,S,...,265.5 m/f,O,T,34 m/f,"Priewert (1951), Lynch (1967)"
+,7.5 f,,,,,,,
+Martes americana,1.04 m/f,S,...,61.0 m/f,C,T,15 m/f,Lofroth (1993)
+Martes pennanti,3.70 m,S,...,23.0 m,C,T,35 m/f,Arthur et al. (1993)
+,2.10 f,,,22.6 f,,,,
+Mustela erminea,0.080 m,S,...,5.6 m,C,T,36 m,Erlinge (1977)
+,0.054 f,,,1.0 f,,,29 f,
+Mustela vison,1.225 m,S,...,45.1 m,C,T,6 m,Mitchell (1961)
+,1.112 f,,,45.0 f,,,2 f,
+Lutra canadensis,9.07 m,S,...,42.0 m,C,T,39 m/f,Melquist and Hornocker (1983)
+Gulo gulo,14.4 m/f,S,...,300 m/f,C,T,...,Pasitschniak-Arts and Lariviere (1995)
+Taxidea taxus,7.80 m,S,...,110.0 m,C,T,1 m,Lindzey (1978)
+,6.15 f,,,52.0 f,,,1f,
+Meles meles,11.6 m,S,...,8.3 m,O,G,...,Cheesman et al. (1988)
+,10.1 f,,,7.8 f,,,,
+Mephitis mephitis,3.176 m,S,...,10.1 m,O,T,1 m,Bjorge et al. (1981)
+,2.642 f,,,21.7 f,,,4 f,
+Helogale parvula,0.350 m/f,D,0.25 m,...,C,T,44 m,Rood (1987)
+,,,0.75 f,,,,22 f,
+Canis latrans,14.06 m/f,S,...,176.0 m,C,N,125,Andrews and Boggess (1978)
+,,,,232.2 f,,,,
+Canis latrans,14.06 m/f,D,16.6 m,...,C,N,7 m,Bowen (1982)
+,,,42.2 f,,,,5 f,
+Canis lupus,42.54 m,S,...,432.0 m,C,T,5 m,"Berg and Kuehn (1982), Mech (1987)"
+,40.22 f,,,79 f,,,2 f,
+Canis lupus,42.54 m,D,125.0 m,...,C,T,9 m,Ballard et al. (1987)
+,40.22 f,,125.0 f,,,,5 f,
+Canis lupus,42.54 m,D,225.0 m,...,C,T,40 m,Gese and Mech (1991)
+,40.22 f,,75.0 f,,,,29 f,
+Vulpes vulpes,5.20 m/f,S,...,394.5 m,C,T,1 m,"Ables (1965), Allen and Sargent (1993)"
+,,,,302.0 f,,,72 f,
+Vulpes vulpes,5.20 m/f,D,8.6 m,...,C,T,31 m,Jensen (1973)
+,,,4.9 f,,,,31 f,
+Vulpes vulpes,5.20 m/f,D,24.2 m,...,C,T,298 m,Storm et al. (1976)
+,,,8.1 f,,,,207 f,
+Vulpes vulpes,5.20 m/f,D,8.1 m,...,C,T,171 m,Phillips et al. (1972)
+,,,8.1 f,,,,124 f,
+Vulpes vulpes,5.20 m/f,D,12.0 m,...,C,T,16 m,Zimen (1984)
+,,,12.4 f,,,,4 f,
+Urocyon cinereoargenteus,4.1 m,S,...,83.68 f,C,T,...,Sullivan (1956)
+,3.9 f,,,,,,,
+Felis concolor,61.6 m,S,...,274.0 m,C,T,33 m,"Logan et al. (1986), Ross and Jalotsky (1992)"
+,44.5 f,,,155.0 f,,,13 f,
+Lynx lynx,10.149 f,S,...,9.7 f,C,T,1,Saunders (1963)
+Lynx rufus,8.2 f,S,...,56.0 f,C,T,10,Robinson and Grant (1958)
+Lynx rufus,9.6 m,S,...,182 m,C,T,...,Lariviere and Walton (1997)
+Castor canadensis,24.3 f,S,2.1 m/f,40.6 m/f,H,T,19 m/f,Leege (1963)
+Marmota flaviventris,5.448 m,S,...,1.4 m,H,G,2,"Armitage (1974), Armitage and Downhower (1974)"
+Marmota monax,3.511 m,S,...,0.685 m,H,N,46 m/f,Swihart (1992)
+,3.486 f,,,0.768 f,,,,
+Spermophilus richardsonii,0.405 m/f,D,0.05 m,0.975 m,H,G,26 m,Mitchener and Mitchener (1977)
+,,,0.05 f,0.525 f,,,26 f,
+Spermophilus beecheyi,0.475 m/f,S,...,1.44 m,H,G,56 m,Evans and Holdenried (1943)
+,,,,1.312 f,,,25 f,
+Spermophilus beldingi,0.400 m/f,S,...,0.328 m/f,H,G,25 m,Holekamp (1984)
+,,,,,,,2 f,
+Spermophilus leucopus,0.192 m/f,S,...,0.515 m,H,N,65 m,Allred and Beck (1963)
+,,,,0.321 f,,,83 f,
+Spermophilus tridecemliniatus,0.140m,S,...,0.239 m,H,T,46 m,Rongstad (1965)
+,,,,,,,45 f,
+Sciurus niger,0.790 m/f,S,...,3.37 m/f,H,T,2,Fitch (1958)
+Tamiasciurus hudsonicus,0.204 m,D,0.485 m,0.60 m,H,T,8 m/f,Sun (1997)
+,0.199 f,,0.24 f,0.60 f,,,,
+Thomomys bottae,0.150 m/f,S,...,0.30 m/f,C,T,2 m,Daly and Patton (1990)
+,,,,,,,1 f,
+Perognathus formosa,0.023 m,S,...,0.853,H,T,28 m,Allred and Beck (1963)
+,,,,,,,18 f,
+Dipodomys merriami,0.044 m,D,0.13 m,0.25 m,H,T,13 m,Jones (1989)
+,0.0426 f,,0.03 f,0.158 f,,,13 f,
+Dipodomys microps,0.065 m/f,S,...,0.411 m,H,T,159 m,Allred and Beck (1963)
+,,,,0.434 f,,,172 f,
+Dipodomys spectabilis,0.115 m/f,S,...,0.9 m,H,T,...,Jones (1987)
+,,,,2.0 f,,,,
+Dipodomys spectabilis,0.115 m/f,D,0.03 m,...,H,T,82 m,Waser and Elliott (1991)
+,,,0.03 f,,,,84 f,
+Dipodomys spectabilis,0.115 m/f,D,0.03 m,...,H,T,22 m,Jones (1987)
+,,,0.03 f,,,,18 f,
+Dipodomys stephensi,0.064 m/f,D,0.087 m,...,H,T,13 m,Price et al. (1994)
+,,,0.045 f,,,,18 f,
+Neotoma cinerea,0.42 m,S,...,2.2 m,H,T,...,Smith (1997)
+,0.30 f,,,,,,,
+Clethrionomys glareolus,0.023 m/f,S,...,0.40 m/f,H,T,58 m/f,Dickman and Doncaster (1989)
+Onychomys torridus,26.8 m/f,S,...,0.329 m,H,T,1 m,Allred and Beck (1963)
+,,,,0.325 f,,,1 f,
+Microtus agrestis,0.023 m/f,D,0.03 m,0.159 m,H,T,39 m,Sandell et al. (1990)
+,,,0.03 f,0.193 f,,,19 f,
+Microtus arvalis,0.022 f,D,0.03 f,0.2 f,H,N,31 f,Boyce and Boyce (1988)
+Microtus ochrogaster,0.028 m,S,...,0.136 m,H,T,79 m,McGuire et al. (1993)
+,0.033 f,,,0.127 f,,,78 f,
+Microtus oeconomus,0.032 m/f,D,0.75 m,1.0 m,H,T,5 m,Steen (1994)
+Microtus pennsylvanicus,0.040 m/f,S,...,0.245 m/f,H,T,1,Mihok et al. (1988)
+Microtus townsendi,0.032 m/f,D,0.008 m,0.068 m,H,T,52 m,Lambin (1994)
+,,,0.003 f,0.054 f,,,300 f,
+Microtus xanthognathus,135 m/f,S,...,0.3 m/f,H,G,...,Wolff and Lidicker (1980)
+Peromyscus californicus,0.018 m/f,D,0.06 m,0.45 m,H,T,27 m,Ribble (1992)
+,,,0.15 f,0.791 f,,,24 f,
+Peromyscus longicaudus,0.008 m/f,S,...,0.228 m,H,T,1 m,Allred and Beck (1963)
+,,,,0.235 f,,,1 f,
+Peromyscus maniculatus,0.015 m/f,D,0.05 m,0.883 m,O,T,71 m,Dice and Howard (1951)
+,,,0.15 f,1.005 f,,,64 f,
+Apodemus sylvaticus,0.020 m/f,S,...,0.5 m/f,H,N,261 m/f,Dickman and Doncaster (1989)
+Ondatra zibethicus,1.048 m/f,S,...,3.37 m/f,H,T,...,Fitch (1958)
+Ochotona princeps,...,D,0.09 m/f,0.396 m/f,H,G,15 m/f,Peacock and Smith (1997)
+Lepus americanus,1.43 m/f,S,...,20.1 m/f,H,T,3,O’Farrell (1965)
+Lepus europea,4.50 m/f,S,...,9.0 m/f,H,T,11,Broekhuisen and Maaskamp (1982)
+Lepus timidus,2.750 m/f,S,3.0 m/f,200 m/f,H,N,99 m/f,Angerbjörn and Flux (1995)
+Lepus californicus,2.2 m/f,S,...,45 m/f,H,N,...,Best (1996)
+Sylvilagus bachmani,0.841 m/f,S,...,0.352 m/f,H,N,148 m/f,Shields (1960)
+Sylvilagus floridanus,1.10 m,S,...,3.9 m,H,T,65 m/f,Chapman and Trethewey (1972)
+,1.20 f,,,2.3 f,,,,
+Odocoileus hemionus columbianus,64.638 m/f,D,4.0 m,15.2 m,H,G,26 m,Bunnell and Harestad (1983)
+,,,2.0 f,12.2 f,,,14 f,
+Odocoileus hemionus hemionus,82.5 m,S,...,7.34 m,H,G,65 m,Robinette (1966)
+,51.75 f,,,8.22 f,,,33 f,
+Odocoileus virginianus,86.41 f,S,...,11.74 f,H,G,7 f,Nelson and Mech (1992)
+Odocoileus virginianus,86.41 f,D,6.0 m,...,H,G,26 m,Nelson (1993)
+,,,24.0 f,,,,4 f,
+Alces alces,481.83 m/f,S,...,118,H,T,87,Pullianen (1974)
+Cervus canadensis,315 m,S,...,18.5 m/f,H,T,5 m/f,Brazda (1953)
+,225 f,,,,,,,
