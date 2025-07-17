@@ -25,15 +25,15 @@ dd <- dd %>%
   mutate(LimitingRate = ifelse(DispersalPotentialKmY <= ClimVeloKmY_RelScale,
                                DispersalPotentialKmY,
                                ClimVeloKmY_RelScale)) %>%
-  mutate(LimitingRate_q3 = ifelse(DispersalPotentialKmY <= q3ClimVeloKmY_RelScale,
+  mutate(LimitingRate_p90 = ifelse(DispersalPotentialKmY <= p90ClimVeloKmY_RelScale,
                                DispersalPotentialKmY,
-                               q3ClimVeloKmY_RelScale)) %>%
+                               p90ClimVeloKmY_RelScale)) %>%
   mutate(ClimVeloKmY_RelScale = abs(ClimVeloKmY_RelScale)) %>%
-  mutate(q3ClimVeloKmY_RelScale = abs(q3ClimVeloKmY_RelScale)) %>%
+  mutate(p90ClimVeloKmY_RelScale = abs(p90ClimVeloKmY_RelScale)) %>%
   mutate(what_is_limiting = ifelse(DispersalPotentialKmY == LimitingRate, "Dispersal", "Climate"),
-         what_is_limiting_q3 = ifelse(DispersalPotentialKmY == LimitingRate_q3, "Dispersal", "Climate")) %>%
+         what_is_limiting_p90 = ifelse(DispersalPotentialKmY == LimitingRate_p90, "Dispersal", "Climate")) %>%
   mutate(colour = ifelse(what_is_limiting == "Climate", ClimVeloKmY_RelScale, NA),
-         colour_q3 = ifelse(what_is_limiting_q3 == "Climate", q3ClimVeloKmY_RelScale, NA)) %>%
+         colour_p90 = ifelse(what_is_limiting_p90 == "Climate", p90ClimVeloKmY_RelScale, NA)) %>%
   mutate(group = ifelse(group == "Aves", "Bird", 
                         ifelse(group == "Mammalia", "Mammal", 
                                ifelse(group == "Plants", "Plant", 
@@ -61,7 +61,7 @@ data %>%
   geom_bar()
 
 barplot = data %>%
-  mutate(is_faster = ifelse(q3ClimVeloKmY_RelScale > DispersalPotentialKmY, 
+  mutate(is_faster = ifelse(p90ClimVeloKmY_RelScale > DispersalPotentialKmY, 
                             "Dispersal-limited", "Not dispersal-limited")) %>%
   count(group, is_faster) %>% 
   mutate(prop = n / sum(n)) %>%
@@ -81,7 +81,7 @@ ggsave(barplot, path = "figures",  filename = "dispersal-limitation_barplot.png"
 ##        ALL OBSERVATIONS       ##
 ###################################
 ## fit and compete the following linear models to all observations of range expansion
-## fit each using mean and 3rd quartile of climate velocity 
+## fit each using mean and 90th percentile of climate velocity 
 
 ## 1. range expansion rate ~ potential dispersal rate
 lm_disp <- lm(ShiftKmY ~ DispersalPotentialKmY,
@@ -90,65 +90,65 @@ lm_disp <- lm(ShiftKmY ~ DispersalPotentialKmY,
 ## 2. range expansion rate ~ velocity of climate change (at ecologically-relevant spatial scale)
 lm_cv <- lm(ShiftKmY ~ ClimVeloKmY_RelScale,
             data = data)
-lm_cv_q3 <- lm(ShiftKmY ~ q3ClimVeloKmY_RelScale,
+lm_cv_p90 <- lm(ShiftKmY ~ p90ClimVeloKmY_RelScale,
                 data = data)
 
 ## 3. range expansion rate ~ potential dispersal rate + velocity of climate change
 lm_disp_cv <- lm(ShiftKmY ~ DispersalPotentialKmY + ClimVeloKmY_RelScale,
                  data = data)
-lm_disp_cv_q3 <- lm(ShiftKmY ~ DispersalPotentialKmY + q3ClimVeloKmY_RelScale,
+lm_disp_cv_p90 <- lm(ShiftKmY ~ DispersalPotentialKmY + p90ClimVeloKmY_RelScale,
                      data = data)
 
 ## 4. range expansion rate ~ potential dispersal rate*velocity of climate change 
 lm_disp_int <- lm(ShiftKmY ~ DispersalPotentialKmY*ClimVeloKmY_RelScale,
                   data = data)
-lm_disp_int_q3 <- lm(ShiftKmY ~ DispersalPotentialKmY*q3ClimVeloKmY_RelScale,
+lm_disp_int_p90 <- lm(ShiftKmY ~ DispersalPotentialKmY*p90ClimVeloKmY_RelScale,
                       data = data)
 
 ## 5. range expansion rate ~ minimum of potential dispersal rate and velocity of climate change 
 lm_limrate <- lm(ShiftKmY ~ LimitingRate,
                  data = data)
-lm_limrate_q3 <- lm(ShiftKmY ~ LimitingRate_q3,
+lm_limrate_p90 <- lm(ShiftKmY ~ LimitingRate_p90,
                      data = data)
 
 
 ## plot residuals 
 plot(lm_disp) 
 plot(lm_cv)
-plot(lm_cv_q3)
+plot(lm_cv_p90)
 plot(lm_disp_cv)
-plot(lm_disp_cv_q3)
+plot(lm_disp_cv_p90)
 plot(lm_disp_int)
-plot(lm_disp_int_q3)
+plot(lm_disp_int_p90)
 plot(lm_limrate)
-plot(lm_limrate_q3)
+plot(lm_limrate_p90)
 
 hist(residuals(lm_disp))
 hist(residuals(lm_cv))
-hist(residuals(lm_cv_q3))
+hist(residuals(lm_cv_p90))
 hist(residuals(lm_disp_cv))
-hist(residuals(lm_disp_cv_q3))
+hist(residuals(lm_disp_cv_p90))
 hist(residuals(lm_disp_int))
-hist(residuals(lm_disp_int_q3))
+hist(residuals(lm_disp_int_p90))
 hist(residuals(lm_limrate))
-hist(residuals(lm_limrate_q3))
+hist(residuals(lm_limrate_p90))
 
 ## model summary 
 summary(lm_disp) 
 summary(lm_cv)
-summary(lm_cv_q3)
+summary(lm_cv_p90)
 summary(lm_disp_cv)
-summary(lm_disp_cv_q3)
+summary(lm_disp_cv_p90)
 summary(lm_disp_int)
-summary(lm_disp_int_q3)
+summary(lm_disp_int_p90)
 summary(lm_limrate)
-summary(lm_limrate_q3)
+summary(lm_limrate_p90)
 
 ## save models 
-main_models <- list(lm_disp, lm_cv, lm_cv_q3, lm_disp_cv, lm_disp_cv_q3, 
-                    lm_disp_int, lm_disp_int_q3, lm_limrate, lm_limrate_q3)
-names(main_models) <- c("lm_disp","lm_cv", "lm_cv_q3", "lm_disp_cv", "lm_disp_cv_q3", 
-                        "lm_disp_int", "lm_disp_int_q3", "lm_limrate", "lm_limrate_q3")
+main_models <- list(lm_disp, lm_cv, lm_cv_p90, lm_disp_cv, lm_disp_cv_p90, 
+                    lm_disp_int, lm_disp_int_p90, lm_limrate, lm_limrate_p90)
+names(main_models) <- c("lm_disp","lm_cv", "lm_cv_p90", "lm_disp_cv", "lm_disp_cv_p90", 
+                        "lm_disp_int", "lm_disp_int_p90", "lm_limrate", "lm_limrate_p90")
 
 saveRDS(main_models, "data-processed/modelfits_main_allobs.rds")
 
@@ -223,12 +223,12 @@ pred = predict(lm_cv, se.fit = TRUE, newdata = df_cv)
 df_cv$pred_lm <- pred$fit
 df_cv$pred_lm_se <- pred$se.fit
 
-df_cv_q3 <- data.frame(q3ClimVeloKmY_RelScale = seq(min(data$q3ClimVeloKmY_RelScale), 
-                                                      max(data$q3ClimVeloKmY_RelScale),
+df_cv_p90 <- data.frame(p90ClimVeloKmY_RelScale = seq(min(data$p90ClimVeloKmY_RelScale), 
+                                                      max(data$p90ClimVeloKmY_RelScale),
                                                       by = 0.001))
-pred = predict(lm_cv_q3, se.fit = TRUE, newdata = df_cv_q3)
-df_cv_q3$pred_lm <- pred$fit
-df_cv_q3$pred_lm_se <- pred$se.fit
+pred = predict(lm_cv_p90, se.fit = TRUE, newdata = df_cv_p90)
+df_cv_p90$pred_lm <- pred$fit
+df_cv_p90$pred_lm_se <- pred$se.fit
 
 df_disp_cv <- data.frame(expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY), by = 10), 
                                       ClimVeloKmY_RelScale = c(mean(data$ClimVeloKmY_RelScale))))
@@ -236,11 +236,11 @@ pred =  predict(lm_disp_cv, se.fit = TRUE, newdata = df_disp_cv)
 df_disp_cv$pred_lm <- pred$fit
 df_disp_cv$pred_lm_se <- pred$se.fit
 
-df_disp_cv_q3 <- data.frame(expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY), by = 10), 
-                                        q3ClimVeloKmY_RelScale = c(mean(data$q3ClimVeloKmY_RelScale))))
-pred =  predict(lm_disp_cv_q3, se.fit = TRUE, newdata = df_disp_cv_q3)
-df_disp_cv_q3$pred_lm <- pred$fit
-df_disp_cv_q3$pred_lm_se <- pred$se.fit
+df_disp_cv_p90 <- data.frame(expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY), by = 10), 
+                                        p90ClimVeloKmY_RelScale = c(mean(data$p90ClimVeloKmY_RelScale))))
+pred =  predict(lm_disp_cv_p90, se.fit = TRUE, newdata = df_disp_cv_p90)
+df_disp_cv_p90$pred_lm <- pred$fit
+df_disp_cv_p90$pred_lm_se <- pred$se.fit
 
 
 df_disp_int <- data.frame(expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY), by = 10), 
@@ -250,18 +250,18 @@ pred =  predict(lm_disp_int, se.fit = TRUE, newdata = df_disp_int)
 df_disp_int$pred_lm <- pred$fit
 df_disp_int$pred_lm_se <- pred$se.fit
 
-df_disp_int_q3 <- data.frame(expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY), by = 10), 
-                                         q3ClimVeloKmY_RelScale = c(min(data$q3ClimVeloKmY_RelScale),
-                                                                  max(data$q3ClimVeloKmY_RelScale))))
-pred =  predict(lm_disp_int_q3, se.fit = TRUE, newdata = df_disp_int_q3)
-df_disp_int_q3$pred_lm <- pred$fit
-df_disp_int_q3$pred_lm_se <- pred$se.fit
+df_disp_int_p90 <- data.frame(expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY), by = 10), 
+                                         p90ClimVeloKmY_RelScale = c(min(data$p90ClimVeloKmY_RelScale),
+                                                                  max(data$p90ClimVeloKmY_RelScale))))
+pred =  predict(lm_disp_int_p90, se.fit = TRUE, newdata = df_disp_int_p90)
+df_disp_int_p90$pred_lm <- pred$fit
+df_disp_int_p90$pred_lm_se <- pred$se.fit
 
-df_disp_int_q3_mean <- data.frame(expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY), by = 10), 
-                                          q3ClimVeloKmY_RelScale = c(mean(data$q3ClimVeloKmY_RelScale))))
-pred =  predict(lm_disp_int_q3, se.fit = TRUE, newdata = df_disp_int_q3_mean)
-df_disp_int_q3_mean$pred_lm <- pred$fit
-df_disp_int_q3_mean$pred_lm_se <- pred$se.fit
+df_disp_int_p90_mean <- data.frame(expand.grid(DispersalPotentialKmY = seq(0, max(data$DispersalPotentialKmY), by = 10), 
+                                          p90ClimVeloKmY_RelScale = c(mean(data$p90ClimVeloKmY_RelScale))))
+pred =  predict(lm_disp_int_p90, se.fit = TRUE, newdata = df_disp_int_p90_mean)
+df_disp_int_p90_mean$pred_lm <- pred$fit
+df_disp_int_p90_mean$pred_lm_se <- pred$se.fit
 
 df_limrate <- data.frame(LimitingRate = seq(min(data$LimitingRate), max(data$LimitingRate),
                                             by = 0.001))
@@ -269,14 +269,14 @@ pred =  predict(lm_limrate, se.fit = TRUE, newdata = df_limrate)
 df_limrate$pred_lm <- pred$fit
 df_limrate$pred_lm_se <-  pred$se.fit
 
-df_limrate_q3 <- data.frame(LimitingRate_q3 = seq(min(data$LimitingRate_q3), max(data$LimitingRate_q3),
+df_limrate_p90 <- data.frame(LimitingRate_p90 = seq(min(data$LimitingRate_p90), max(data$LimitingRate_p90),
                                             by = 0.001))
-pred =  predict(lm_limrate_q3, se.fit = TRUE, newdata = df_limrate_q3)
-df_limrate_q3$pred_lm <- pred$fit
-df_limrate_q3$pred_lm_se <-  pred$se.fit
+pred =  predict(lm_limrate_p90, se.fit = TRUE, newdata = df_limrate_p90)
+df_limrate_p90$pred_lm <- pred$fit
+df_limrate_p90$pred_lm_se <-  pred$se.fit
 
 data$cv_lab_mean = "Mean climate velocity"
-data$cv_lab_q3 = "3rd quartile climate velocity"
+data$cv_lab_p90 = "90th percentile climate velocity"
 
 
 ## DISPERSAL 
@@ -358,21 +358,21 @@ cv_plot <- data %>%
                           "\nR2 = ", coefs$R2[which(coefs$Model == "lm_cv")[1]]), colour = "black",
            size = 3.5)
 
-cv_plot_q3 <- data %>%
-  ggplot(aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
+cv_plot_p90 <- data %>%
+  ggplot(aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, colour = p90ClimVeloKmY_RelScale)) +
   geom_point(alpha = 0.7, aes(shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Plant"), colour = "black", inherit.aes = FALSE,
+  geom_point(data = filter(data, is.na(colour_p90), group == "Plant"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 0,
-             aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Bird"), colour = "black", inherit.aes = FALSE,
+             aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(data, is.na(colour_p90), group == "Bird"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 1,
-             aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Squamate"), colour = "black", inherit.aes = FALSE,
+             aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(data, is.na(colour_p90), group == "Squamate"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 5,
-             aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Mammal"), colour = "black", inherit.aes = FALSE,
+             aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(data, is.na(colour_p90), group == "Mammal"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 2,
-             aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+             aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
   theme_bw() +
   stat_function(colour = "grey", fun = function(x){x},
                 linetype = "dashed") + 
@@ -385,16 +385,16 @@ cv_plot_q3 <- data %>%
        y = "Observed range expansion rate (km/y)", 
        colour = 'Velocity of\nclimate\nchange\n(km/y)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  geom_ribbon(data = df_cv_q3, aes(x = q3ClimVeloKmY_RelScale, y = pred_lm, 
+  geom_ribbon(data = df_cv_p90, aes(x = p90ClimVeloKmY_RelScale, y = pred_lm, 
                                     ymin = pred_lm - pred_lm_se, ymax = pred_lm + pred_lm_se), 
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_line(data = df_cv_q3, aes(x = q3ClimVeloKmY_RelScale, y = pred_lm),
+  geom_line(data = df_cv_p90, aes(x = p90ClimVeloKmY_RelScale, y = pred_lm),
             inherit.aes = FALSE, alpha = 0.5) +
   scale_shape_manual(values = c(19,17,15,18)) +
   scale_x_continuous(limits = c(0, 12.1)) +
   annotate("text", x = 7, y = 23, hjust = 0,
-           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lm_cv_q3")[1]],
-                          "\nR2 = ", coefs$R2[which(coefs$Model == "lm_cv_q3")[1]]), colour = "black",
+           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lm_cv_p90")[1]],
+                          "\nR2 = ", coefs$R2[which(coefs$Model == "lm_cv_p90")[1]]), colour = "black",
            size = 3.5)
 
 
@@ -437,19 +437,19 @@ disp_cv_plot <- data %>%
                           "\nR2 = ", coefs$R2[which(coefs$Model == "lm_disp_cv")[1]]), colour = "black",
            size = 3.5)
 
-disp_cv_q3_plot <- data %>%
-  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
+disp_cv_p90_plot <- data %>%
+  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = p90ClimVeloKmY_RelScale)) +
   geom_point(alpha = 0.7, aes(shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Plant"), colour = "black", inherit.aes = FALSE,
+  geom_point(data = filter(data, is.na(colour_p90), group == "Plant"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 0,
              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Bird"), colour = "black", inherit.aes = FALSE,
+  geom_point(data = filter(data, is.na(colour_p90), group == "Bird"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 1,
              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Squamate"), colour = "black", inherit.aes = FALSE,
+  geom_point(data = filter(data, is.na(colour_p90), group == "Squamate"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 5,
              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Mammal"), colour = "black", inherit.aes = FALSE,
+  geom_point(data = filter(data, is.na(colour_p90), group == "Mammal"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 2,
              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
   theme_bw() +
@@ -464,15 +464,15 @@ disp_cv_q3_plot <- data %>%
        y = "Observed range expansion rate (km/y)", 
        colour = 'Velocity of\nclimate\nchange\n(km/y)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  geom_ribbon(data = df_disp_cv_q3, aes(x = DispersalPotentialKmY, y = pred_lm, 
+  geom_ribbon(data = df_disp_cv_p90, aes(x = DispersalPotentialKmY, y = pred_lm, 
                                   ymin = pred_lm - pred_lm_se, ymax = pred_lm + pred_lm_se), 
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_line(data = df_disp_cv_q3, aes(x = DispersalPotentialKmY, y = pred_lm),
+  geom_line(data = df_disp_cv_p90, aes(x = DispersalPotentialKmY, y = pred_lm),
             inherit.aes = FALSE, alpha = 0.5)  +
   scale_shape_manual(values = c(19,17,15,18)) +
   annotate("text", x = 700, y = 23, hjust = 0,
-           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lm_disp_cv_q3")[1]],
-                          "\nR2 = ", coefs$R2[which(coefs$Model == "lm_disp_cv_q3")[1]]), colour = "black",
+           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lm_disp_cv_p90")[1]],
+                          "\nR2 = ", coefs$R2[which(coefs$Model == "lm_disp_cv_p90")[1]]), colour = "black",
            size = 3.5)
 
 ## DISPERSAL AND CLIMATE - INTERACTIVE
@@ -516,8 +516,8 @@ disp_int_plot <- data %>%
                           "\nR2 = ", coefs$R2[which(coefs$Model == "lm_disp_int")[1]]), colour = "black",
            size = 3.5)
 
-disp_int_q3_plot <- data %>%
-  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
+disp_int_p90_plot <- data %>%
+  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = p90ClimVeloKmY_RelScale)) +
   geom_point(alpha = 0.7, aes(shape = group)) +
   geom_point(data = filter(data, is.na(colour), group == "Plant"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 0,
@@ -543,21 +543,21 @@ disp_int_q3_plot <- data %>%
        y = "Observed range expansion rate (km/y)", 
        colour = 'Velocity of\nclimate\nchange\n(km/y)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  geom_ribbon(data = df_disp_int_q3, aes(x = DispersalPotentialKmY, y = pred_lm, 
+  geom_ribbon(data = df_disp_int_p90, aes(x = DispersalPotentialKmY, y = pred_lm, 
                                       ymin = pred_lm - pred_lm_se, ymax = pred_lm + pred_lm_se,
-                                      group = q3ClimVeloKmY_RelScale), 
+                                      group = p90ClimVeloKmY_RelScale), 
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_smooth(data = df_disp_int_q3, aes(x = DispersalPotentialKmY, y = pred_lm, 
-                                      colour = q3ClimVeloKmY_RelScale, group = q3ClimVeloKmY_RelScale),
+  geom_smooth(data = df_disp_int_p90, aes(x = DispersalPotentialKmY, y = pred_lm, 
+                                      colour = p90ClimVeloKmY_RelScale, group = p90ClimVeloKmY_RelScale),
               inherit.aes = FALSE, alpha = 0.5, method = "lm")  +
   scale_shape_manual(values = c(19,17,15,18)) +
   annotate("text", x = 750, y = 23, hjust = 0,
-           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lm_disp_int_q3")[1]],
-                          "\nR2 = ", coefs$R2[which(coefs$Model == "lm_disp_int_q3")[1]]), colour = "black",
+           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lm_disp_int_p90")[1]],
+                          "\nR2 = ", coefs$R2[which(coefs$Model == "lm_disp_int_p90")[1]]), colour = "black",
            size = 3.5)
 
-disp_int_q3_mean_plot <- data %>%
-  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
+disp_int_p90_mean_plot <- data %>%
+  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = p90ClimVeloKmY_RelScale)) +
   geom_point(alpha = 0.7, aes(shape = group)) +
   geom_point(data = filter(data, is.na(colour), group == "Plant"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 0,
@@ -584,15 +584,15 @@ disp_int_q3_mean_plot <- data %>%
        y = "Observed range expansion rate (km/y)", 
        colour = 'Velocity of\nclimate\nchange\n(km/y)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  geom_ribbon(data = df_disp_int_q3_mean, aes(x = DispersalPotentialKmY, y = pred_lm, 
+  geom_ribbon(data = df_disp_int_p90_mean, aes(x = DispersalPotentialKmY, y = pred_lm, 
                                           ymin = pred_lm - pred_lm_se, ymax = pred_lm + pred_lm_se), 
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_line(data = df_disp_int_q3_mean, aes(x = DispersalPotentialKmY, y = pred_lm),
+  geom_line(data = df_disp_int_p90_mean, aes(x = DispersalPotentialKmY, y = pred_lm),
               inherit.aes = FALSE, alpha = 0.5)  +
   scale_shape_manual(values = c(19,17,15,18)) +
   annotate("text", x = 650, y = 23, hjust = 0,
-           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lm_disp_int_q3")[1]],
-                          "\nR2 = ", coefs$R2[which(coefs$Model == "lm_disp_int_q3")[1]]), colour = "black",
+           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lm_disp_int_p90")[1]],
+                          "\nR2 = ", coefs$R2[which(coefs$Model == "lm_disp_int_p90")[1]]), colour = "black",
            size = 3.5)
 
 ## LIMITING RATE
@@ -635,21 +635,21 @@ limrate_plot <- data %>%
                           "\nR2 = ", coefs$R2[which(coefs$Model == "lm_limrate")[1]]), colour = "black",
            size = 3.5) 
 
-limrate_plot_q3 <- data %>%
-  ggplot(aes(x = LimitingRate_q3, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
+limrate_plot_p90 <- data %>%
+  ggplot(aes(x = LimitingRate_p90, y = ShiftKmY, colour = p90ClimVeloKmY_RelScale)) +
   geom_point(alpha = 0.7, aes(shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Plant"), colour = "black", inherit.aes = FALSE,
+  geom_point(data = filter(data, is.na(colour_p90), group == "Plant"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 0,
-             aes(x = LimitingRate_q3, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Bird"), colour = "black", inherit.aes = FALSE,
+             aes(x = LimitingRate_p90, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(data, is.na(colour_p90), group == "Bird"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 1,
-             aes(x = LimitingRate_q3, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Squamate"), colour = "black", inherit.aes = FALSE,
+             aes(x = LimitingRate_p90, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(data, is.na(colour_p90), group == "Squamate"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 5,
-             aes(x = LimitingRate_q3, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(data, is.na(colour_q3), group == "Mammal"), colour = "black", inherit.aes = FALSE,
+             aes(x = LimitingRate_p90, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(data, is.na(colour_p90), group == "Mammal"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 2,
-             aes(x = LimitingRate_q3, y = ShiftKmY, shape = group)) +
+             aes(x = LimitingRate_p90, y = ShiftKmY, shape = group)) +
   theme_bw() +
   stat_function(colour = "grey", fun = function(x){x},
                 linetype = "dashed") + 
@@ -662,44 +662,44 @@ limrate_plot_q3 <- data %>%
        y = "Observed range expansion rate (km/y)", 
        colour = 'Velocity of\nclimate\nchange\n(km/y)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  geom_ribbon(data = df_limrate_q3, aes(x = LimitingRate_q3, y = pred_lm, 
+  geom_ribbon(data = df_limrate_p90, aes(x = LimitingRate_p90, y = pred_lm, 
                                      ymin = pred_lm - pred_lm_se, ymax = pred_lm + pred_lm_se), 
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_line(data = df_limrate_q3, aes(x = LimitingRate_q3, y = pred_lm),
+  geom_line(data = df_limrate_p90, aes(x = LimitingRate_p90, y = pred_lm),
             inherit.aes = FALSE, alpha = 0.5) +
   scale_shape_manual(values = c(19,17,15,18)) +
   annotate("text", x = 7, y = 23, hjust = 0,
-           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lm_limrate_q3")[1]],
-                          "\nR2 = ", coefs$R2[which(coefs$Model == "lm_limrate_q3")[1]]), colour = "black",
+           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lm_limrate_p90")[1]],
+                          "\nR2 = ", coefs$R2[which(coefs$Model == "lm_limrate_p90")[1]]), colour = "black",
            size = 3.5) +
   scale_x_continuous(limits = c(0, 12.1)) 
 
 
-plot_grid(disp_int_q3_mean_plot, cv_plot_q3, limrate_plot_q3, 
+plot_grid(disp_int_p90_mean_plot, cv_plot_p90, limrate_plot_p90, 
           ncol = 3, align = "h")
 
-ggsave(path = "figures/model_results/all-observations", filename = "model-predictions_cv_q3.png", 
+ggsave(path = "figures/model_results/all-observations", filename = "model-predictions_cv_p90.png", 
        width = 9.2, height = 3.2)
 
 ##save legend
-temp = cv_plot_q3 +
+temp = cv_plot_p90 +
   theme(legend.position = "right")
 
 legend = ggpubr::get_legend(temp) 
 
-ggsave(legend, path = "figures/model_results/all-observations", filename = "model-predictions_cv_q3_legend.png",
+ggsave(legend, path = "figures/model_results/all-observations", filename = "model-predictions_cv_p90_legend.png",
        width = 1, height = 4)
 
-cv_plot_q3 <- cv_plot_q3 +
-  facet_grid(cols = vars(cv_lab_q3), scales = "free") +
+cv_plot_p90 <- cv_plot_p90 +
+  facet_grid(cols = vars(cv_lab_p90), scales = "free") +
   theme(strip.text.x = element_text(size = 11, angle = 0, colour = "black"),
         strip.background = element_rect(fill = "lightgrey", colour = "transparent")) 
 cv_plot <- cv_plot +
   facet_grid(cols = vars(cv_lab_mean), scales = "free") +
   theme(strip.text.x = element_text(size = 11, angle = 0, colour = "black"),
         strip.background = element_rect(fill = "lightgrey", colour = "transparent"))
-limrate_plot_q3<- limrate_plot_q3 +
-  facet_grid(cols = vars(cv_lab_q3), scales = "free") +
+limrate_plot_p90<- limrate_plot_p90 +
+  facet_grid(cols = vars(cv_lab_p90), scales = "free") +
   theme(strip.text.x = element_text(size = 11, angle = 0, colour = "black"),
         strip.background = element_rect(fill = "lightgrey", colour = "transparent"))
 limrate_plot <- limrate_plot +
@@ -707,7 +707,7 @@ limrate_plot <- limrate_plot +
   theme(strip.text.x = element_text(size = 11, angle = 0, colour = "black"),
         strip.background = element_rect(fill = "lightgrey", colour = "transparent")) 
 
-plot_grid(cv_plot_q3, cv_plot, limrate_plot_q3, limrate_plot,
+plot_grid(cv_plot_p90, cv_plot, limrate_plot_p90, limrate_plot,
           ncol = 2, align = "h")
 
 ggsave(path = "figures/model_results/all-observations", filename = "model-predictions_cv_comparison.png", 
@@ -721,11 +721,11 @@ ggsave(path = "figures/model_results/all-observations", filename = "model-predic
 ###################################################
 ## fit and compete the same linear models uisng best fit climate velocity to only observations of range expansion where dispersal < climate velocity
 ## mean+sd climate velocity was best fit
-di_data <- filter(data, what_is_limiting_q3 == "Dispersal")
+di_data <- filter(data, what_is_limiting_p90 == "Dispersal")
 
 lm_disp_di <- lm(ShiftKmY ~ DispersalPotentialKmY,
               data = di_data)
-lm_cv_di <- lm(ShiftKmY ~ q3ClimVeloKmY_RelScale,
+lm_cv_di <- lm(ShiftKmY ~ p90ClimVeloKmY_RelScale,
             data = di_data)
 
 ## plot residuals 
@@ -795,7 +795,7 @@ coefs <- coefs %>%
   select(Model, Formula, Parameter, Estimate, `Std. Error`, `t-value`, 
          `p-value`, `R2`, n, K, LL, AICc, everything())  %>%
   mutate(Parameter = ifelse(Parameter == "(Intercept)", "Intercept", 
-                            ifelse(str_detect(Parameter, "q3ClimVeloKmY_RelScale"), "Velocity of climate change",
+                            ifelse(str_detect(Parameter, "p90ClimVeloKmY_RelScale"), "Velocity of climate change",
                                    ifelse(str_detect(Parameter, "DispersalPotentialKmY"), "Potential dispersal rate", 
                                           "Minimum rate")))) %>%
   select(-Cum.Wt, -Formula) %>%
@@ -813,8 +813,8 @@ table_di <- coefs %>%
     title = "Main model set - dispersal-insufficient observations"
   ) 
 
-gtsave(table_di, path = "figures/model_results/dispersal-insufficient", filename = "table_di_cv_q3.png")
-gtsave(table_di, path = "figures/model_results/dispersal-insufficient", filename = "table_di_cv_q3.docx")
+gtsave(table_di, path = "figures/model_results/dispersal-insufficient", filename = "table_di_cv_p90.png")
+gtsave(table_di, path = "figures/model_results/dispersal-insufficient", filename = "table_di_cv_p90.docx")
 
 
 
@@ -825,7 +825,7 @@ pred =  predict(lm_disp_di, se.fit = TRUE, newdata = df_disp)
 df_disp$pred_lm <- pred$fit
 df_disp$pred_lm_se <- pred$se.fit
 
-df_cv <- data.frame(q3ClimVeloKmY_RelScale = seq(min(di_data$q3ClimVeloKmY_RelScale), max(di_data$q3ClimVeloKmY_RelScale),
+df_cv <- data.frame(p90ClimVeloKmY_RelScale = seq(min(di_data$p90ClimVeloKmY_RelScale), max(di_data$p90ClimVeloKmY_RelScale),
                                            by = 0.001))
 pred = predict(lm_cv_di, se.fit = TRUE, newdata = df_cv)
 df_cv$pred_lm <- pred$fit
@@ -834,18 +834,18 @@ df_cv$pred_lm_se <- pred$se.fit
 
 ## DISPERSAL 
 disp_plot_di <- di_data %>%
-  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
+  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = p90ClimVeloKmY_RelScale)) +
   geom_point(alpha = 0.7, aes(shape = group)) +
-  geom_point(data = filter(di_data, is.na(colour_q3), group == "Plant"), colour = "black", inherit.aes = FALSE,
+  geom_point(data = filter(di_data, is.na(colour_p90), group == "Plant"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 0,
              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(di_data, is.na(colour_q3), group == "Bird"), colour = "black", inherit.aes = FALSE,
+  geom_point(data = filter(di_data, is.na(colour_p90), group == "Bird"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 1,
              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(di_data, is.na(colour_q3), group == "Squamate"), colour = "black", inherit.aes = FALSE,
+  geom_point(data = filter(di_data, is.na(colour_p90), group == "Squamate"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 5,
              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(di_data, is.na(colour_q3), group == "Mammal"), colour = "black", inherit.aes = FALSE,
+  geom_point(data = filter(di_data, is.na(colour_p90), group == "Mammal"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 2,
              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
   theme_bw() +
@@ -870,20 +870,20 @@ disp_plot_di <- di_data %>%
 
 ## CLIMATE
 cv_plot_di <- di_data %>%
-  ggplot(aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
+  ggplot(aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, colour = p90ClimVeloKmY_RelScale)) +
   geom_point(alpha = 0.7, aes(shape = group)) +
-  geom_point(data = filter(di_data, is.na(colour_q3), group == "Plant"), colour = "black", inherit.aes = FALSE,
+  geom_point(data = filter(di_data, is.na(colour_p90), group == "Plant"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 0,
-             aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(di_data, is.na(colour_q3), group == "Bird"), colour = "black", inherit.aes = FALSE,
+             aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(di_data, is.na(colour_p90), group == "Bird"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 1,
-             aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(di_data, is.na(colour_q3), group == "Squamate"), colour = "black", inherit.aes = FALSE,
+             aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(di_data, is.na(colour_p90), group == "Squamate"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 5,
-             aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
-  geom_point(data = filter(di_data, is.na(colour_q3), group == "Mammal"), colour = "black", inherit.aes = FALSE,
+             aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(di_data, is.na(colour_p90), group == "Mammal"), colour = "black", inherit.aes = FALSE,
              fill = "transparent", pch = 2,
-             aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+             aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
   theme_bw() +
   stat_function(colour = "grey", fun = function(x){x},
                 linetype = "dashed") + 
@@ -896,10 +896,10 @@ cv_plot_di <- di_data %>%
        y = "Observed range expansion rate (km/y)", 
        colour = 'Velocity of\nclimate\nchange\n(km/y)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  geom_ribbon(data = df_cv, aes(x = q3ClimVeloKmY_RelScale, y = pred_lm, 
+  geom_ribbon(data = df_cv, aes(x = p90ClimVeloKmY_RelScale, y = pred_lm, 
                                 ymin = pred_lm - pred_lm_se, ymax = pred_lm + pred_lm_se), 
               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-  geom_line(data = df_cv, aes(x = q3ClimVeloKmY_RelScale, y = pred_lm),
+  geom_line(data = df_cv, aes(x = p90ClimVeloKmY_RelScale, y = pred_lm),
             inherit.aes = FALSE, alpha = 0.5) +
   scale_shape_manual(values = c(19,17,15,18)) +
   scale_x_continuous(limits = c(0, 12)) 
@@ -1077,11 +1077,11 @@ cv_plot_di_mean <- di_data_mean %>%
   scale_x_continuous(limits = c(0, 12)) 
 
 disp_plot_di <- disp_plot_di +
-  facet_grid(cols = vars(cv_lab_q3), scales = "free") +
+  facet_grid(cols = vars(cv_lab_p90), scales = "free") +
   theme(strip.text.x = element_text(size = 11, angle = 0, colour = "black"),
         strip.background = element_rect(fill = "lightgrey", colour = "transparent")) 
 cv_plot_di <- cv_plot_di +
-  facet_grid(cols = vars(cv_lab_q3), scales = "free") +
+  facet_grid(cols = vars(cv_lab_p90), scales = "free") +
   theme(strip.text.x = element_text(size = 11, angle = 0, colour = "black"),
         strip.background = element_rect(fill = "lightgrey", colour = "transparent"))
 disp_plot_di_mean<- disp_plot_di_mean +
@@ -1118,7 +1118,7 @@ cv_plot_di <- cv_plot_di +
 plot_grid(disp_plot_di, cv_plot_di,
           ncol = 2, align = "h")
 
-ggsave(path = "figures/model_results/dispersal-insufficient", filename = "model-predictions_di_cv_q3.png", 
+ggsave(path = "figures/model_results/dispersal-insufficient", filename = "model-predictions_di_cv_p90.png", 
        width = 6, height = 2.8)
 
 disp_plot_di + theme(legend.position = "right")
@@ -1133,11 +1133,11 @@ mean(di_data$ShiftKmY)
 # ##        DISPERSAL-SUFFICIENT OBSERVATIONS      ##
 # ###################################################
 # ## fit and compete the same linear models to only observations of range expansion where dispersal >climate velocity
-# ds_data <- filter(data, what_is_limiting_q3 == "Climate")
+# ds_data <- filter(data, what_is_limiting_p90 == "Climate")
 # 
 # lm_disp_ds <- lm(ShiftKmY ~ DispersalPotentialKmY,
 #                  data = ds_data)
-# lm_cv_ds <- lm(ShiftKmY ~ q3ClimVeloKmY_RelScale,
+# lm_cv_ds <- lm(ShiftKmY ~ p90ClimVeloKmY_RelScale,
 #                data = ds_data)
 # 
 # ## plot residuals 
@@ -1212,7 +1212,7 @@ mean(di_data$ShiftKmY)
 #     title = "Main model set - dispersal-sufficient observations"
 #   ) 
 # 
-# gtsave(table_ds, path = "figures/model_results/dispersal-sufficient", filename = "table_ds_cv_q3.png")
+# gtsave(table_ds, path = "figures/model_results/dispersal-sufficient", filename = "table_ds_cv_p90.png")
 # 
 # 
 # ## plot model predictions
@@ -1222,7 +1222,7 @@ mean(di_data$ShiftKmY)
 # df_disp$pred_lm <- pred$fit
 # df_disp$pred_lm_se <- pred$se.fit
 # 
-# df_cv <- data.frame(q3ClimVeloKmY_RelScale = seq(min(ds_data$q3ClimVeloKmY_RelScale), max(ds_data$q3ClimVeloKmY_RelScale),
+# df_cv <- data.frame(p90ClimVeloKmY_RelScale = seq(min(ds_data$p90ClimVeloKmY_RelScale), max(ds_data$p90ClimVeloKmY_RelScale),
 #                                                      by = 0.001))
 # pred = predict(lm_cv_ds, se.fit = TRUE, newdata = df_cv)
 # df_cv$pred_lm <- pred$fit
@@ -1231,18 +1231,18 @@ mean(di_data$ShiftKmY)
 # 
 # ## DISPERSAL 
 # disp_plot_ds<- ds_data %>%
-#   ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
+#   ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = p90ClimVeloKmY_RelScale)) +
 #   geom_point(alpha = 0.7, aes(shape = group)) +
-#   geom_point(data = filter(ds_data, is.na(colour_q3), group == "Plant"), colour = "black", inherit.aes = FALSE,
+#   geom_point(data = filter(ds_data, is.na(colour_p90), group == "Plant"), colour = "black", inherit.aes = FALSE,
 #              fill = "transparent", pch = 0,
 #              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-#   geom_point(data = filter(ds_data, is.na(colour_q3), group == "Bird"), colour = "black", inherit.aes = FALSE,
+#   geom_point(data = filter(ds_data, is.na(colour_p90), group == "Bird"), colour = "black", inherit.aes = FALSE,
 #              fill = "transparent", pch = 1,
 #              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-#   geom_point(data = filter(ds_data, is.na(colour_q3), group == "Squamate"), colour = "black", inherit.aes = FALSE,
+#   geom_point(data = filter(ds_data, is.na(colour_p90), group == "Squamate"), colour = "black", inherit.aes = FALSE,
 #              fill = "transparent", pch = 5,
 #              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-#   geom_point(data = filter(ds_data, is.na(colour_q3), group == "Mammal"), colour = "black", inherit.aes = FALSE,
+#   geom_point(data = filter(ds_data, is.na(colour_p90), group == "Mammal"), colour = "black", inherit.aes = FALSE,
 #              fill = "transparent", pch = 2,
 #              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
 #   theme_bw() +
@@ -1266,20 +1266,20 @@ mean(di_data$ShiftKmY)
 # 
 # ## CLIMATE
 # cv_plot_ds<- ds_data %>%
-#   ggplot(aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
+#   ggplot(aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, colour = p90ClimVeloKmY_RelScale)) +
 #   geom_point(alpha = 0.7, aes(shape = group)) +
-#   geom_point(data = filter(ds_data, is.na(colour_q3), group == "Plant"), colour = "black", inherit.aes = FALSE,
+#   geom_point(data = filter(ds_data, is.na(colour_p90), group == "Plant"), colour = "black", inherit.aes = FALSE,
 #              fill = "transparent", pch = 0,
-#              aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
-#   geom_point(data = filter(ds_data, is.na(colour_q3), group == "Bird"), colour = "black", inherit.aes = FALSE,
+#              aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+#   geom_point(data = filter(ds_data, is.na(colour_p90), group == "Bird"), colour = "black", inherit.aes = FALSE,
 #              fill = "transparent", pch = 1,
-#              aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
-#   geom_point(data = filter(ds_data, is.na(colour_q3), group == "Squamate"), colour = "black", inherit.aes = FALSE,
+#              aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+#   geom_point(data = filter(ds_data, is.na(colour_p90), group == "Squamate"), colour = "black", inherit.aes = FALSE,
 #              fill = "transparent", pch = 5,
-#              aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
-#   geom_point(data = filter(ds_data, is.na(colour_q3), group == "Mammal"), colour = "black", inherit.aes = FALSE,
+#              aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+#   geom_point(data = filter(ds_data, is.na(colour_p90), group == "Mammal"), colour = "black", inherit.aes = FALSE,
 #              fill = "transparent", pch = 2,
-#              aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+#              aes(x = p90ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
 #   theme_bw() +
 #   stat_function(colour = "grey", fun = function(x){x},
 #                 linetype = "dashed") + 
@@ -1292,10 +1292,10 @@ mean(di_data$ShiftKmY)
 #        y = "Observed range expansion rate (km/y)", 
 #        colour = 'Velocity of\nclimate\nchange\n(km/y)') +
 #   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-#   geom_ribbon(data = df_cv, aes(x = q3ClimVeloKmY_RelScale, y = pred_lm, 
+#   geom_ribbon(data = df_cv, aes(x = p90ClimVeloKmY_RelScale, y = pred_lm, 
 #                                 ymin = pred_lm - pred_lm_se, ymax = pred_lm + pred_lm_se), 
 #               fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
-#   geom_line(data = df_cv, aes(x = q3ClimVeloKmY_RelScale, y = pred_lm),
+#   geom_line(data = df_cv, aes(x = p90ClimVeloKmY_RelScale, y = pred_lm),
 #             inherit.aes = FALSE, alpha = 0.5) +
 #   scale_shape_manual(values = c(19,17,15,18)) +
 #   scale_x_continuous(limits = c(0, 12.5)) 
@@ -1472,11 +1472,11 @@ mean(di_data$ShiftKmY)
 #   scale_x_continuous(limits = c(0, 12.5)) 
 # 
 # disp_plot_ds<- disp_plot_ds +
-#   facet_grid(cols = vars(cv_lab_q3), scales = "free") +
+#   facet_grid(cols = vars(cv_lab_p90), scales = "free") +
 #   theme(strip.text.x = element_text(size = 11, angle = 0, colour = "black"),
 #         strip.background = element_rect(fill = "lightgrey", colour = "transparent")) 
 # cv_plot_ds <- cv_plot_ds +
-#   facet_grid(cols = vars(cv_lab_q3), scales = "free") +
+#   facet_grid(cols = vars(cv_lab_p90), scales = "free") +
 #   theme(strip.text.x = element_text(size = 11, angle = 0, colour = "black"),
 #         strip.background = element_rect(fill = "lightgrey", colour = "transparent"))
 # disp_plot_ds_mean <- disp_plot_ds_mean +
@@ -1513,7 +1513,7 @@ mean(di_data$ShiftKmY)
 # plot_grid(cv_plot_ds, disp_plot_ds, 
 #           ncol = 2, align = "h")
 # 
-# ggsave(path = "figures/model_results/dispersal-sufficient", filename = "model-predictions_ds_cv_q3.png", 
+# ggsave(path = "figures/model_results/dispersal-sufficient", filename = "model-predictions_ds_cv_p90.png", 
 #        width = 8.5, height = 4)
 # 
 # 

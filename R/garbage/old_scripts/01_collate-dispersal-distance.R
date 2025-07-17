@@ -329,7 +329,7 @@ jenkins_dd <- jenkins %>%
   unique()
 
 ## check how many species in bioshifts 
-length(which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))) ## 300
+length(which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))) ## 299
 jenkins_sp <- unique(jenkins_dd$scientificName)[which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))]
 
 
@@ -348,7 +348,7 @@ flores$reported_name_fixed[which(flores$reported_name_fixed == "Erodyum cicutari
 
 ## harmonize taxonomy
 flores_harm <- harmonize(flores$reported_name_fixed)
-notfound <- filter(flores_harm, is.na(db_code)) #two not found
+notfound <- filter(flores_harm, is.na(db_code)) #one not found
 
 ## rename columns 
 flores <- flores %>%
@@ -391,7 +391,7 @@ jenkins_dd <- jenkins_dd %>%
   filter(!paste(scientificName, Code, DispersalDistance, sep = "_") %in% key$data_id)
 
 ## check how many species in bioshifts 
-length(which(unique(flores_dd$scientificName) %in% unique(sp$scientificName))) ## 33
+length(which(unique(flores_dd$scientificName) %in% unique(sp$scientificName))) ## 34
 flores_sp <- unique(flores_dd$scientificName)[which(unique(flores_dd$scientificName) %in% unique(sp$scientificName))]
 
 ## check how many species in bioshifts 
@@ -507,7 +507,7 @@ jenkins_dd <- jenkins_dd %>%
   filter(!paste(scientificName, DispersalDistance, sep = "_") %in% key$data_id)
 
 ## check how many species in bioshifts 
-length(which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))) ## 218
+length(which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))) ## 217
 jenkins_sp <- unique(jenkins_dd$scientificName)[which(unique(jenkins_dd$scientificName) %in% unique(sp$scientificName))]
 
 
@@ -525,7 +525,7 @@ tamme_dd <- tamme_dd %>%
          Source != "Smith & Kok 1984")
 
 ## check how many species in bioshifts 
-length(which(unique(tamme_dd$scientificName) %in% unique(sp$scientificName))) ## 333
+length(which(unique(tamme_dd$scientificName) %in% unique(sp$scientificName))) ## 334
 tamme_sp <- unique(tamme_dd$scientificName)[which(unique(tamme_dd$scientificName) %in% unique(sp$scientificName))]
 
 
@@ -775,7 +775,7 @@ dd_collated <- dd_collated %>%
   filter(type != "Min")
 
 
-length(unique(dd_collated$scientificName)) #605 species
+length(unique(dd_collated$scientificName)) #604 species
 
 ## make general observation type column 
 ## general types of studies:

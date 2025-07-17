@@ -88,7 +88,7 @@ v3 = read.csv("data-processed/v3_shifts.csv")
 
 ## subset v3 to only species with dispersal distance  
 v3 <- filter(v3, scientificName_checked %in% dscale$scientificName_checked)
-length(unique(v3$scientificName_checked)) #601 species 
+length(unique(v3$scientificName_checked)) #600 species 
 
 
 #########################################################
@@ -107,7 +107,7 @@ dscale <- rename(dscale, "DispersalSource"= Source, "DispersalUnit"= Unit)
 v3 = left_join(v3, dscale, by = "scientificName_checked") 
 
 ## check on merge
-length(unique(v3$scientificName_checked[which(!is.na(v3$MaxDispersalDistanceKm))])) # 601 species have max dispersal distance
+length(unique(v3$scientificName_checked[which(!is.na(v3$MaxDispersalDistanceKm))])) # 600 species have max dispersal distance
 length(which(is.na(v3$MaxDispersalDistanceKm))) # 0 missing max dispersal distance
 
 
@@ -143,7 +143,7 @@ v3 <- left_join(v3, am_join, by = "scientificName_checked")
 
 length(unique(v3$scientificName_checked)) ## still have all the species
 length(unique(v3$scientificName_checked[which(is.na(v3$AgeAtMaturityDays))])) 
-## 138 / 601 species with dispersal estimates do not have age at maturity data 
+## 136 / 600 species with dispersal estimates do not have age at maturity data 
 
 unique(v3$scientificName[which(is.na(v3$AgeAtMaturityDays))])
 
@@ -170,8 +170,8 @@ v3$ShiftKmY <- ifelse(v3$Type == "ELE", v3$Rate / 1000,
 ## colour pal
 mycolours <- colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(10)
 
-nrow(v3) # 3952 range shifts
-length(unique(v3$scientificName_checked)) # 463 species 
+nrow(v3) # 3958 range shifts
+length(unique(v3$scientificName_checked)) # 464 species 
 unique(v3$Param)
 
 v3 %>%
@@ -202,7 +202,7 @@ v3 <- read.csv("data-processed/v3_potential-dispersal-rate.csv")
 lat <- v3  %>%
   filter(Type != "ELE")
   
-nrow(lat) # 2759 shifts
+nrow(lat) # 2755 shifts
 length(unique(lat$scientificName_checked)) # 398 species 
   
 ## how many are centroid vs. leading edge 

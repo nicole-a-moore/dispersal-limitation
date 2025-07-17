@@ -31,8 +31,8 @@ data <- dd %>%
   mutate(cv_lab = ifelse(cv_type == "ClimVeloKmY_25km", "25km", 
                          ifelse(cv_type == "ClimVeloKmY_50km", "50km", 
                                 ifelse(cv_type == "ClimVeloKmY_110km", "110km", 
-                                       "Relevant scale")))) %>%
-  mutate(cv_lab = factor(cv_lab, levels = c("Relevant scale", "25km", "50km", "110km"), ordered = TRUE))
+                                       "Species-relevant scale")))) %>%
+  mutate(cv_lab = factor(cv_lab, levels = c("25km", "50km", "110km", "Species-relevant scale"), ordered = TRUE))
 
 ## arrange by what is limiting
 data <- arrange(data, what_is_limiting)
@@ -64,15 +64,15 @@ data %>%
   guides(size = "legend", fill = "none")
 
 
-## plot that shows mean + 90th percentile and max dispersal
+## plot that shows mean + 3rd quantile and max dispersal
 data <- dd %>%
-  mutate(facet = ifelse(DispersalPotentialKmY <= p90ClimVeloKmY_RelScale, 
+  mutate(facet = ifelse(DispersalPotentialKmY <= q3ClimVeloKmY_RelScale, 
                         "Dispersal", "Climate")) %>%
   mutate(what_is_limiting_median = ifelse(MedianDispersalPotentialKmY <= ClimVeloKmY_RelScale, "Dispersal", "Climate"),
-         what_is_limiting_median_upper = ifelse(MedianDispersalPotentialKmY <= p90ClimVeloKmY_RelScale, 
+         what_is_limiting_median_upper = ifelse(MedianDispersalPotentialKmY <= q3ClimVeloKmY_RelScale, 
                                                 "Dispersal", "Climate"),
          what_is_limiting = ifelse(DispersalPotentialKmY <= ClimVeloKmY_RelScale, "Dispersal", "Climate"),
-         what_is_limiting_upper = ifelse(DispersalPotentialKmY <= p90ClimVeloKmY_RelScale, "Dispersal", "Climate")) %>%
+         what_is_limiting_upper = ifelse(DispersalPotentialKmY <= q3ClimVeloKmY_RelScale, "Dispersal", "Climate")) %>%
   mutate(sensitive = ifelse(what_is_limiting_median == what_is_limiting_median_upper & 
                               what_is_limiting_median_upper ==  what_is_limiting & 
                               what_is_limiting == what_is_limiting_upper,
@@ -97,8 +97,8 @@ p <- data %>%
   ggplot(aes(x = rank, y = disp_measure, colour = disp_measure_type)) +
   geom_pointrange(inherit.aes = F, 
                   data = data, aes(x = rank, y = ClimVeloKmY_RelScale, 
-                                   ymax = p90ClimVeloKmY_RelScale,
-                                   ymin = p10ClimVeloKmY_RelScale),
+                                   ymax = q3ClimVeloKmY_RelScale,
+                                   ymin = q1ClimVeloKmY_RelScale),
                   size = 0.1, linewidth = 0.08) +
   labs(x = "Range shift observation", 
        colour = "", 
@@ -118,10 +118,10 @@ p <- data %>%
 ## hack a legend for point range 
 legend <- data %>%
   filter(cat == "Sensitive to type of\nmeasurement used") %>%
-  mutate(cat = "p10, mean, and p90 velocity of climate change") %>%
+  mutate(cat = "q1, mean, and q3 velocity of climate change") %>%
   ggplot(aes(x = rank, y = ClimVeloKmY_RelScale, 
-             ymax = p90ClimVeloKmY_RelScale,
-             ymin = p10ClimVeloKmY_RelScale, colour = cat)) +
+             ymax = q3ClimVeloKmY_RelScale,
+             ymin = q1ClimVeloKmY_RelScale, colour = cat)) +
   geom_point() +
   geom_linerange(size = 0.1, linewidth = 0.1) +
   theme(legend.position = "bottom", 
