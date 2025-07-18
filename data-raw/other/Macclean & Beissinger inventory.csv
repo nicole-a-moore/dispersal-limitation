@@ -1,0 +1,46 @@
+exclude,Study,Taxa,Location,Range Type,Traits Tested,Method to detect shift,Response type,Ele or lat,Findings,,,
+n,Auer and King 2014,bird,USA,"L, A","Migratory distance, fecundity, diet breadth, range size, historic limit",north american breeding bird survery over 35 years,magnitude of upper elevation boundary displacement,ele,migratory status as proxy for dispersal distance,migratory status 0,,bird elevation: no or contrary to expectation
+n,Tingley et al. 2009,bird,"CA, USA",A,"Migratory distance, fecundity, diet breadth, body size, territory type, home range",bird elevation shifts in US,probability of upper limt elevational shift,ele,more likely to shift if non-migratory,migratory distance -,,
+n,Angert et al. 2011,bird,USA,L,"Migratory distance, fecundity, diet breadth, body size, wingload, flight rank, range size, historic limit",pre-existing datasets,rate of nothern boundary displacement,lat,no real strong effect of any trait,"body size 0
+migratory status 0",,
+n,Auer and King 2014,bird,USA,"L, A","Migratory distance, fecundity, diet breadth, range size, historic limit",north american breeding bird survery over 35 years,magnitude of northern latitude boundary displacement,lat,migratory status as proxy for dispersal distance,migratory status 0,,
+n,Bradshaw et al. 2014,bird,Britain,L,"Body size, natal dispersal, conservation status",british breeding birds ,change in area of occupancy (expansion),lat,increasing body mass and natal dispersal resulted in a reduced probability of expanding area of occupancy,"body size -
+mean natal dispersal -",,
+n,Brommer 2008,bird,Finland,L,"Migratory distance, diet guild, body size",finnish birds,magnitude of poleward range margin shift,lat,"larger birds showed smaller range margin shift, no difference for species with different migration ecology","body size -
+migration ecology 0",,
+n,Hockey et al. 2011,bird,South Africa,L,"Migratory distance, diet breadth, habitat breadth",range expansions south and west in south africa,whether range expanded or not (0 or 1),lat,full migrants more likely to expand range,migration habit +,,
+n,La Sorte and Thompson,bird,USA,L,Migratory distance ,CBC data ,trend in maximum occupied latitude ,lat,no evidence that it is associated,migratory status 0,,
+,Zurrell,,,,"Body size, HWI",,,lat,mixed,body size +/-,,
+n,Betzholtz et al. 2012,butterfly,Sweden,L,"Length of flight period, activity period temp., diet breadth, diet guild, body size, habitat niche",long term data set over sweden,magnitude of northern boundary displacement,lat,,body size 0,,
+n,Pöyry et al. 2009,lepidoptera,Finland,L,"Length of flight period, diet breadth, body size, flight behavior, larval host, habitat niche, habitat breadth, overwintering stage, conservation status, range size ",finnish butterflies,change in latitude of northern range boundary,lat,"mobility, calculated based on experts","body size +
+mobility +",,
+n,Angert et al. 2011,dragonfly,Britain,L,"Migratory distance, length of flight period, fecundity, body size, flight behavior, habitat niche, range size, historic limit",pre-existing datasets,rate of nothern boundary displacement,lat,no real strong effect of any trait,body size 0,,
+n,Comte et al. 2014,fish,France,A,"Fecundity, diet niche, mobility, habitat breadth, thermophily, range size",freshwater fish in france,rate of range margin shift,ele,weaky related to larval and adult body size,body size 0,HERE,
+n,Alofs et al. 2014,fish,"Ontario, Canada",L,"Fecundity, lifespan, diet breadth, body size, habitat niche, habitat breadth, harvest status, range size, historic limit",historical surveys,shift of northern range boundary,lat,larger fish shifted farther north,body size +,,
+n,Perry et al. 2005,fish,North Sea,L,"Age at maturity, body size, growth rate",,shifting versus non-shifting,lat,,body size -,,
+n,Sunday et al. 2015,fish,Australia,L,"Diet breadth, body size, range size",,polward boundary shifts,lat,,"mobility +
+body size 0",,
+n,Angert et al. 2011,mammal,"CA, USA",A,"Fecundity, lifespan, diet breadth, body size, hibernation behavior, daily rhythm, range size, historic limit",pre-existing datasets,magnitude of boundary displacement,ele,no real strong effect of any trait,body size 0,,
+n,Angert et al. 2011,plant,Switzerland,A,"Fecundity, lifespan, diet breadth, body size, hibernation behavior, daily rhythm, range size, historic limit",pre-existing datasets,rate of boundary displacement,ele,longer seed dispersal period had faster shift,"dispersal duration +
+seed mass 0
+body size 0",,
+n,Felde et al. 2012,plant,Norway,A,"Dispersal mode, cryophily, snow affinity, growth form, Ellenberg indicators",plant elevation shifts in Norway,magnitude of range margin shift,ele,upper limit shift not related to traits,"life form 0
+dispersal syndrome 0",,
+n,Parolo and Rossi 2007,plant,Italy,A,"Dispersal mode, disaspore mass",alps study,,ele,more prounounced shifts in species with less seed mass ,seed mass -,,
+n,Powney et al. 2014,plant,Britain,L,"Thermophily, height, habitat breadth, Ellenberg values, life cycle",vascular plants in Britain,range change - not necessarily only expansion,lat,taller species had more positive range change ,height +,,
+n,Moreno-Rueda et al. 2012,reptile,Spain,A,"Fecundity, body size",reptile shift in spain,magnitude of range margin shift,lat,shift in northward limit not related to body size,body size 0,,
+y,Moritz et al. 2008,bird,"CA, USA",A,"Diet guild, body size, fecundity, lifespan, hibernation behavior, daily rhythm",predicted which species shifted up,,ele,,,,
+y,McDonald et al. 2012,bird,USA,L,Migratory distance,testing diversity shifts ,,,,,,
+y,Mattila et al. 2011,butterfly,Finland,L,"Length of flight period, diet breadth, body size, flight behavior, habitat breadth, overwintering stage",testing whether species with certain triats more often shifted in average direction,,,,,,
+y,Yemane et al. 2014,fish,Atlantic (Africa),"L, A","Body size, harvest status",whether species that show shift or not have certain body size,shift versus not,lat," There was no significant difference in mean maximum length between species that showed a shift and those that didnÕt shift in either of the four indices, mean latitude and mean depth, depth range and latitudinal range",body size 0,,
+y,Grenouillet and Comte 2014,fish,France,L,"Lifespan, dispersal, thermophily, range size, historic limit",not directly testing dispersal effect on range expansion - excluded ,,,,,,
+y,McCain and King 2014,mammal,North America,"L, A","Body size, hibernation behavior, daily rhythm, heterothermy, burrowing behavior, nesting behavior",testing whether traits explain whether species responded as expected or not ,,,,,,
+y,Przeslawski et al. 2012,marine,Global,L,"Mobility, dispersal potential, habitat niche, diet guild",meta analysis but didn't distinguish between expansion and contraction,,,not significantly related,"dispersal ability 0
+mobility 0",,
+y,Grytnes et al. 2014,plant,Europe,A,"Thermophily, snow preference, dispersal mode, Ellenberg indicators",not testing dispersal ina traditional way - measuring traits of the proportion of species new to summit ,proportion of species new to summit,ele,only endochory (seeds dispersed by passing through the guts of animals) showed a statistically significant trend. But few data were endochory so not really a reliable result,dispersal mode *,,
+y,Wolf et al. 2016,plant,"CA, USA",A,"Seed size, growth form",mean position along elevational gradient,mean shift rate across species ,ele,small seed plants had greater propensity to shift upward,seed size -,,
+y,Crimmins et al. 2011,plant,USA,A,"Growth form, dispersal mode, physiognomy, fire adaptation",downward shift in optimum elevation of plants - excluded,,,,,,
+y,Holzinger et al.,plant,Switzerland,A,"Dispersal mode, dispersal month, diaspore length",measure range shift as species richness change - exclude,,,,,,
+,Brommer and Møller 2010,bird,"Europe, USA","L, A","Migratory distance, fecundity, diet guild, body size, habitat niche, adult survival, brain mass, thermal range, dispersal distance",,,,,,,
+y,Zuckerberg et al. 2009,bird,"NY, USA","L, A","Migratory distance, diet guild, habitat niche",,shifts in centre of occurrence,lat,no relationship,migratory status 0,,bird latitude: only 1 study with expected relationship
+y,Zuckerberg et al. 2009,bird,"NY, USA","L, A","Migratory distance, diet guild, habitat niche",,mean shift in centre of occurrence,ele,resident birds shifted to higher elevations,migratory status *,,
