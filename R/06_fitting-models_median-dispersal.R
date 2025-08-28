@@ -46,6 +46,9 @@ dd <- dd %>%
 ## get rid of range contractions that are father than 1 sd from the mean shift 
 data <- filter(dd, Rate >= (mean(dd$ShiftKmY) - sd(dd$ShiftKmY)))
 
+## get rid of non-birds and non-plants
+data = filter(data, group %in% c("Bird", "Plant"))
+
 ## save data
 write.csv(data, "data-processed/model-data_main_median-disp.csv", row.names = FALSE)
 

@@ -42,12 +42,14 @@ max(sd$sd_dp)
 
 ## calculate the max and median dispersal distance per species 
 ## keep rows that correspond to original data for the max value 
-dscale <- dscale %>%
+dscale_temp <- dscale %>%
   group_by(scientificName_checked) %>%
   mutate(MaxDispersalDistanceKm = max(DispersalDistanceKm),
          MedianDispersalDistanceKm = median(DispersalDistanceKm),
          NObs_MedianDispersalDistanceKm = n()) %>% 
-  ungroup() %>%
+  ungroup() 
+
+dscale <- dscale_temp %>%
   filter(DispersalDistanceKm == MaxDispersalDistanceKm)
 
 ## look at duplicates
@@ -132,11 +134,19 @@ am_join <- am %>%
                                            AgeAtMaturity*7,
                                            AgeAtMaturity))) %>% # convert all to days 
   group_by(scientificName_checked) %>%
-  mutate(AgeAtMaturityDays = min(AgeAtMaturityDays)) %>% # select minimum per species 
+  filter(AgeAtMaturityDays == min(AgeAtMaturityDays)) %>% # select minimum per species 
+  slice(1) %>% ## keep first row 
   ungroup() %>%
-  select(scientificName_checked, AgeAtMaturityDays) %>%
+  select(scientificName_checked, AgeAtMaturityDays, AgeAtMaturity, Database, Unit, Code) %>%
   unique() %>%
+  rename("AgeAtMaturyCode" = Code, "AgeAtMaturityDatabase" = Database) %>%
   mutate(YearOfMaturity = ceiling(AgeAtMaturityDays/365)) ## make new column for a value that's rounded to the nearest year 
+# 
+# am_join = am_join_temp %>%
+#   select(scientificName_checked, AgeAtMaturityDays) %>%
+#   unique() %>%
+#   rename("AgeAtMaturyCode" = Code, "AgeAtMaturitySource" = Source) %>%
+#   mutate(YearOfMaturity = ceiling(AgeAtMaturityDays/365)) ## make new column for a value that's rounded to the nearest year 
 
 ## join to dispersal data:
 v3 <- left_join(v3, am_join, by = "scientificName_checked")
@@ -164,6 +174,43 @@ v3 = v3 %>%
 v3$ShiftKmY <- ifelse(v3$Type == "ELE", v3$Rate / 1000, 
                                v3$Rate)
 
+## make database that has species, dispersal distance measurements + source, longevity measurement + source, Max and Median dispersal measurement
+
+db <- v3 %>%
+  select(sp_name_checked, Database, 
+         MaxDispersalDistanceKm, MedianDispersalDistanceKm, NObs_MedianDispersalDistanceKm,
+         AgeAtMaturity, Unit, AgeAtMaturyCode, AgeAtMaturityDatabase, YearOfMaturity, DispersalPotentialKmY) %>% 
+  distinct() %>%
+  rename("MaxDispersalDistance_Database" = Database, "DispersalFrequency_MeasurementType" = AgeAtMaturyCode,
+         "DispersalFrequency_Database" = AgeAtMaturityDatabase, "DispersalFrequency" = AgeAtMaturity, 
+         "DispersalFrequency_Unit" = Unit, "DispersalFrequencyY" = YearOfMaturity,
+         "PotentialDispersalRateKmY" = DispersalPotentialKmY) %>%
+  mutate(sp_name_checked = str_replace_all(sp_name_checked, "_", " ")) 
+
+## add in raw dispersal estimates (before mean and median were calculated)
+db = dscale_temp %>%
+  select(scientificName_checked, DispersalDistance, Unit, Code, Database, ObservationTypeGeneral) %>%
+  rename("sp_name_checked" = scientificName_checked, "DispersalDistance_ObservationType" = ObservationTypeGeneral,
+         "DispersalDistance_Database" = Database,
+         "DispersalDistance_MeasurementType" = Code, "DispersalDistance_Unit" = Unit) %>%
+  left_join(., db) %>%
+  filter(!is.na(DispersalFrequency)) %>%
+  select(sp_name_checked, DispersalDistance, DispersalDistance_Unit, DispersalDistance_ObservationType,
+         DispersalDistance_MeasurementType, DispersalDistance_Database,
+         DispersalFrequency, DispersalFrequency_Unit, DispersalFrequency_MeasurementType,
+         DispersalFrequency_Database, MaxDispersalDistanceKm, MaxDispersalDistance_Database, 
+         MedianDispersalDistanceKm, NObs_MedianDispersalDistanceKm, 
+         DispersalFrequencyY, PotentialDispersalRateKmY) %>%
+  arrange(sp_name_checked) %>%
+  rename("GenusSpecies" = sp_name_checked)
+
+length(which(db$DispersalFrequency_MeasurementType %in% c("MaturityFromLifespan", "MaturityFromGrowthForm")))
+## 24 species 
+
+## save the database as a csv:
+write.csv(db, "figures/supplementary-table_dispersal-data.csv", row.names = F)
+
+
 ##########################
 ####   plot the data  ####
 ##########################
@@ -171,7 +218,7 @@ v3$ShiftKmY <- ifelse(v3$Type == "ELE", v3$Rate / 1000,
 mycolours <- colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(10)
 
 nrow(v3) # 3952 range shifts
-length(unique(v3$scientificName_checked)) # 463 species 
+length(unique(v3$scientificName_checked)) # 465 species 
 unique(v3$Param)
 
 v3 %>%

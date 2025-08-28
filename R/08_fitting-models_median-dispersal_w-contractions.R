@@ -40,6 +40,9 @@ dd <- dd %>%
 
 data = dd
 
+## get rid of non-birds and non-plants
+data = filter(data, group %in% c("Bird", "Plant"))
+
 ## save data
 write.csv(data, "data-processed/model-data_main_median-disp.csv", row.names = FALSE)
 
