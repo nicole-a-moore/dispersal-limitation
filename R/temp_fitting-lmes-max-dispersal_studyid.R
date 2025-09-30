@@ -111,40 +111,55 @@ library(nlme)
 
 ## 1. range expansion rate ~ potential dispersal rate
 lme_disp = lme(ShiftKmY ~ DispersalPotentialKmY, 
-               random = ~ 1|sp_name_checked,
+               random = ~ 1|ID,
                data = data)
+lme_disp = lme4::lmer(ShiftKmY ~ DispersalPotentialKmY + (1|Article_ID) + (1|sp_name_checked), data = data)
 
 ## 2. range expansion rate ~ velocity of climate change (at ecologically-relevant spatial scale)
 lme_cv = lme(ShiftKmY ~ ClimVeloKmY_RelScale, 
-               random = ~ 1|sp_name_checked,
+               random = ~1|ID,
                data = data)
+lme_cv <- lme4::lmer(ShiftKmY ~ ClimVeloKmY_RelScale + (1|Article_ID) + (1|sp_name_checked), data = data)
+
 lme_cv_q3 <- lme(ShiftKmY ~ q3ClimVeloKmY_RelScale,
-                random = ~ 1|sp_name_checked,
+                random = ~ 1|ID,
                 data = data)
+
+lme_cv_q3 <- lme4::lmer(ShiftKmY ~ q3ClimVeloKmY_RelScale + (1|Article_ID) + (1|sp_name_checked), data = data)
 
 ## 3. range expansion rate ~ potential dispersal rate + velocity of climate change
 lme_disp_cv <- lme(ShiftKmY ~ DispersalPotentialKmY + ClimVeloKmY_RelScale,
-                   random = ~ 1|sp_name_checked,
+                   random = ~ 1|ID,
                    data = data)
 lme_disp_cv_q3 <- lme(ShiftKmY ~ DispersalPotentialKmY + q3ClimVeloKmY_RelScale,
-                      random = ~ 1|sp_name_checked,
+                      random = ~ 1|Article_ID,
                       data = data)
+
+lme_disp_cv <- lme4::lmer(ShiftKmY ~ DispersalPotentialKmY + ClimVeloKmY_RelScale + (1|ID) + (1|sp_name_checked), data = data)
+lme_disp_cv_q3 <- lme4::lmer(ShiftKmY ~ DispersalPotentialKmY + q3ClimVeloKmY_RelScale + (1|Article_ID) + (1|sp_name_checked), data = data)
+
 
 ## 4. range expansion rate ~ potential dispersal rate*velocity of climate change 
 lme_disp_int <- lme(ShiftKmY ~ DispersalPotentialKmY*ClimVeloKmY_RelScale,
-                    random = ~ 1|sp_name_checked,
+                    random = ~ 1|ID,
                     data = data)
 lme_disp_int_q3 <- lme(ShiftKmY ~ DispersalPotentialKmY*q3ClimVeloKmY_RelScale,
-                       random = ~ 1|sp_name_checked,
+                       random = ~ 1|Article_ID,
                        data = data)
+lme_disp_int <- lme4::lmer(ShiftKmY ~ DispersalPotentialKmY*ClimVeloKmY_RelScale + (1|ID) + (1|sp_name_checked), data = data)
+lme_disp_cv_q3 <- lme4::lmer(ShiftKmY ~ DispersalPotentialKmY*q3ClimVeloKmY_RelScale + (1|Article_ID) + (1|sp_name_checked), data = data)
+
 
 ## 5. range expansion rate ~ minimum of potential dispersal rate and velocity of climate change 
 lme_limrate <- lme(ShiftKmY ~ LimitingRate,
                    random = ~ 1|sp_name_checked,
                    data = data)
 lme_limrate_q3 <- lme(ShiftKmY ~ LimitingRate_q3,
-                      random = ~ 1|sp_name_checked,
+                      random = ~ 1|ID,
                       data = data)
+lme_limrate <- lme4::lmer(ShiftKmY ~ LimitingRate + (1|Article_ID) + (1|sp_name_checked), data = data)
+lme_limrate_q3 <- lme4::lmer(ShiftKmY ~ LimitingRate_q3 + (1|Article_ID) + (1|sp_name_checked), data = data)
+
 
 ## plot residuals 
 plot(lme_disp) 

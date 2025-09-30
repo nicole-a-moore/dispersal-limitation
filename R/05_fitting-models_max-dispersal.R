@@ -23,8 +23,30 @@ dd %>%
   filter(Param == "LE") %>%
   filter(ClimVeloKmY_RelScale < 0)
 
-## filter to leading edge shifts with positive mean climate velocity 
-dd <- filter(dd, !Param %in% c("O", "TE") & ClimVeloKmY_RelScale >= 0)
+## filter to leading edge shifts 
+dd = filter(dd, !Param %in% c("O", "TE"))
+
+## get info on % of observations per group
+n_sp = length(unique(dd$sp_name_checked)) #279
+round(length(unique(dd$sp_name_checked[which(dd$group == "Aves")]))/n_sp*100, digits = 2) #45.52%
+round(length(unique(dd$sp_name_checked[which(dd$group == "Plants")]))/n_sp*100, digits = 2) #51.25%
+round(length(unique(dd$sp_name_checked[which(dd$group == "Squamata")]))/n_sp*100, digits = 2) #1.43%
+round(length(unique(dd$sp_name_checked[which(dd$group == "Mammalia")]))/n_sp*100, digits = 2) # 0.36%
+round(length(unique(dd$sp_name_checked[which(dd$group == "Amphibia")]))/n_sp*100, digits = 2) # 1.43%
+
+## get number of shift estimates
+nrow(dd)
+
+## get stats about the mean, median and max number of shifts per species:
+tally = dd %>%
+  group_by(sp_name_checked) %>%
+  tally()
+max(tally$n) # 5
+mean(tally$n) # 1.71
+median(tally$n) # 1
+
+## filter to shifts with positive mean climate velocity 
+dd <- filter(dd, ClimVeloKmY_RelScale >= 0)
 
 dd <- dd %>%
   mutate(LimitingRate = ifelse(DispersalPotentialKmY <= ClimVeloKmY_RelScale,
@@ -49,16 +71,21 @@ dd <- dd %>%
 ## but small contractions might be expansions that are measured as contractions due to measurement error 
 ## to be sure that the bounding of the response variable (range shift rate) at 0 doesn't have an effect on the results, refit models keeping range contractions that are slower than 10km/y
 
+## get # of contractions 
+length(which(dd$ShiftKmY < 0)) # 177
+
 ## get rid of range contractions that are father than 1 sd from the mean shift 
 contractors <- filter(dd, Rate < (mean(dd$ShiftKmY) - sd(dd$ShiftKmY))) %>%
   arrange(ShiftKmY) %>%
   select(ShiftKmY, scientificName_checked) %>%
   distinct()
 
+nrow(contractors) ## 29 extreme range contractions
+
 ## write out:
 write.csv(contractors, "figures/extreme-contractors.csv", row.names = F)
 
-data <- filter(dd, Rate > (mean(dd$ShiftKmY) - sd(dd$ShiftKmY)))
+data <- filter(dd, Rate >= (mean(dd$ShiftKmY) - sd(dd$ShiftKmY)))
 
 ## get rid of non-birds and non-plants
 data = filter(data, group %in% c("Bird", "Plant"))
@@ -100,6 +127,19 @@ barplot = data %>%
 
 ggsave(barplot, path = "figures",  filename = "dispersal-limitation_barplot.png",
        width = 4, height = 3)
+
+## get % of species with dispersal > clim velo
+round(length(which(data$DispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 2) ## 61.99 % max disp. mean cv.
+round(length(which(data$DispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 2) ## 55.11 % max disp. q3 cv
+## birds:
+birds = filter(data, group == "Bird")
+round(length(which(birds$DispersalPotentialKmY > birds$ClimVeloKmY_RelScale))/nrow(birds)*100, digits = 2) ## 96.62 % max disp. mean cv.
+## plants
+plants = filter(data, group == "Plant")
+round(length(which(plants$DispersalPotentialKmY > plants$ClimVeloKmY_RelScale))/nrow(plants)*100, digits = 2) ## 28.50 % max disp. mean cv.
+## median
+round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 2) ## 50.83 % med disp. mean cv.
+round(length(which(data$MedianDispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 2) ## 43.71 % med disp. q3 cv
 
 ###################################
 ##        ALL OBSERVATIONS       ##
