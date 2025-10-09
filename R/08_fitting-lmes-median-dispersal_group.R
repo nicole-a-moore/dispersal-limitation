@@ -381,12 +381,12 @@ table_main <- coefs %>%
     title = "Main model set - all observations (with group interactions)"
   ) 
 
-gtsave(table_main, path = "figures/model_results/all-observations", filename = "table_all-models_lme_by-group.png")
-gtsave(table_main, path = "figures/model_results/all-observations", filename = "table_all-models_lme_by-group.docx")
+gtsave(table_main, path = "figures/model_results/all-observations", filename = "tableS2_all-models_lme_by-group.png")
+gtsave(table_main, path = "figures/model_results/all-observations", filename = "tableS2_all-models_lme_by-group.docx")
 
 ## make table summarizing results by model 'type' 
 ## calculate cumulative weight and mean rank per model 'type'
-table1 = coefs %>%
+tableS3 = coefs %>%
   select(Model, `Dispersal rate`, `Velocity of isotherm shift`, `AIC weight`) %>%
   distinct() %>%
   mutate(ModelRank = 1:nrow(.)) %>%
@@ -400,9 +400,9 @@ table1 = coefs %>%
   rename("Lowest model rank" = LowestRank, "Mean model rank" = MeanRank, "Cumulative weight" = CumulativeWeight,
          "Model type" = Model)
 
-table1 = table1 %>% gt()
+tableS3 = tableS3 %>% gt()
 
 ## save table 
-gtsave(table1, path = "figures/model_results/all-observations", filename = "table1_by-group.docx")
+gtsave(tableS3, path = "figures/model_results/all-observations", filename = "tableS3_by-group.docx")
 
 

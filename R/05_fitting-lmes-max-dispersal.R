@@ -118,6 +118,13 @@ round(length(which(plants$DispersalPotentialKmY > plants$ClimVeloKmY_RelScale))/
 round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 51% med disp. mean cv.
 round(length(which(data$MedianDispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 44% med disp. q3 cv
 
+## get % of species with dispersal rate > max range shift rate 
+round(length(which(data$DispersalPotentialKmY > 23.75))/nrow(data)*100, digits = 0) ## 36%
+
+## get min and max 
+min(data$DispersalPotentialKmY)
+max(data$DispersalPotentialKmY)
+
 
 ## function to sqrt transform with negative numbers:
 ssqrt_trans <- scales::trans_new(name      = 'signed square root',
@@ -125,7 +132,7 @@ ssqrt_trans <- scales::trans_new(name      = 'signed square root',
                                  inverse   = function(y) sign(y) * y^2,
                                  domain    = c(-Inf,Inf))
 ## density plot of all 3 rates
-data %>%
+density = data %>%
   gather(key = "type", value = "measure", c(ClimVeloKmY_RelScale, DispersalPotentialKmY, ShiftKmY)) %>%
   mutate(type = factor(type, levels = c("DispersalPotentialKmY", "ClimVeloKmY_RelScale", "ShiftKmY"), 
                        ordered = T)) %>%
@@ -133,50 +140,22 @@ data %>%
   geom_hline(yintercept = 0) +
   scale_x_discrete(labels = c("Potential\ndispersal rate", 
                               "Velocity of\nisotherm shift", 
-                              "Estimated range\nexpansion rate")) +
+                              "Local range\nexpansion rate")) +
   geom_point(position = position_jitterdodge(seed = 120), 
              size = 0.1, alpha = 0.4) +
   geom_violin(fill = "transparent", scale = "width") +
   labs(x = "", y = "Rate (km/yr)", colour = "") +
   scale_y_continuous(trans = ssqrt_trans, breaks = c(0, 200, 400, 600, 800, 1000, 1200)) +
   coord_flip() +
-  theme(panel.grid = element_blank())
-
-library(ggridges)
-data %>%
-  gather(key = "type", value = "measure", c(ClimVeloKmY_RelScale, DispersalPotentialKmY, ShiftKmY)) %>%
-  mutate(type = factor(type, levels = rev(c("DispersalPotentialKmY", "ClimVeloKmY_RelScale", "ShiftKmY")), 
-                       ordered = T)) %>%
-  ggplot(aes(y = type, x = measure, colour = group, group = interaction(group, type), height = ..density..)) + 
-  scale_y_discrete(labels = rev(c("Potential\ndispersal rate", 
-                              "Velocity of\nisotherm shift", 
-                              "Estimated range\nexpansion rate"))) +
-  #geom_density_ridges(stat = "density", trim = TRUE, fill = "transparent") +
-  geom_density_ridges(fill = "transparent",
-                      rel_min_height = 0.01,
-                      jittered_points = TRUE,
-                      point_alpha = 0.4, 
-                      point_size = 0.1,
-                      aes(point_color = group)) +
-  scale_x_continuous(trans = ssqrt_trans, breaks = c(0, 200, 400, 600, 800, 1000, 1200)) +
   theme(panel.grid = element_blank()) +
-  labs(y = "", x = "Rate (km/yr)", colour = "", group = "", point_color = "")
-  
+  scale_color_manual(values = c("#e49e00", "#A2B06D"))
 
-## try plotting the difference between dispersal and climate velocity 
-data %>%
-  mutate(diff = DispersalPotentialKmY - ClimVeloKmY_RelScale) %>%
-  arrange(diff) %>%
-  mutate(id = 1:nrow(.)) %>%
-  ## recenter around 6 
-  mutate(diff = diff + 6) %>%
-  mutate(ymin = pmin(diff, 6), ymax = pmax(diff, 6)) %>%
-  ggplot(aes(x = id)) +
-  geom_linerange(aes(ymin = ymin, ymax = ymax)) +
-  geom_hline(yintercept = 6) +
-  scale_y_sqrt()
+## save as new figure 3
+ggsave(density, path = "figures",  filename = "figure3_distribution-of-rates.png",
+       width = 7, height = 3)
 
-## try with broken axis
+
+## try plotting the difference between dispersal and climate velocity with broken axis
 ## transform y positions > 25
 trans <- function(x){ pmin(x, 50) + 0.05*pmax(x - 50, 0) + ifelse(x > 50, 5, 0)}
 
@@ -217,10 +196,8 @@ barplot = data %>%
   labs(y = "% of total range shift estimates", fill = "", x = "") +
   scale_x_discrete(expand = c(0,0)) +
   theme(axis.text.x = ggtext::element_markdown())
-
-## 1,5,45,43,6,0.002
-ggsave(barplot, path = "figures",  filename = "dispersal-limitation_barplot.png",
-       width = 4, height = 3)
+# ggsave(barplot, path = "figures",  filename = "dispersal-limitation_barplot.png",
+#        width = 4, height = 3)
 
 ## make a pie chart
 library(ggpattern)
@@ -251,13 +228,11 @@ pie = data %>%
   guides(fill = "none", 
          pattern = guide_legend(override.aes = list(fill = "transparent", colour = "black"))) +
   geom_label_repel(aes(label = scales::percent(prop, accuracy = 1)), y = c(0.75, 0.3, 0.09, 0.99),
-            colour = "black", nudge_x = 0.5, min.segment.length = 10) +
+                   colour = "black", nudge_x = 0.5, min.segment.length = 10) +
   scale_fill_manual(values = c("white", "white"))
 
-ggsave(pie, path = "figures",  filename = "dispersal-limitation_pie-chart.png",
+ggsave(pie, path = "figures",  filename = "figure3_pie-chart.png",
        width = 4, height = 3)
-
-
 
 ###################################
 ##        ALL OBSERVATIONS       ##
@@ -498,7 +473,7 @@ disp_plot <- data %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Potential dispersal rate (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   # geom_ribbon(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lme, 
@@ -530,8 +505,8 @@ cv_plot <- data %>%
         panel.spacing = unit(2 , "lines"),
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
-  labs(x = "velocity of isotherm shift (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+  labs(x = "Velocity of isotherm shift (km/yr)",
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   geom_ribbon(data = df_cv, aes(x = ClimVeloKmY_RelScale, y = pred_lme, 
@@ -564,7 +539,7 @@ cv_plot_q3 <- data %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Velocity of isotherm shift (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   geom_ribbon(data = df_cv_q3, aes(x = q3ClimVeloKmY_RelScale, y = pred_lme, 
@@ -599,7 +574,7 @@ disp_cv_plot <- data %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Potential dispersal rate (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   # geom_ribbon(data = df_disp_cv, aes(x = DispersalPotentialKmY, y = pred_lme, 
@@ -631,7 +606,7 @@ disp_cv_q3_plot <- data %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Potential dispersal rate (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   # geom_ribbon(data = df_disp_cv_q3, aes(x = DispersalPotentialKmY, y = pred_lme, 
@@ -664,7 +639,7 @@ disp_int_plot <- data %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Potential dispersal rate (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   # geom_ribbon(data = df_disp_int, aes(x = DispersalPotentialKmY, y = pred_lme, 
@@ -698,7 +673,7 @@ disp_int_q3_plot <- data %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Potential dispersal rate (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   # geom_ribbon(data = df_disp_int_q3, aes(x = DispersalPotentialKmY, y = pred_lme, 
@@ -732,7 +707,7 @@ disp_int_q3_mean_plot <- data %>%
         panel.spacing = unit(2 , "lines"),
         legend.position = "none") +
   labs(x = "Potential dispersal rate (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   # geom_ribbon(data = df_disp_int_q3_mean, aes(x = DispersalPotentialKmY, y = pred_lme, 
@@ -765,7 +740,7 @@ limrate_plot <- data %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Minimum of potential dispersal rate\nand velocity of isotherm shift (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   geom_ribbon(data = df_limrate, aes(x = LimitingRate, y = pred_lme, 
@@ -798,7 +773,7 @@ limrate_plot_q3 <- data %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Minimum of potential dispersal rate\nand velocity of isotherm shift (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   geom_ribbon(data = df_limrate_q3, aes(x = LimitingRate_q3, y = pred_lme, 
@@ -829,16 +804,16 @@ legend = ggpubr::get_legend(temp)
 ggsave(legend, path = "figures/model_results/all-observations", filename = "model-predictions_cv_q3_legend.png",
        width = 1, height = 4)
 
-## new figure 2:
-fig2 = data %>%
+## new figure 4:
+fig4a = data %>%
   ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
   geom_point(alpha = 0.7, aes(shape = group)) +
-  # geom_point(data = filter(data, is.na(colour), group == "Plant"), colour = "black", inherit.aes = FALSE,
-  #            fill = "transparent", pch = 2,
-  #            aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
-  # geom_point(data = filter(data, is.na(colour), group == "Bird"), colour = "black", inherit.aes = FALSE,
-  #            fill = "transparent", pch = 1,
-  #            aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(data, is.na(colour), group == "Plant"), colour = "black", inherit.aes = FALSE,
+             fill = "transparent", pch = 2,
+             aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(data, is.na(colour), group == "Bird"), colour = "black", inherit.aes = FALSE,
+             fill = "transparent", pch = 1,
+             aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
   theme_bw() +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   stat_function(colour = "grey", fun = function(x){x},
@@ -849,7 +824,7 @@ fig2 = data %>%
         legend.position = "none") +
   
   labs(x = "Potential dispersal rate (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   # geom_ribbon(data = df_disp_int_q3_mean, aes(x = DispersalPotentialKmY, y = pred_lme, 
@@ -860,11 +835,7 @@ fig2 = data %>%
   scale_shape_manual(values = c(19,17,15,18)) +
   theme(plot.margin = margin(r = 0.5, l = 0.2, unit = "cm"))
 
-ggsave(fig2, path = "figures/model_results/all-observations", filename = "model-predictions_fig2.png", 
-       width = 3.8, height = 3.2)
-
-## new figure 3: 
-fig3 <- data %>%
+fig4b <- data %>%
   ggplot(aes(x = LimitingRate_q3, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
   geom_point(alpha = 0.7, aes(shape = group)) +
   geom_point(data = filter(data, is.na(colour_q3), group == "Plant"), colour = "black", inherit.aes = FALSE,
@@ -882,7 +853,7 @@ fig3 <- data %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Minimum of potential dispersal rate\nand velocity of isotherm shift (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   geom_ribbon(data = df_limrate_q3, aes(x = LimitingRate_q3, y = pred_lme, 
@@ -894,12 +865,11 @@ fig3 <- data %>%
   scale_x_continuous(limits = c(0, 12.1)) +
   theme(plot.margin = margin(r = 0.5, l = 0.2, unit = "cm"))
 
-fig3 = plot_grid(fig2, fig3,
+fig4 = plot_grid(fig4a, fig4b,
           ncol = 2, align = "h")
 
-ggsave(fig3, path = "figures/model_results/all-observations", filename = "model-predictions_fig3.png", 
+ggsave(fig4, path = "figures", filename = "figure4_dispersal-mod-vs-lim-rate-mod.png", 
        width = 6.8, height = 3.2)
-
 
 cv_plot_q3 <- cv_plot_q3 +
   facet_grid(cols = vars(cv_lab_q3), scales = "free") +
@@ -1076,7 +1046,7 @@ disp_plot_di <- di_data %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Potential dispersal rate (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   geom_ribbon(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lme, 
@@ -1106,7 +1076,7 @@ cv_plot_di <- di_data %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Velocity of isotherm shift (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   geom_ribbon(data = df_cv, aes(x = q3ClimVeloKmY_RelScale, y = pred_lme, 
@@ -1247,7 +1217,7 @@ disp_plot_di_mean <- di_data_mean %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Potential dispersal rate (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   geom_ribbon(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lme, 
@@ -1277,7 +1247,7 @@ cv_plot_di_mean <- di_data_mean %>%
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
   labs(x = "Velocity of isotherm shift (km/yr)",
-       y = "Estimated range expansion rate (km/yr)", 
+       y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   geom_ribbon(data = df_cv_mean, aes(x = ClimVeloKmY_RelScale, y = pred_lme, 
@@ -1332,7 +1302,7 @@ cv_plot_di <- cv_plot_di +
 plot_grid(disp_plot_di, cv_plot_di,
           ncol = 2, align = "h")
 
-ggsave(path = "figures/model_results/dispersal-insufficient", filename = "model-predictions_di_cv_q3.png", 
+ggsave(path = "figures", filename = "figure5_dispersal-slower-than-cv.png", 
        width = 6.2, height = 3)
 
 disp_plot_di = disp_plot_di + theme(legend.position = "right")
@@ -1340,7 +1310,7 @@ disp_plot_di = disp_plot_di + theme(legend.position = "right")
 ## save legend
 legend = ggpubr::get_legend(disp_plot_di) 
 
-ggsave(legend, path = "figures/model_results/dispersal-insufficient", filename = "model-predictions_di_cv_q3_legend.png", 
+ggsave(legend, path = "figures", filename = "figure5_legend.png", 
        width = 1, height = 4)
 
 ## calculate some means

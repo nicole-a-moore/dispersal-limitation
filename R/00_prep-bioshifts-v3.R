@@ -69,7 +69,11 @@ cvs_spp = cvs_spp[which(cvs_spp$Eco == "Ter"), ]
 ## save 
 write.csv(cvs_spp, "data-processed/v3_lat-spp-specific-cvs.csv", row.names = FALSE)
 
+## get range of SD of temps across study area 
+cvs_study = read.csv("data-raw/BIOSHIFTSv3/clim_vel/vel_SA_all.csv")
 
+min(cvs_study$VelLat_sd_mat, na.rm = T)
+max(cvs_study$VelLat_sd_mat, na.rm = T)
 
 # GARBAGE
 

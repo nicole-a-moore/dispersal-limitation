@@ -250,8 +250,6 @@ table_main <- coefs %>%
     title = "Main model set - all observations - median dispersal"
   ) 
 
-#gtsave(table_main, path = "figures/model_results/all-observations", filename = "table_main-models_all-observations_lme.png")
-
 
 ## plot model predictions
 df_disp <- data.frame(expand.grid(MedianDispersalPotentialKmY = seq(0, max(data$MedianDispersalPotentialKmY), by = 10), 
@@ -821,8 +819,8 @@ table_main <- coefs %>%
     title = "Main model set - all observations"
   ) 
 
-gtsave(table_main, path = "figures/model_results/all-observations", filename = "table_all-models_lme.png")
-gtsave(table_main, path = "figures/model_results/all-observations", filename = "table_all-models_lme.docx")
+gtsave(table_main, path = "figures/model_results/all-observations", filename = "tableS1_all-models_lme.png")
+gtsave(table_main, path = "figures/model_results/all-observations", filename = "tableS1_all-models_lme.docx")
 
 ## make table summarizing results by model 'type' 
 ## calculate cumulative weight and mean rank per model 'type'
@@ -843,7 +841,7 @@ table1 = coefs %>%
 table1 = table1 %>% gt()
 
 ## save table 
-gtsave(table1, path = "figures/model_results/all-observations", filename = "table1.docx")
+gtsave(table1, path = "figures/model_results/all-observations", filename = "table1_summary.docx")
 
 
 ###################################################
