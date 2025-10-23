@@ -12,7 +12,7 @@ library(data.table)
 source("R/taxonomic-harmonization/harmonize.R")
 
 ## read in dispersal data
-dd_collated <- read.csv("data-processed/dispersal-distance-collated.csv")
+dd_collated <- read.csv("data-processed/intermediate_files/dispersal-distance/dispersal-distance-collated.csv")
 
 cols_to_keep <- c("reported_name","reported_name_fixed", "scientificName", "kingdom", "phylum",
                   "class", "order", "family", "db", "db_code")
@@ -70,7 +70,7 @@ try_am <- left_join(try_am, try_am_harm, by = c("reported_name_fixed" = "species
   unique()
 
 ## write 
-write.csv(try_am, "data-processed/TRY_age-at-maturity_harmonized.csv", row.names = FALSE)
+write.csv(try_am, "data-processed/intermediate_files/dispersal-frequency/TRY_age-at-maturity_harmonized.csv", row.names = FALSE)
 
 ## subset to bioshifts species with dispersal distance
 try_am_bs <- filter(try_am, scientificName %in% dd_collated$scientificName)
@@ -137,7 +137,7 @@ try_am_bs <- try_am_bs %>%
   rename("Source" = Reference, "Field" = OriglName)
 
 ## save 
-write.csv(try_am_bs, "data-processed/age-at-maturity-TRY.csv", row.names = FALSE)
+write.csv(try_am_bs, "data-processed/intermediate_files/dispersal-frequency/age-at-maturity-TRY.csv", row.names = FALSE)
 
 ## fill in the gaps:
 missing_am = dd_collated %>%
@@ -506,5 +506,5 @@ all_am <- left_join(all_am, key) %>%
   select(reported_name, reported_name_fixed, scientificName, scientificName_checked, everything())
   
 ## write 
-write.csv(all_am, "data-processed/age-at-maturity.csv", row.names = FALSE)
+write.csv(all_am, "data-processed/intermediate_files/dispersal-frequency/age-at-maturity.csv", row.names = FALSE)
 

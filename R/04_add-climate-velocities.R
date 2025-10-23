@@ -23,7 +23,7 @@ v3 %>%
 ######################################
 ## read in file with species-specific climate velocities across different scales
 ## includes mean across study area and across each species range within study area 
-cvs <- read.csv("data-processed/v3_lat-spp-specific-cvs.csv")
+cvs <- read.csv("data-processed/intermediate_files/bioshifts/v3_lat-spp-specific-cvs.csv")
 
 ##############################################
 ####   join v3 with climate velocity data ####

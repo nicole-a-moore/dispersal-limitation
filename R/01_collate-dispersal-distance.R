@@ -14,20 +14,7 @@ source("R/taxonomic-harmonization/harmonize.R")
 ## get list of all species in bioshifts v3 
 #################################################
 ## read in bioshifts v3
-v3 = read.csv("data-raw/BIOSHIFTSv3/BIOSHIFTS_v3.csv")
-v3$scientificName_checked = str_replace_all(v3$sp_name_checked, "\\_", " ")
-v3$scientificName = str_replace_all(v3$sp_name_database, "\\_", " ")
-v3$scientificName
-
-## fix ecosystem column 
-## everything != marine is ter
-v3$Eco = ifelse(!v3$Eco %in% c("Mar", "Ter"), "Ter", v3$Eco)
-
-## except: A164_P1 = "Mar"
-v3$Eco[which(v3$ID %in% c("A164_P1", "A183_P1"))] = "Mar"
-
-## save 
-write.csv(v3, "data-processed/v3_shifts.csv", row.names = FALSE)
+v3 = read.csv("data-processed/intermediate_files/bioshifts/v3_shifts.csv")
 
 sp <- select(v3, scientificName, scientificName_checked) %>%
   distinct()
@@ -443,7 +430,7 @@ tamme <- left_join(tamme, tamme_harm, by = c("reported_name_fixed" = "species"),
   unique()
 
 ## write
-write.csv(tamme, "data-processed/Tamme_harmonized.csv", row.names = FALSE)
+write.csv(tamme, "data-processed/intermediate_files/dispersal-distance/Tamme_harmonized.csv", row.names = FALSE)
 
 
 ## Tamme
@@ -725,10 +712,6 @@ length(unique(dd_collated$scientificName)) # 615
 
 length(which(!dd_collated$scientificName %in% sp$scientificName))
 
-## write intermediate file 
-write.csv(dd_collated, "data-processed/dispersal-distance-collated_intermediate.csv", row.names = FALSE)
-dd_collated <- read.csv("data-processed/dispersal-distance-collated_intermediate.csv")
-
 ## fix classes that are missing
 v3 <- v3 %>%
   select(scientificName, class, kingdom, phylum, family) %>%
@@ -812,8 +795,8 @@ dd_collated <- dd_collated %>%
 dd_collated <- left_join(dd_collated, sp) %>%
   select(reported_name, reported_name_fixed, scientificName, scientificName_checked, everything())
 
-write.csv(dd_collated, "data-processed/dispersal-distance-collated.csv", row.names = FALSE)
-dd_collated <- read.csv("data-processed/dispersal-distance-collated.csv")
+write.csv(dd_collated, "data-processed/intermediate_files/dispersal-distance/dispersal-distance-collated.csv", row.names = FALSE)
+dd_collated <- read.csv("data-processed/intermediate_files/dispersal-distance/dispersal-distance-collated.csv")
 
 
 #----------------------------

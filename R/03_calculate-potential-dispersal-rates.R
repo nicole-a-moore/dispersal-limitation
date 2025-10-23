@@ -10,7 +10,7 @@ source("R/taxonomic-harmonization/harmonize.R")
 #########################################
 #----------------------
 ## read in dispersal distance data 
-dscale = read.csv("data-processed/dispersal-distance-collated.csv") 
+dscale = read.csv("data-processed/intermediate_files/dispersal-distance/dispersal-distance-collated.csv") 
 
 ## make sure it's clean
 unique(dscale$Unit)
@@ -86,7 +86,7 @@ length(unique(dscale$scientificName_checked)) == nrow(dscale)
 ####   prep range expansion rate data  ####
 ###########################################
 ## read clean version of bioshifts v3 
-v3 = read.csv("data-processed/v3_shifts.csv")
+v3 = read.csv("data-processed/intermediate_files/bioshifts/v3_shifts.csv")
 
 ## subset v3 to only species with dispersal distance  
 v3 <- filter(v3, scientificName_checked %in% dscale$scientificName_checked)
@@ -117,7 +117,7 @@ length(which(is.na(v3$MaxDispersalDistanceKm))) # 0 missing max dispersal distan
 ####   calculating annual dispersal potential  ####
 ###################################################
 ### join age at maturity data with dispersal data 
-am <- read.csv("data-processed/age-at-maturity.csv")
+am <- read.csv("data-processed/intermediate_files/dispersal-frequency/age-at-maturity.csv")
 
 ## plot
 am %>% 
@@ -208,7 +208,7 @@ length(which(db$DispersalFrequency_MeasurementType %in% c("MaturityFromLifespan"
 ## 24 species 
 
 ## save the database as a csv:
-write.csv(db, "figures/supplementary-table_dispersal-data.csv", row.names = F)
+write.csv(db, "figures/databaseS1_dispersal-data.csv", row.names = F)
 
 
 ##########################
@@ -242,59 +242,4 @@ v3 %>%
 
 ## save 
 write.csv(v3, "data-processed/v3_potential-dispersal-rate.csv", row.names = FALSE)
-
-v3 <- read.csv("data-processed/v3_potential-dispersal-rate.csv")
-
-## filter out elevational studies 
-lat <- v3  %>%
-  filter(Type != "ELE")
   
-nrow(lat) # 2759 shifts
-length(unique(lat$scientificName_checked)) # 398 species 
-  
-## how many are centroid vs. leading edge 
-lat %>% 
-  group_by(Param) %>%
-  tally()
-
-## plot distribution of dispersal scale for proposal document:
-lat %>%
-  select(DispersalPotentialKmY, scientificName_checked, group) %>%
-  unique() %>%
-  ggplot(aes(x = DispersalPotentialKmY, fill = group)) + geom_histogram() +
-  theme_bw() +
-  scale_x_log10(breaks = c(0.0001, 0.001, 0.01, 0.01, 0.1, 1, 10, 100, 1000),
-                labels = c("0.0001", "0.001", "0.01", "0.01", "0.1", "1", "10", "100", "1000")) +
-  labs(fill = "", x = "Potential dispersal rate (km/y)", y = "Frequency") +
-  theme(panel.grid = element_blank())
-
-ggsave(path = "figures/proposal", filename = "disp-pot-distribution.png",
-       height = 3, width = 6)
-
-lat %>%
-  select(DispersalPotentialKmY, scientificName_checked, group) %>%
-  unique() %>%
-  ggplot(aes(x = DispersalPotentialKmY)) + geom_histogram() +
-  theme_bw() +
-  scale_x_log10(breaks = c(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000),
-                labels = c("0.0001", "0.001", "0.01", "0.1", "1", "10", "100", "1000")) +
-  labs(fill = "", x = "Potential dispersal rate (km/y)", y = "Frequency") +
-  theme(panel.grid = element_blank()) 
-
-lat %>%
-  ggplot(aes(x = DispersalPotentialKmY, fill = group)) + geom_histogram() +
-  theme_bw() +
-  scale_x_log10(breaks = c(0.0001, 0.001, 0.01, 0.01, 0.1, 1, 10, 100, 1000),
-                labels = c("0.0001", "0.001", "0.01", "0.01", "0.1", "1", "10", "100", "1000")) +
-  labs(fill = "", x = "Potential dispersal rate (km/y)", y = "Frequency") +
-  theme(panel.grid = element_blank()) +
-  facet_wrap(~Param) +
-  theme(legend.position = "none")
-
-ggsave(path = "figures/proposal", filename = "disp-pot-distribution-by-position.png",
-       height = 3, width = 6)
-
-
-
-
-
