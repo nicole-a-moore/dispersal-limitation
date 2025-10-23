@@ -117,9 +117,9 @@ round(length(which(plants$DispersalPotentialKmY > plants$ClimVeloKmY_RelScale))/
 ## median
 round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 51% med disp. mean cv.
 round(length(which(data$MedianDispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 44% med disp. q3 cv
-
-## get % of species with dispersal rate > max range shift rate 
-round(length(which(data$DispersalPotentialKmY > 23.75))/nrow(data)*100, digits = 0) ## 36%
+## plants
+round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale & data$group == "Plant"))/nrow(data)*100, digits = 0) ## 10% med disp.
+round(length(which(data$MedianDispersalPotentialKmY > data$q3ClimVeloKmY_RelScale & data$group == "Plant"))/nrow(data)*100, digits = 0) ## 6% med disp.
 
 ## get min and max 
 min(data$DispersalPotentialKmY)
@@ -139,7 +139,7 @@ density = data %>%
   ggplot(aes(x = type, y = measure, colour = group)) + 
   geom_hline(yintercept = 0) +
   scale_x_discrete(labels = c("Potential\ndispersal rate", 
-                              "Velocity of\nisotherm shift", 
+                              "Local velocity of\nisotherm shifts", 
                               "Local range\nexpansion rate")) +
   geom_point(position = position_jitterdodge(seed = 120), 
              size = 0.1, alpha = 0.4) +
@@ -178,7 +178,7 @@ data %>%
   geom_hline(yintercept = 55, linetype="dashed", colour = "gray") +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   labs(x = "", y = "Difference between potential dispersal rate\nand velocity of isotherm shift (km/yr)",
-       colour = "Velocity\nof isotherm\nshift (km/yr)") +
+       colour = "Local velocity\nof isotherm\nshift (km/yr)") +
   geom_hline(yintercept = 0, colour = "black") 
 
 ## make a plot 
@@ -204,11 +204,11 @@ library(ggpattern)
 library(ggrepel)
 pie = data %>%
   mutate(is_faster = ifelse(ClimVeloKmY_RelScale > DispersalPotentialKmY, 
-                            "Potential dispersal rate *slower* than<br />velocity of isotherm shift", 
-                            "Potential dispersal rate *faster* than<br />velocity of isotherm shift")) %>%
+                            "Potential dispersal rate *slower* than<br />velocity of isotherm shifts", 
+                            "Potential dispersal rate *faster* than<br />velocity of isotherm shifts")) %>%
   mutate(is_faster = factor(is_faster, ordered = TRUE, 
-                            levels = c("Potential dispersal rate *slower* than<br />velocity of isotherm shift", 
-                                       "Potential dispersal rate *faster* than<br />velocity of isotherm shift"))) %>%
+                            levels = c("Potential dispersal rate *slower* than<br />velocity of isotherm shifts", 
+                                       "Potential dispersal rate *faster* than<br />velocity of isotherm shifts"))) %>%
   count(group, is_faster) %>% 
   mutate(prop = n / sum(n)) %>%
   mutate(group = factor(group)) %>%
@@ -244,39 +244,48 @@ ggsave(pie, path = "figures",  filename = "figure3_pie-chart.png",
 ## 1. range expansion rate ~ potential dispersal rate
 lme_disp = lme(ShiftKmY ~ DispersalPotentialKmY, 
                random = ~ 1|sp_name_checked,
-               data = data)
+               data = data, 
+               method = "ML")
 
 ## 2. range expansion rate ~ velocity of isotherm shift (at ecologically-relevant spatial scale)
 lme_cv = lme(ShiftKmY ~ ClimVeloKmY_RelScale, 
              random = ~ 1|sp_name_checked,
-             data = data)
+             data = data,
+             method = "ML")
 lme_cv_q3 <- lme(ShiftKmY ~ q3ClimVeloKmY_RelScale,
                  random = ~ 1|sp_name_checked,
-                 data = data)
+                 data = data,
+                 method = "ML")
 
 ## 3. range expansion rate ~ potential dispersal rate + velocity of isotherm shift
 lme_disp_cv <- lme(ShiftKmY ~ DispersalPotentialKmY + ClimVeloKmY_RelScale,
                    random = ~ 1|sp_name_checked,
-                   data = data)
+                   data = data,
+                   method = "ML")
 lme_disp_cv_q3 <- lme(ShiftKmY ~ DispersalPotentialKmY  + q3ClimVeloKmY_RelScale,
                       random = ~ 1|sp_name_checked,
-                      data = data)
+                      data = data,
+                      method = "ML")
 
 ## 4. range expansion rate ~ potential dispersal rate*velocity of isotherm shift 
 lme_disp_int <- lme(ShiftKmY ~ DispersalPotentialKmY*ClimVeloKmY_RelScale,
                     random = ~ 1|sp_name_checked,
-                    data = data)
+                    data = data,
+                    method = "ML")
 lme_disp_int_q3 <- lme(ShiftKmY ~ DispersalPotentialKmY*q3ClimVeloKmY_RelScale,
                        random = ~ 1|sp_name_checked,
-                       data = data)
+                       data = data,
+                       method = "ML")
 
 ## 5. range expansion rate ~ minimum of potential dispersal rate and velocity of isotherm shift 
 lme_limrate <- lme(ShiftKmY ~ LimitingRate,
                    random = ~ 1|sp_name_checked,
-                   data = data)
+                   data = data,
+                   method = "ML")
 lme_limrate_q3 <- lme(ShiftKmY ~ LimitingRate_q3,
                       random = ~ 1|sp_name_checked,
-                      data = data)
+                      data = data,
+                      method = "ML")
 
 ## plot residuals 
 plot(lme_disp) 
@@ -338,7 +347,7 @@ n <- c(rep(nrow(data), length(main_models)))
 ## get aic
 aic_main <- aictab(cand.set = main_models, modnames = names(main_models)) %>%
   data.frame() %>%
-  select(Modnames, K, AICc, Delta_AICc, AICcWt, Cum.Wt, Res.LL) %>%
+  select(Modnames, K, AICc, Delta_AICc, AICcWt, Cum.Wt, LL) %>%
   rename("Model" = Modnames)
 
 ## get coefs, join to r squared + se and aic table
@@ -366,7 +375,7 @@ coefs <- coefs %>%
   rename("Conditional R2" = r_squared_cond, "Marginal R2" = r_squared_marg, "ΔAICc" = Delta_AICc,
          "AIC weight" = AICcWt, "Estimate" = Value) %>%
   select(Model, Formula, Parameter, Estimate, `Std.Error`,
-        `Conditional R2`, `Conditional R2`, `Marginal R2`, DF, `t-value`, `p-value`, n, K, Res.LL, AICc, everything())  %>%
+        `Conditional R2`, `Conditional R2`, `Marginal R2`, DF, `t-value`, `p-value`, n, K, LL, AICc, everything())  %>%
   select(-Cum.Wt, -Formula) %>%
   arrange(`ΔAICc`)
 
@@ -739,7 +748,7 @@ limrate_plot <- data %>%
         panel.spacing = unit(2 , "lines"),
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
-  labs(x = "Minimum of potential dispersal rate\nand velocity of isotherm shift (km/yr)",
+  labs(x = "Minimum of potential dispersal rate\nand local velocity of isotherm shifts (km/yr)",
        y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
@@ -772,7 +781,7 @@ limrate_plot_q3 <- data %>%
         panel.spacing = unit(2 , "lines"),
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
-  labs(x = "Minimum of potential dispersal rate\nand velocity of isotherm shift (km/yr)",
+  labs(x = "Minimum of potential dispersal rate\nand local velocity of isotherm shifts (km/yr)",
        y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
@@ -825,7 +834,7 @@ fig4a = data %>%
   
   labs(x = "Potential dispersal rate (km/yr)",
        y = "Local range expansion rate (km/yr)", 
-       colour = 'Velocity of\nisotherm\nshift (km/yr)') +
+       colour = 'Local velocity of\nisotherm\nshifts (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   # geom_ribbon(data = df_disp_int_q3_mean, aes(x = DispersalPotentialKmY, y = pred_lme, 
   #                                             ymin = pred_lme - pred_lme_se, ymax = pred_lme + pred_lme_se), 
@@ -852,9 +861,9 @@ fig4b <- data %>%
         panel.spacing = unit(2 , "lines"),
         legend.position = "none") +
   scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
-  labs(x = "Minimum of potential dispersal rate\nand velocity of isotherm shift (km/yr)",
+  labs(x = "Minimum of potential dispersal rate\nand local velocity of isotherm shifts (km/yr)",
        y = "Local range expansion rate (km/yr)", 
-       colour = 'Velocity of\nisotherm\nshift (km/yr)') +
+       colour = 'Local velocity of\nisotherm\nshifts (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   geom_ribbon(data = df_limrate_q3, aes(x = LimitingRate_q3, y = pred_lme, 
                                         ymin = pred_lme - pred_lme_se, ymax = pred_lme + pred_lme_se), 
@@ -1282,18 +1291,80 @@ plot_grid(cv_plot_di, disp_plot_di,
 ggsave(path = "figures/model_results/dispersal-insufficient", filename = "model-predictions_di_cv_comparison_lme.png", 
        width = 8, height = 7.5)
 
-disp_plot_di <- disp_plot_di +
+disp_plot_di <- di_data %>%
+  ggplot(aes(x = DispersalPotentialKmY, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
+  geom_point(alpha = 0.7, aes(shape = group)) +
+  geom_point(data = filter(di_data, is.na(colour_q3), group == "Plant"), colour = "black", inherit.aes = FALSE,
+             fill = "transparent", pch = 2, alpha = 0.5, 
+             aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(di_data, is.na(colour_q3), group == "Bird"), colour = "black", inherit.aes = FALSE,
+             fill = "transparent", pch = 1, alpha = 0.5, 
+             aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
+  theme_bw() +
+  stat_function(colour = "grey", fun = function(x){x},
+                linetype = "dashed") + 
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank(),
+        panel.spacing = unit(2 , "lines"),
+        legend.position = "none") +
+  scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
+  labs(x = "Potential dispersal rate (km/yr)",
+       y = "Local range expansion rate (km/yr)", 
+       colour = 'Local velocity\n of isotherm\nshifts (km/yr)') +
+   facet_grid(cols = vars(cv_lab_q3), scales = "free") +
+  theme(strip.text.x = element_text(size = 11, angle = 0, colour = "black"),
+        strip.background = element_rect(fill = "lightgrey", colour = "transparent")) +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
+  geom_ribbon(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lme, 
+                                  ymin = pred_lme - pred_lme_se, ymax = pred_lme + pred_lme_se), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
+  geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lme),
+            inherit.aes = FALSE, alpha = 0.5)  +
+  scale_shape_manual(values = c(19,17,15,18)) +
+  scale_x_continuous(limits = c(0, 8.5)) +
   theme(strip.text.x = element_blank(),
         strip.background =  element_blank()) +
-  annotate("text", x = 7, y = 23, hjust = 0,
+  annotate("text", x = 5, y = 23, hjust = 0,
            label = paste0("AICc = ", coefs_saved$AICc[which(coefs_saved$Model == "lme_disp_di")[1]],
-                          "\nR2 = ", coefs_saved$`Conditional R2`[which(coefs_saved$Model == "lme_disp_di")[1]]), colour = "black",
+                          "\nR2 = ", format(round(as.numeric(coefs_saved$`Conditional R2`[which(coefs_saved$Model == "lme_disp_di")[1]]), 
+                                           digits = 2), nsmall = 2)), colour = "black",
            size = 3.5) +
-  theme(plot.margin = margin(r = 0.5, l = 0.2, t = 0.1, unit = "cm"))
-cv_plot_di <- cv_plot_di +
+  theme(plot.margin = margin(r = 0.5, l = 0.2, t = 0.1, unit = "cm")) 
+
+cv_plot_di <-  di_data %>%
+  ggplot(aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, colour = q3ClimVeloKmY_RelScale)) +
+  geom_point(alpha = 0.7, aes(shape = group)) +
+  geom_point(data = filter(di_data, is.na(colour_q3), group == "Plant"), colour = "black", inherit.aes = FALSE,
+             fill = "transparent", pch = 2, alpha = 0.5, 
+             aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+  geom_point(data = filter(di_data, is.na(colour_q3), group == "Bird"), colour = "black", inherit.aes = FALSE,
+             fill = "transparent", pch = 1, alpha = 0.5, 
+             aes(x = q3ClimVeloKmY_RelScale, y = ShiftKmY, shape = group)) +
+  theme_bw() +
+  stat_function(colour = "grey", fun = function(x){x},
+                linetype = "dashed") + 
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank(),
+        panel.spacing = unit(2 , "lines"),
+        legend.position = "none") +
+  scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
+  labs(x = "Local velocity of isotherm shifts (km/yr)",
+       y = "Local range expansion rate (km/yr)", 
+       colour = 'Local velocity of\nisotherm\nshifts (km/yr)') +
+  facet_grid(cols = vars(cv_lab_q3), scales = "free") +
+  theme(strip.text.x = element_text(size = 11, angle = 0, colour = "black"),
+        strip.background = element_rect(fill = "lightgrey", colour = "transparent")) +
+  scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
+  geom_ribbon(data = df_cv, aes(x = q3ClimVeloKmY_RelScale, y = pred_lme, 
+                                ymin = pred_lme - pred_lme_se, ymax = pred_lme + pred_lme_se), 
+              fill = "grey", alpha = 0.2, inherit.aes = FALSE) +
+  geom_line(data = df_cv, aes(x = q3ClimVeloKmY_RelScale, y = pred_lme),
+            inherit.aes = FALSE, alpha = 0.5) +
+  scale_shape_manual(values = c(19,17,15,18)) +
+  scale_x_continuous(limits = c(0, 8.5)) +
   theme(strip.text.x = element_blank(),
         strip.background =  element_blank()) +
-  annotate("text", x = 7, y = 23, hjust = 0,
+  annotate("text", x = 5, y = 23, hjust = 0,
            label = paste0("AICc = ", coefs_saved$AICc[which(coefs_saved$Model == "lme_cv_di")[1]],
                           "\nR2 = ", coefs_saved$`Conditional R2`[which(coefs_saved$Model == "lme_cv_di")[1]]), colour = "black",
            size = 3.5) +

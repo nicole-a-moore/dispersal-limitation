@@ -48,7 +48,7 @@ data %>%
              colour = ifelse(data$what_is_limiting == "Climate", "transparent", "black")) +
   scale_shape_manual(values = c(21,24,22,23), labels = c("Birds", "Plants")) +
   scale_fill_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
-  labs(x = "Spatial resolution of temperature data", y = "Mean velocity of isotherm shift (km/yr)", 
+  labs(x = "Spatial resolution of temperature data", y = "Mean local velocity of isotherm shifts (km/yr)", 
        shape = "") + 
   guides(size = "legend", fill = "none") 
 

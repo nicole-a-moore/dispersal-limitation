@@ -16,7 +16,7 @@ polys = st_read("data-raw/BIOSHIFTSv3/ShapefilesBioShiftsv3_species.gpkg")
 ## and full study polygons 
 studies = st_read("data-raw/BIOSHIFTSv3/ShapefilesBioShiftsv3_studyareas.gpkg")
                 
-## filter to speices x study area combinations in the dispersal data 
+## filter to specices x study area combinations in the dispersal data 
 polys = polys %>%
   filter(ID %in% paste(data$sp_name_checked, data$ID, sep = "_"))
 
@@ -33,7 +33,8 @@ nrow(studies) ## 24
 r = rast(vect(polys), res=0.5)
 
 ## rasterize 
-polys_raster <- rasterize(vect(polys), r, fun = "count")
+polys_raster <- terra::rasterize(vect(polys), r, field = 1, fun = "sum")
+crs(polys_raster) <- "EPSG:4326" # if missing
 polys_raster
 
 my_breaks <- c(1, 10, 100, 3000)
@@ -52,18 +53,18 @@ polys = polys %>%
 world_map <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
 northern_hemisphere_map <- world_map[st_coordinates(st_centroid(world_map))[, "Y"] > 0, ]
 
-all_polys = ggplot(world_map) + 
-  geom_sf(fill = "grey90", colour = "gray70", linewidth = 0.1) + 
-  coord_sf() +
+## isolate the china study polygon
+china = filter(polys, str_detect(ID, "A145_P1"))
+
+all_polys = ggplot() + 
   geom_spatraster(data = polys_raster) + 
-  scale_fill_gradient(name = "No. species", 
-                      trans = "log",
-                      breaks = my_breaks, 
-                      labels = my_breaks, 
-                      low = "#E9DFEC",
-                      high = "#B097B8",
-                      space = "Lab",
-                      na.value = "transparent") +
+  geom_sf(data = world_map, fill = "grey90", colour = "gray70", linewidth = 0.1) + 
+  geom_spatraster(data = polys_raster) +
+  coord_sf() +
+  scale_fill_viridis_c(option = "plasma", 
+                       na.value = "transparent", 
+                       alpha = 0.5,
+                       name = "No. species") +
   scale_x_continuous(expand = c(0,0),
                      limits = c(-155, 136)) +
   scale_y_continuous(expand = c(0,0),
@@ -74,10 +75,16 @@ all_polys = ggplot(world_map) +
         plot.background = element_rect(fill = "transparent"),
         legend.position = "bottom") +
   ## add outlines of clipped study polys 
-  geom_sf(data = polys, fill = "transparent", colour = "black", linewidth = 0.08, linetype = "longdash",
+  geom_sf(data = polys, fill = "transparent", colour = "black", linewidth = 0.1, linetype = "longdash",
           inherit.aes = F) +
   ## add study area polygon outlines
-  geom_sf(data = studies, fill = "transparent", colour = "black", linewidth = 0.2, inherit.aes = F) 
+  geom_sf(data = studies, fill = "transparent", colour = "black", linewidth = 0.1, inherit.aes = F) +
+  ## add china studies with a base colour
+  geom_sf(data = china, fill = "#7976b6", colour = "#7976b6", linewidth = 0.1, linetype = "longdash",
+          inherit.aes = F) +
+  ## add china studies with a base colour
+  geom_sf(data = china, fill = "transparent", colour = "black", linewidth = 0.15, linetype = "longdash",
+          inherit.aes = F) 
 
 ## save:
 ggsave(all_polys, path = "figures/methodological-figure", filename = "map_all-polys.png", width = 7.8, height = 4)
