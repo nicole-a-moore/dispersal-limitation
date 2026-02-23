@@ -75,9 +75,9 @@ write.csv(try_am, "data-processed/intermediate_files/dispersal-frequency/TRY_age
 ## subset to bioshifts species with dispersal distance
 try_am_bs <- filter(try_am, scientificName %in% dd_collated$scientificName)
 
-length(unique(try_am_bs$scientificName)) # 264 species 
+length(unique(try_am_bs$scientificName)) # 265 species 
 
-length(unique(dd_collated$scientificName[which(dd_collated$group == "Plants")])) # out of the 394 plants - nice!!! 
+length(unique(dd_collated$scientificName[which(dd_collated$group == "Plants")])) # out of the 395 plants - nice!!! 
 
 ## clean the data 
 unique(try_am_bs$OriglName)
@@ -150,7 +150,7 @@ missing_am = dd_collated %>%
 ####################################################################################
 ## for species that live 1 year, age at maturity = 1 year 
 ## longevity: 
-lifespan <- read.csv("data-raw/CompilationLifeSpan_02242022.csv")
+lifespan <- read.csv("data-raw/dispersal-data/CompilationLifeSpan_02242022.csv")
 unique(lifespan$Database)
 
 ## filter to species with dispersal distance
@@ -500,7 +500,7 @@ all_am <- rbind(all_am, amniota_am)
 
 all_am$GenerationLength = NA
 
-length(unique(all_am$scientificName)) ## 465 spp
+length(unique(all_am$scientificName)) ## 466 spp
 
 all_am <- left_join(all_am, key) %>%
   select(reported_name, reported_name_fixed, scientificName, scientificName_checked, everything())

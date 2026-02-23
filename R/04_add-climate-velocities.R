@@ -83,6 +83,3 @@ v3_merged <- v3_merged %>%
 ## save 
 write.csv(v3_merged, "data-processed/v3_with-cv.csv", row.names = FALSE)
 
-## see how many have neg clim velo at leading edge 
-v3_merged = read.csv("data-processed/v3_with-cv.csv")
-

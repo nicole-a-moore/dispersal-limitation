@@ -20,12 +20,7 @@ get_formula <- function(lm) {
 ## read in data 
 dd <- read.csv("data-processed/v3_with-cv.csv")
 
-## see how many leading edge shifts with negative clim velocity
-dd %>%
-  filter(Param == "LE") %>%
-  filter(ClimVeloKmY_RelScale < 0)
-
-## filter to leading edge shifts 
+## filter out optimum shifts 
 dd = filter(dd, !Param %in% c("O", "TE"))
 
 ## get info on % of observations per group
@@ -37,7 +32,7 @@ round(length(unique(dd$sp_name_checked[which(dd$group == "Mammalia")]))/n_sp*100
 round(length(unique(dd$sp_name_checked[which(dd$group == "Amphibia")]))/n_sp*100, digits = 2) # 1.43%
 
 ## get number of shift estimates
-nrow(dd)
+nrow(dd) # 478
 
 ## get stats about the mean, median and max number of shifts per species:
 tally = dd %>%
@@ -47,8 +42,9 @@ max(tally$n) # 5
 mean(tally$n) # 1.71
 median(tally$n) # 1
 
-## filter to shifts with positive mean climate velocity 
-dd <- filter(dd, ClimVeloKmY_RelScale >= 0)
+## filter to shifts with mean climate velocity that predicts expansion (positive at leading edge, negative at trailing edge)
+dd <- filter(dd, Param == "TE" & ClimVeloKmY_RelScale <= 0 | Param == "LE" & ClimVeloKmY_RelScale >=0) %>%
+  mutate(ClimVeloKmY_RelScale = abs(ClimVeloKmY_RelScale)) ## make trailing edge climate velocity positive 
 
 dd <- dd %>%
   mutate(LimitingRate = ifelse(DispersalPotentialKmY <= ClimVeloKmY_RelScale,
@@ -80,7 +76,7 @@ dd <- dd %>%
 ## to be sure that the bounding of the response variable (range shift rate) at 0 doesn't have an effect on the results, refit models keeping range contractions that are slower than 10km/y
 
 ## get # of contractions 
-length(which(dd$ShiftKmY < 0)) # 177
+length(which(dd$ShiftKmY < 0)) # 110
 
 ## get rid of range contractions that are father than 1 sd from the mean shift 
 contractors <- filter(dd, Rate < (mean(dd$ShiftKmY) - sd(dd$ShiftKmY))) %>%
@@ -88,10 +84,10 @@ contractors <- filter(dd, Rate < (mean(dd$ShiftKmY) - sd(dd$ShiftKmY))) %>%
   select(ShiftKmY, scientificName_checked) %>%
   distinct()
 
-nrow(contractors) ## 29 extreme range contractions
+nrow(contractors) ## 16 extreme range contractions
 
 ## write out:
-write.csv(contractors, "data-processed/intermediate-files/extreme-contractors.csv", row.names = F)
+write.csv(contractors, "data-processed/intermediate_files/extreme-contractors.csv", row.names = F)
 
 data <- filter(dd, Rate >= (mean(dd$ShiftKmY) - sd(dd$ShiftKmY)))
 
@@ -112,19 +108,19 @@ write.csv(data, "data-processed/model_data/model-data_main.csv", row.names = FAL
 hist(data$ShiftKmY)
 
 ## get % of species with dispersal > clim velo
-round(length(which(data$DispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 62 % max disp. mean cv.
-round(length(which(data$DispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 55 % max disp. q3 cv
+round(length(which(data$DispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 75 % max disp. mean cv.
+round(length(which(data$DispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 64 % max disp. q3 cv
 ## birds:
 birds = filter(data, group == "Bird")
-round(length(which(birds$DispersalPotentialKmY > birds$ClimVeloKmY_RelScale))/nrow(birds)*100, digits = 0) ## 97 % max disp. mean cv.
+round(length(which(birds$DispersalPotentialKmY > birds$ClimVeloKmY_RelScale))/nrow(birds)*100, digits = 0) ## 99 % max disp. mean cv.
 ## plants
 plants = filter(data, group == "Plant")
-round(length(which(plants$DispersalPotentialKmY > plants$ClimVeloKmY_RelScale))/nrow(plants)*100, digits = 0) ## 29% max disp. mean cv.
+round(length(which(plants$DispersalPotentialKmY > plants$ClimVeloKmY_RelScale))/nrow(plants)*100, digits = 0) ## 43% max disp. mean cv.
 ## median
-round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 51% med disp. mean cv.
-round(length(which(data$MedianDispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 44% med disp. q3 cv
+round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 61% med disp. mean cv.
+round(length(which(data$MedianDispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 50% med disp. q3 cv
 ## plants
-round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale & data$group == "Plant"))/nrow(data)*100, digits = 0) ## 10% med disp.
+round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale & data$group == "Plant"))/nrow(data)*100, digits = 0) ## 13% med disp.
 round(length(which(data$MedianDispersalPotentialKmY > data$q3ClimVeloKmY_RelScale & data$group == "Plant"))/nrow(data)*100, digits = 0) ## 6% med disp.
 
 ## get min and max 
@@ -554,7 +550,7 @@ coefs <- coefs %>%
 ## make gt table
 table_main <- coefs %>% 
   gt() %>%
-  tab_header(
+  gt::tab_header(
     title = "Main model set - all observations"
   ) 
 
@@ -666,13 +662,13 @@ ggsave(legend, path = "figures", filename = "figure4_legend.png",
        width = 2, height = 4)
 
 ## calculate ratio and stats about shift versus expansion
-round(length(which(data$DispersalPotentialKmY > abs(data$ShiftKmY)))/nrow(data)*100, digits = 0) ## 57
-round(length(which(data$MedianDispersalPotentialKmY > abs(data$ShiftKmY)))/nrow(data)*100, digits = 0) ## 47
+round(length(which(data$DispersalPotentialKmY > abs(data$ShiftKmY)))/nrow(data)*100, digits = 0) ## 61
+round(length(which(data$MedianDispersalPotentialKmY > abs(data$ShiftKmY)))/nrow(data)*100, digits = 0) ## 53
 
 mean(data$DispersalPotentialKmY[data$ShiftKmY != 0]/abs(data$ShiftKmY[data$ShiftKmY != 0]), na.rm = T)
-## 97.85
+## 119.6663
 median(data$DispersalPotentialKmY[data$ShiftKmY != 0]/abs(data$ShiftKmY[data$ShiftKmY != 0]), na.rm = T)
-## 3.75
+## 4.871769
 
 
 ##########################################################
@@ -886,7 +882,7 @@ library(phylobase)
 library(phylosignal)
 
 ## write out species list to use to get tree from TimeTree
-write.csv(str_replace_all(unique(data$sp_name_checked), "\\_", " "), "data-processed/intermediate-files/sp_list.csv", row.names = F)
+write.csv(str_replace_all(unique(data$sp_name_checked), "\\_", " "), "data-processed/intermediate_files/sp_list.csv", row.names = F)
 
 ## read in TimeTree:
 tree = read.tree("data-raw/other/timetree.nwk")
@@ -902,42 +898,33 @@ resid = data.frame(resid = residuals(lme_limrate_q3))
 
 ## for species with multiple residuals, take mean 
 resid = resid %>%
-  mutate(sp_name_checked = names(residuals(lme_limrate_q3))) %>%
+  mutate(sp_name_checked = names(residuals(lme_limrate_q3)))
+
+resid$sp_name_checked[which(resid$sp_name_checked == "Grus_canadensis")] <- "Branta_canadensis"
+
+resid = resid %>%
   group_by(sp_name_checked) %>%
   mutate(resid = mean(resid)) %>%
   ungroup() %>%
   distinct() %>%
   as.data.frame()
 
-## get rid of species with insufficient data 
-# Larus californicus (insufficient data in TimeTree to place this taxon)
-# Strix varia (insufficient data in TimeTree to place this taxon)
-# Larus fuscus (insufficient data in TimeTree to place this taxon)
-# Carduus crispus (insufficient data in TimeTree to place this taxon)
-# Sialia mexicana (insufficient data in TimeTree to place this taxon)
-# Accipiter cooperii (insufficient data in TimeTree to place this taxon)
-# Quercus petraea (insufficient data in TimeTree to place this taxon)
-# Primula elatior (insufficient data in TimeTree to place this taxon)
-# Larus delawarensis (insufficient data in TimeTree to place this taxon)
-not_in_tree = c("Larus_californicus", "Strix_varia", "Larus_fuscus", "Carduus_crispus", 
-                "Sialia_mexicana", "Accipiter_cooperii", "Quercus_petraea", "Primula_elatior",
-                "Larus_delawarensis")
+not_in_tree = resid$sp_name_checked[which(!resid$sp_name_checked %in% labels(tree))]
 
 resid = resid[which(!resid$sp_name_checked %in% not_in_tree),] 
-
-## change species names that time tree changed
-resid$sp_name_checked[which(resid$sp_name_checked == "Grus_canadensis")] <- "Antigone_canadensis"
 
 rownames(resid) = resid$sp_name_checked
 
 resid = select(resid, resid)
+
+tree <- subset(tree, tips.include = rownames(resid))
 
 ## bind tip data to tree
 p4 <- phylo4d(tree, tip.data = resid)
 
 ## use Pagel's lambda to test the strength of phylogenetic autocorrelation:
 physig = phyloSignal(p4, methods = "Lambda")
-physig$stat #Lambda = 0.02
+physig$stat #Lambda = 0.03
 physig$pvalue < 0.05 #FALSE
 
 ## run same test for residuals of dispersal model for dispersal-insufficient observations
@@ -968,24 +955,11 @@ resid = resid %>%
   distinct() %>%
   as.data.frame()
 
-## get rid of species with insufficient data 
-# Larus californicus (insufficient data in TimeTree to place this taxon)
-# Strix varia (insufficient data in TimeTree to place this taxon)
-# Larus fuscus (insufficient data in TimeTree to place this taxon)
-# Carduus crispus (insufficient data in TimeTree to place this taxon)
-# Sialia mexicana (insufficient data in TimeTree to place this taxon)
-# Accipiter cooperii (insufficient data in TimeTree to place this taxon)
-# Quercus petraea (insufficient data in TimeTree to place this taxon)
-# Primula elatior (insufficient data in TimeTree to place this taxon)
-# Larus delawarensis (insufficient data in TimeTree to place this taxon)
-not_in_tree = c("Larus_californicus", "Strix_varia", "Larus_fuscus", "Carduus_crispus", 
-                "Sialia_mexicana", "Accipiter_cooperii", "Quercus_petraea", "Primula_elatior",
-                "Larus_delawarensis")
+not_in_tree = resid$sp_name_checked[which(!resid$sp_name_checked %in% labels(tree))]
 
 resid = resid[which(!resid$sp_name_checked %in% not_in_tree),] 
 
 ## change species names that time tree changed
-resid$sp_name_checked[which(resid$sp_name_checked == "Grus_canadensis")] <- "Antigone_canadensis"
 
 rownames(resid) = resid$sp_name_checked
 
@@ -996,8 +970,8 @@ p4 <- phylo4d(tree, tip.data = resid)
 
 ## use Pagel's lambda to test the strength of phylogenetic autocorrelation:
 physig = phyloSignal(p4, methods = "Lambda")
-physig$stat #Lambda = 0.32
-physig$pvalue < 0.05 #FALSE
+physig$stat #Lambda = 0.41
+physig$pvalue < 0.05 #TRUE
 
 
 

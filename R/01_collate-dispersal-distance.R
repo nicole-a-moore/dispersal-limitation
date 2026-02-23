@@ -729,8 +729,11 @@ dd_collated <- filter(dd_collated, !scientificName %in% missing_class$scientific
   rbind(., missing_class)
 
 ## fix Chloris chloris 
-dd_collated[which(dd_collated$scientificName == "Chloris chloris"), c(4,5,6,7,8)] <-
-  rep(c("Animalia", "Chordata", "Aves", "Passeriformes", "Fringillidae"), each = 7)
+dd_collated$kingdom[which(dd_collated$scientificName == "Chloris chloris")] <- "Animalia"
+dd_collated$phylum[which(dd_collated$scientificName == "Chloris chloris")] <- "Chordata"
+dd_collated$class[which(dd_collated$scientificName == "Chloris chloris")] <- "Aves"
+dd_collated$order[which(dd_collated$scientificName == "Chloris chloris")] <- "Passeriformes"
+dd_collated$family[which(dd_collated$scientificName == "Chloris chloris")] <- "Fringillidae"
 
 ## get rid of sea anemone, shark, fish
 dd_collated <- filter(dd_collated, class != "Ascidiacea", class != "Elasmobranchii", class != "Actinopteri")

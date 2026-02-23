@@ -435,6 +435,7 @@ tableS5 = coefs %>%
   select(Model, LowestRank, MeanRank, CumulativeWeight) %>%
   distinct() %>%
   ungroup() %>%
+  arrange(LowestRank, MeanRank, Model) %>%
   rename("Lowest model rank" = LowestRank, "Mean model rank" = MeanRank, "Cumulative weight" = CumulativeWeight,
          "Model type" = Model)
 

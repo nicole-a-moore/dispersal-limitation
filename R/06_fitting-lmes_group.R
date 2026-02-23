@@ -358,13 +358,6 @@ coefs <- coefs %>%
   select(Model, cv_type, disp_type, Formula, Parameter, Estimate, `Std.Error`,
          `Conditional R2`, `Conditional R2`, `Marginal R2`, DF, `t-value`, `p-value`, n, K, LL, AICc, everything())  %>%
   arrange(`ΔAICc`) %>% 
-  mutate(Parameter = ifelse(Parameter == "(Intercept)", "Intercept", 
-                            ifelse(str_detect(Parameter, "\\:"), 
-                                   "Potential dispersal rate:velocity of isotherm shift", 
-                                   ifelse(str_detect(Parameter, "ClimVeloKmY"), "Velocity of isotherm shift",
-                                          ifelse(str_detect(Parameter, "DispersalPotential"), 
-                                                 "Potential dispersal rate", 
-                                                 "Minimum rate"))))) %>%
   select(-Formula, -Cum.Wt)
 
 ## replace NA with blank
@@ -411,10 +404,11 @@ tableS3 = coefs %>%
   select(Model, LowestRank, MeanRank, CumulativeWeight) %>%
   distinct() %>%
   ungroup() %>%
-  rename("Lowest model rank" = LowestRank, "Mean model rank" = MeanRank, "Cumulative weight" = CumulativeWeight,
+  arrange(LowestRank, MeanRank, Model) %>%
+  rename("Lowest model rank" = LowestRank, "Mean model rank" = , "Cumulative weight" = CumulativeWeight,
          "Model type" = Model)
 
-tableS3 = table3 %>% gt()
+tableS3 = tableS3 %>% gt()
 
 ## save table 
 gtsave(tableS3, path = "figures", filename = "tableS3_by-group.docx")

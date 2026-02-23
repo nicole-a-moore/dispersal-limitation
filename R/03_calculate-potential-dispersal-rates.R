@@ -153,7 +153,7 @@ v3 <- left_join(v3, am_join, by = "scientificName_checked")
 
 length(unique(v3$scientificName_checked)) ## still have all the species
 length(unique(v3$scientificName_checked[which(is.na(v3$AgeAtMaturityDays))])) 
-## 138 / 601 species with dispersal estimates do not have age at maturity data 
+## 136 / 601 species with dispersal estimates do not have age at maturity data 
 
 unique(v3$scientificName[which(is.na(v3$AgeAtMaturityDays))])
 
@@ -217,7 +217,7 @@ write.csv(db, "figures/databaseS1_dispersal-data.csv", row.names = F)
 ## colour pal
 mycolours <- colorRampPalette(RColorBrewer::brewer.pal(8, "RdBu"))(10)
 
-nrow(v3) # 3952 range shifts
+nrow(v3) # 3954 range shifts
 length(unique(v3$scientificName_checked)) # 465 species 
 unique(v3$Param)
 
@@ -231,11 +231,6 @@ groups <- v3 %>%
   theme(panel.grid = element_blank(),
         legend.position = "none") +
   labs (x = "", y = "Number of\nrange expansion\nobservations") 
-
-groups
-
-ggsave(groups, path = "figures/sotm", filename = "barplot-groups.png", 
-       device = "png", height = 2, width = 4)
 
 v3 %>%
   group_by(group) %>% tally()
