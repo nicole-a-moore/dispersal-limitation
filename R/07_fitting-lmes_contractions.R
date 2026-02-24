@@ -22,8 +22,8 @@ dd <- read.csv("data-processed/v3_with-cv.csv")
 ## filter to leading edge shifts 
 dd = filter(dd, !Param %in% c("O", "TE"))
 
-## filter to shifts with positive mean climate velocity 
-dd <- filter(dd, ClimVeloKmY_RelScale >= 0)
+## filter to shifts with positive climate velocity 
+dd <- filter(dd, Param == "LE" & ClimVeloKmY_RelScale >=0) 
 
 dd <- dd %>%
   mutate(LimitingRate = ifelse(DispersalPotentialKmY <= ClimVeloKmY_RelScale,

@@ -42,9 +42,8 @@ max(tally$n) # 5
 mean(tally$n) # 1.71
 median(tally$n) # 1
 
-## filter to shifts with mean climate velocity that predicts expansion (positive at leading edge, negative at trailing edge)
-dd <- filter(dd, Param == "TE" & ClimVeloKmY_RelScale <= 0 | Param == "LE" & ClimVeloKmY_RelScale >=0) %>%
-  mutate(ClimVeloKmY_RelScale = abs(ClimVeloKmY_RelScale)) ## make trailing edge climate velocity positive 
+## filter to shifts with positive climate velocity 
+dd <- filter(dd, Param == "LE" & ClimVeloKmY_RelScale >=0) 
 
 dd <- dd %>%
   mutate(LimitingRate = ifelse(DispersalPotentialKmY <= ClimVeloKmY_RelScale,
@@ -71,12 +70,16 @@ dd <- dd %>%
                                       ifelse(group == "Squamata", "Squamate",
                                              NA)))))
 
+
+nrow(dd) ## 391
+length(unique(dd$sp_name_checked)) ## 230
+
 ## range contractions at the leading edge likely happen for ecological reasons other than climate (e.g., habitat loss)
 ## but small contractions might be expansions that are measured as contractions due to measurement error 
 ## to be sure that the bounding of the response variable (range shift rate) at 0 doesn't have an effect on the results, refit models keeping range contractions that are slower than 10km/y
 
 ## get # of contractions 
-length(which(dd$ShiftKmY < 0)) # 110
+length(which(dd$ShiftKmY < 0)) # 151
 
 ## get rid of range contractions that are father than 1 sd from the mean shift 
 contractors <- filter(dd, Rate < (mean(dd$ShiftKmY) - sd(dd$ShiftKmY))) %>%
@@ -84,7 +87,8 @@ contractors <- filter(dd, Rate < (mean(dd$ShiftKmY) - sd(dd$ShiftKmY))) %>%
   select(ShiftKmY, scientificName_checked) %>%
   distinct()
 
-nrow(contractors) ## 16 extreme range contractions
+nrow(contractors) ## 21 extreme range contractions
+length(unique(contractors$scientificName_checked)) ## 16 species 
 
 ## write out:
 write.csv(contractors, "data-processed/intermediate_files/extreme-contractors.csv", row.names = F)
@@ -107,21 +111,34 @@ write.csv(data, "data-processed/model_data/model-data_main.csv", row.names = FAL
 ## look at distribution of response variable 
 hist(data$ShiftKmY)
 
+## get number of shift estimates
+nrow(data)
+
+## get num species
+length(unique(data$sp_name_checked))
+dd %>%
+  select(group, sp_name_checked) %>%
+  group_by(group) %>% tally()
+dd %>%
+  select(group, sp_name_checked) %>%
+  distinct() %>%
+  group_by(group) %>% tally()
+
 ## get % of species with dispersal > clim velo
-round(length(which(data$DispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 75 % max disp. mean cv.
-round(length(which(data$DispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 64 % max disp. q3 cv
+round(length(which(data$DispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 55 % max disp. mean cv.
+round(length(which(data$DispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 50 % max disp. q3 cv
 ## birds:
 birds = filter(data, group == "Bird")
-round(length(which(birds$DispersalPotentialKmY > birds$ClimVeloKmY_RelScale))/nrow(birds)*100, digits = 0) ## 99 % max disp. mean cv.
+round(length(which(birds$DispersalPotentialKmY > birds$ClimVeloKmY_RelScale))/nrow(birds)*100, digits = 0) ## 96 % max disp. mean cv.
 ## plants
 plants = filter(data, group == "Plant")
-round(length(which(plants$DispersalPotentialKmY > plants$ClimVeloKmY_RelScale))/nrow(plants)*100, digits = 0) ## 43% max disp. mean cv.
+round(length(which(plants$DispersalPotentialKmY > plants$ClimVeloKmY_RelScale))/nrow(plants)*100, digits = 0) ## 25% max disp. mean cv.
 ## median
-round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 61% med disp. mean cv.
-round(length(which(data$MedianDispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 50% med disp. q3 cv
+round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 49% med disp. mean cv.
+round(length(which(data$MedianDispersalPotentialKmY > data$q3ClimVeloKmY_RelScale))/nrow(data)*100, digits = 0) ## 44% med disp. q3 cv
 ## plants
-round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale & data$group == "Plant"))/nrow(data)*100, digits = 0) ## 13% med disp.
-round(length(which(data$MedianDispersalPotentialKmY > data$q3ClimVeloKmY_RelScale & data$group == "Plant"))/nrow(data)*100, digits = 0) ## 6% med disp.
+round(length(which(data$MedianDispersalPotentialKmY > data$ClimVeloKmY_RelScale & data$group == "Plant"))/nrow(data)*100, digits = 0) ## 9% med disp.
+round(length(which(data$MedianDispersalPotentialKmY > data$q3ClimVeloKmY_RelScale & data$group == "Plant"))/nrow(data)*100, digits = 0) ## 7% med disp.
 
 ## get min and max 
 min(data$DispersalPotentialKmY)
@@ -168,7 +185,7 @@ pie = data %>%
   count(group, is_faster) %>% 
   mutate(prop = n / sum(n)) %>%
   mutate(group = factor(group)) %>%
-  arrange(desc(prop)) %>%
+  arrange(group, desc(prop)) %>% 
   ggplot(aes(x = "", y = prop, fill = group), colour = "black") +
   labs(y = "% of total range shift estimates", fill = "", pattern = "") +
   geom_bar(stat = "identity",  alpha = 0.5) +
@@ -183,7 +200,7 @@ pie = data %>%
   theme(legend.text = ggtext::element_markdown()) +
   guides(fill = "none", 
          pattern = guide_legend(override.aes = list(fill = "transparent", colour = "black"))) +
-  geom_label_repel(aes(label = scales::percent(prop, accuracy = 1)), y = c(0.75, 0.3, 0.09, 0.99),
+  geom_label_repel(aes(label = scales::percent(c(0.40,0.44,0.14,0.02), accuracy = 1)), y = c(0.75, 0.3, 0.09, 0.99),
                    colour = "black", nudge_x = 0.5, min.segment.length = 10) +
   scale_fill_manual(values = c("white", "white"))
 
@@ -601,7 +618,7 @@ fig4a = data %>%
              fill = "transparent", pch = 1,
              aes(x = DispersalPotentialKmY, y = ShiftKmY, shape = group)) +
   theme_bw() +
-  scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
+  scale_y_continuous(limits = c(-4, 24), expand = c(0,0.5)) +
   stat_function(colour = "grey", fun = function(x){x},
                 linetype = "dashed") + 
   theme(panel.grid = element_blank(),
@@ -632,7 +649,7 @@ fig4b <- data %>%
         strip.background = element_blank(),
         panel.spacing = unit(2 , "lines"),
         legend.position = "none") +
-  scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
+  scale_y_continuous(limits = c(-4, 24), expand = c(0,0.5)) +
   labs(x = "Minimum of potential dispersal rate\nand local velocity of isotherm shifts (km/yr)",
        y = "Local range expansion rate (km/yr)", 
        colour = 'Local velocity of\nisotherm\nshifts (km/yr)') +
@@ -643,7 +660,7 @@ fig4b <- data %>%
   geom_line(data = df_limrate_q3, aes(x = LimitingRate_q3, y = pred_lme),
             inherit.aes = FALSE, alpha = 0.5) +
   scale_shape_manual(values = c(19,17,15,18)) +
-  scale_x_continuous(limits = c(0, 12.1)) +
+  scale_x_continuous(limits = c(0, 8)) +
   theme(plot.margin = margin(r = 0.5, l = 0.2, unit = "cm"))
 
 fig4 = plot_grid(fig4a, fig4b,
@@ -662,13 +679,17 @@ ggsave(legend, path = "figures", filename = "figure4_legend.png",
        width = 2, height = 4)
 
 ## calculate ratio and stats about shift versus expansion
-round(length(which(data$DispersalPotentialKmY > abs(data$ShiftKmY)))/nrow(data)*100, digits = 0) ## 61
-round(length(which(data$MedianDispersalPotentialKmY > abs(data$ShiftKmY)))/nrow(data)*100, digits = 0) ## 53
+round(length(which(data$DispersalPotentialKmY > abs(data$ShiftKmY)))/nrow(data)*100, digits = 0) ## 51
+round(length(which(data$MedianDispersalPotentialKmY > abs(data$ShiftKmY)))/nrow(data)*100, digits = 0) ## 43
 
 mean(data$DispersalPotentialKmY[data$ShiftKmY != 0]/abs(data$ShiftKmY[data$ShiftKmY != 0]), na.rm = T)
-## 119.6663
+## 102.43
 median(data$DispersalPotentialKmY[data$ShiftKmY != 0]/abs(data$ShiftKmY[data$ShiftKmY != 0]), na.rm = T)
-## 4.871769
+## 1.26
+## max expansion rate
+max(data$ShiftKmY)
+## % with dispersal rates greater
+length(which(data$DispersalPotentialKmY >= max(data$ShiftKmY))) / nrow(data) * 100 ## 30%
 
 
 ##########################################################
@@ -827,12 +848,11 @@ disp_plot_di <- di_data %>%
                 linetype = "dashed") + 
   theme(panel.grid = element_blank(),
         strip.background = element_blank(),
-        panel.spacing = unit(2 , "lines"),
-        legend.position = "none") +
-  scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
+        panel.spacing = unit(2 , "lines")) +
+  scale_y_continuous(limits = c(-3, 10), expand = c(0,0.5)) +
   labs(x = "Potential dispersal rate (km/yr)",
        y = "Local range expansion rate (km/yr)", 
-       colour = 'Velocity of\nisotherm\nshift (km/yr)') +
+       colour = 'Local velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   geom_ribbon(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lme, 
                                   ymin = pred_lme - pred_lme_se, ymax = pred_lme + pred_lme_se), 
@@ -840,7 +860,11 @@ disp_plot_di <- di_data %>%
   geom_line(data = df_disp, aes(x = DispersalPotentialKmY, y = pred_lme),
             inherit.aes = FALSE, alpha = 0.5)  +
   scale_shape_manual(values = c(19,17,15,18)) +
-  scale_x_continuous(limits = c(0, 12)) 
+  scale_x_continuous(limits = c(0, 6)) +
+  annotate("text", x = 3.8, y = 9, hjust = 0,
+           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lme_disp_di")[1]],
+                          "\nR2 = ", coefs$`Conditional R2`[which(coefs$Model == "lme_disp_di")[1]]), colour = "black",
+           size = 3.5)
 
 ## CLIMATE
 cv_plot_di <- di_data %>%
@@ -859,8 +883,8 @@ cv_plot_di <- di_data %>%
         strip.background = element_blank(),
         panel.spacing = unit(2 , "lines"),
         legend.position = "none") +
-  scale_y_continuous(limits = c(-6, 26), expand = c(0,0.5)) +
-  labs(x = "Velocity of isotherm shift (km/yr)",
+  scale_y_continuous(limits = c(-3, 10), expand = c(0,0.5)) +
+  labs(x = "Local velocity of isotherm shift (km/yr)",
        y = "Local range expansion rate (km/yr)", 
        colour = 'Velocity of\nisotherm\nshift (km/yr)') +
   scale_colour_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
@@ -870,8 +894,23 @@ cv_plot_di <- di_data %>%
   geom_line(data = df_cv, aes(x = q3ClimVeloKmY_RelScale, y = pred_lme),
             inherit.aes = FALSE, alpha = 0.5) +
   scale_shape_manual(values = c(19,17,15,18)) +
-  scale_x_continuous(limits = c(0, 12)) 
+  scale_x_continuous(limits = c(0, 6)) +
+  annotate("text", x = 3.8, y = 9, hjust = 0,
+           label = paste0("AICc = ", coefs$AICc[which(coefs$Model == "lme_cv_di")[1]],
+                          "\nR2 = ", coefs$`Conditional R2`[which(coefs$Model == "lme_cv_di")[1]]), colour = "black",
+           size = 3.5)
 
+## get legend
+legend = get_legend(disp_plot_di)
+disp_plot_di <- disp_plot_di + theme(legend.position = "none")
+
+## save 
+grid = plot_grid(disp_plot_di,  cv_plot_di, 
+          ncol = 2, align = "h")
+ggsave(grid, path = "figures", filename = "figure5_dispersal-slower-than-cv.png",
+       height = 3, width = 6)
+ggsave(legend, path = "figures", filename = "figure5_legend.png",
+       height = 3, width = 3)
 
 #########################################
 ##       PHYLOGENETIC CORRELATION      ##
@@ -900,6 +939,7 @@ resid = data.frame(resid = residuals(lme_limrate_q3))
 resid = resid %>%
   mutate(sp_name_checked = names(residuals(lme_limrate_q3)))
 
+## fix name that got changed
 resid$sp_name_checked[which(resid$sp_name_checked == "Grus_canadensis")] <- "Branta_canadensis"
 
 resid = resid %>%
@@ -909,14 +949,15 @@ resid = resid %>%
   distinct() %>%
   as.data.frame()
 
+## get rid of names not in the tree
 not_in_tree = resid$sp_name_checked[which(!resid$sp_name_checked %in% labels(tree))]
-
 resid = resid[which(!resid$sp_name_checked %in% not_in_tree),] 
 
 rownames(resid) = resid$sp_name_checked
 
 resid = select(resid, resid)
 
+## get rid of tree names not in the model (because they got changed)
 tree <- subset(tree, tips.include = rownames(resid))
 
 ## bind tip data to tree
@@ -924,7 +965,7 @@ p4 <- phylo4d(tree, tip.data = resid)
 
 ## use Pagel's lambda to test the strength of phylogenetic autocorrelation:
 physig = phyloSignal(p4, methods = "Lambda")
-physig$stat #Lambda = 0.03
+physig$stat #Lambda = 0.01
 physig$pvalue < 0.05 #FALSE
 
 ## run same test for residuals of dispersal model for dispersal-insufficient observations
@@ -956,10 +997,7 @@ resid = resid %>%
   as.data.frame()
 
 not_in_tree = resid$sp_name_checked[which(!resid$sp_name_checked %in% labels(tree))]
-
 resid = resid[which(!resid$sp_name_checked %in% not_in_tree),] 
-
-## change species names that time tree changed
 
 rownames(resid) = resid$sp_name_checked
 

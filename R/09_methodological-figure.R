@@ -8,7 +8,7 @@ library(stringr)
 theme_set(theme_bw())
 
 ## start by reading in data
-data = read.csv("data-processed/model-data_main.csv")
+data = read.csv("data-processed/model_data/model-data_main.csv")
 
 ## now read in species-specific study polygons 
 polys = st_read("data-raw/BIOSHIFTSv3/ShapefilesBioShiftsv3_species.gpkg")
@@ -20,8 +20,8 @@ studies = st_read("data-raw/BIOSHIFTSv3/ShapefilesBioShiftsv3_studyareas.gpkg")
 polys = polys %>%
   filter(ID %in% paste(data$sp_name_checked, data$ID, sep = "_"))
 
-nrow(polys) ## 406 
-length(unique(paste(data$sp_name_checked, data$ID, sep = "_"))) ## 406 - all are there 
+nrow(polys) ## 355 
+length(unique(paste(data$sp_name_checked, data$ID, sep = "_"))) ## 355 - all are there 
 
 studies = studies %>%
   filter(Name %in% data$ID)
@@ -122,7 +122,7 @@ polys %>%
 
 data %>% 
   group_by(ID, group) %>%
-  count(ID) %>% view()
+  count(ID) %>% View()
 
 ## zoom in on a plant and a bird:
 candidates = polys %>% 

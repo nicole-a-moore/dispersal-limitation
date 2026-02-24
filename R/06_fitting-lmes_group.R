@@ -405,7 +405,7 @@ tableS3 = coefs %>%
   distinct() %>%
   ungroup() %>%
   arrange(LowestRank, MeanRank, Model) %>%
-  rename("Lowest model rank" = LowestRank, "Mean model rank" = , "Cumulative weight" = CumulativeWeight,
+  rename("Lowest model rank" = LowestRank, "Mean model rank" = MeanRank, "Cumulative weight" = CumulativeWeight,
          "Model type" = Model)
 
 tableS3 = tableS3 %>% gt()

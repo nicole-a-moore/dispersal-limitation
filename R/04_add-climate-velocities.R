@@ -23,7 +23,10 @@ v3 %>%
 ######################################
 ## read in file with species-specific climate velocities across different scales
 ## includes mean across study area and across each species range within study area 
-cvs <- read.csv("data-processed/intermediate_files/bioshifts/v3_lat-spp-specific-cvs.csv")
+cvs <- read.csv("data-processed/v3_with-cv.csv")
+
+cvs = cvs %>% 
+  rename("Eco" = eco, "Type" = type, "START_firstperiod" = start_firstperiod)
 
 ##############################################
 ####   join v3 with climate velocity data ####
@@ -37,9 +40,9 @@ v3 <- v3 %>%
                             ifelse(MaxDispersalDistanceKm <= (50/2+70.71), "50km",
                                    ifelse(MaxDispersalDistanceKm > (50/2+70.71), "110km",
                                           NA)))) %>%
-  select(MaxDispersalDistanceKm, cv_res, everything()) %>%
+  select(MaxDispersalDistanceKm, cv_res, everything()) %>% 
   left_join(., cvs) %>%
-  select(-median_cv_spp, -min_cv_spp, -max_cv_spp) %>% ## get rid of cv metrics we don't want
+  select(-median_cv_spp) %>% ## get rid of cv metrics we don't want
   rename("ClimVeloKmY_RelScale" = mean_cv_spp, 
          "sdClimVeloKmY_RelScale" = sd_cv_spp, 
          "q1ClimVeloKmY_RelScale" = q1_cv_spp, 
@@ -51,19 +54,20 @@ v3 <- v3 %>%
 ## now add all other scales 
 ## pivot wider: 
 cvs <- cvs %>%
-  select(-median_cv_spp, -min_cv_spp, -max_cv_spp) %>%
+  select(-median_cv_spp) %>%
   rename("ClimVeloKmY" = mean_cv_spp, "sdClimVeloKmY" = sd_cv_spp, 
          "q1ClimVeloKmY" = q1_cv_spp, "q3ClimVeloKmY" = q3_cv_spp) %>%
   pivot_wider(names_from = cv_res, 
               values_from = c(ClimVeloKmY, sdClimVeloKmY, q1ClimVeloKmY, q3ClimVeloKmY),
               names_glue = "{.value}_{cv_res}") %>%
-  select(scientificName_checked, ID, Type, Eco,
+  select(sp_name_checked, ID, Type, Eco, START_firstperiod,
          ClimVeloKmY_25km, sdClimVeloKmY_25km, q1ClimVeloKmY_25km, q3ClimVeloKmY_25km,
          ClimVeloKmY_50km, sdClimVeloKmY_50km, q1ClimVeloKmY_50km, q3ClimVeloKmY_50km,
-         ClimVeloKmY_110km, sdClimVeloKmY_110km, q1ClimVeloKmY_110km, q3ClimVeloKmY_110km)
+         ClimVeloKmY_110km, sdClimVeloKmY_110km, q1ClimVeloKmY_110km, q3ClimVeloKmY_110km) %>% 
+  distinct() 
 
 ## make sure each unique species x study area combination has only 1 row 
-length(unique(paste(cvs$scientificName_checked, cvs$ID))) == nrow(cvs) # TRUE
+length(unique(paste(cvs$sp_name_checked, cvs$ID, cvs$START_firstperiod))) == nrow(cvs) # TRUE
 ## :-)
 
 ## now merge to v3
@@ -80,6 +84,12 @@ v3_merged <- v3_merged %>%
          ClimVeloKmY_25km, sdClimVeloKmY_25km, q1ClimVeloKmY_25km, q3ClimVeloKmY_25km,
          ClimVeloKmY_50km, sdClimVeloKmY_50km, q1ClimVeloKmY_50km, q3ClimVeloKmY_50km,
          ClimVeloKmY_110km, sdClimVeloKmY_110km, q1ClimVeloKmY_110km, q3ClimVeloKmY_110km, everything())
+
+## get rid of duplicates 
+v3_merged <- v3_merged %>% 
+  select(-NewID) %>% 
+  distinct()
+
 ## save 
 write.csv(v3_merged, "data-processed/v3_with-cv.csv", row.names = FALSE)
 

@@ -30,7 +30,7 @@ cvs_spp = read.csv("data-raw/BIOSHIFTSv3/cvs/sp_shifts_and_cvs_for_nikki.csv")
 ## ID, sps, res, type
 ## get rid of unnecessary columns 
 cvs_spp = cvs_spp %>%
-  select(old_id, id, eco, sp_name_checked, type, colnames(.)[33:55]) %>%
+  select(old_id, id, eco, sp_name_checked, type, start_firstperiod, colnames(.)[33:55]) %>%
   rename("ID" = old_id, "NewID" = id) 
 
 ## reformat data to create resolution column 
