@@ -42,18 +42,20 @@ data <- dd %>%
 data <- arrange(data, what_is_limiting)
 
 data %>%
+  filter(ClimVeloKmY >= 0) %>% 
+  mutate(colour = ifelse(what_is_limiting == "Climate", "transparent", "black")) %>%
   ggplot(aes(x = cv_lab, y = ClimVeloKmY, fill = ClimVeloKmY, shape = group)) +
-  geom_violin(inherit.aes = F, data = data , aes(x = cv_lab, y = ClimVeloKmY)) +
-  geom_point(position = position_jitter(),
-             colour = ifelse(data$what_is_limiting == "Climate", "transparent", "black")) +
+  geom_violin(inherit.aes = F, aes(x = cv_lab, y = ClimVeloKmY)) +
+  geom_point(position = position_jitter(), aes(colour = colour)) +
+  scale_colour_manual(values = c("black", "transparent")) +
   scale_shape_manual(values = c(21,24,22,23), labels = c("Birds", "Plants")) +
   scale_fill_gradient2(high = "#B2182B", low = "#2166AC", mid = "#F8DCCB", midpoint = 3.5) +
   labs(x = "Spatial resolution of temperature data", y = "Mean local velocity of isotherm shifts (km/yr)", 
        shape = "") + 
-  guides(size = "legend", fill = "none") 
+  guides(size = "legend", fill = "none", colour = "none") 
 
 ## save
-ggsave(path = "figures/visualizing-sensitivity", filename = "sensitivity_cv-scale.png",
+ggsave(path = "figures", filename = "figureS1_sensitivity_cv-scale.png",
        width = 6, height = 3.5)
 
 data %>%
