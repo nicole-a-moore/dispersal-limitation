@@ -28,7 +28,7 @@ length(unique(sp$scientificName)) ## 12617 spp
 ## Sutherland - mean/median natal dispersal distances
 ## Whitmee & Orme 2013 - mammal natal breeding dispersal distances 
 ## Jenkins - bird and plant dispersal 
-## Flores - plant seed dispersal
+## Flores-Moreno - plant seed dispersal
 ## Tamme - plant seed dispersal 
 ## TRY - seed or whole plant dispersal
 ## Chu - bird natal dispersal distances 
@@ -321,7 +321,7 @@ jenkins_sp <- unique(jenkins_dd$scientificName)[which(unique(jenkins_dd$scientif
 
 
 #---------------------
-# Flores et al. 2013
+# Flores-Moreno et al. 2013
 #---------------------
 ## seed traps, tracked individual seeds, marked and recaptured seeds and estimated dispersal distances based on tracking vectors and calculating gut or fur retention times
 flores <- read.delim("data-raw/dispersal-data/Flores/Flores_et_al_2013.txt") %>%
@@ -357,7 +357,7 @@ flores_dd <- flores %>%
                               "MaxDispersalDistance", 
                               NA))) %>%
   mutate(Sex = NA, ObservationTypeSpecific = "seed/plant dispersal (field)", Unit = "m", 
-         Database = "Flores et al. 2013") %>%
+         Database = "Flores-Moreno et al. 2013") %>%
   filter(!is.na(DispersalDistance)) %>%
   rename("Source" = Reference) %>%
   mutate(Source = ifelse(str_detect(Source, "Bossard CC. The Role of Habitat Disturbance"),
@@ -570,7 +570,7 @@ try_dd_sp <- unique(try_dd_dd$scientificName)[which(unique(try_dd_dd$scientificN
 
 
 #---------------------
-# Chu 2021
+# Chu 2023
 #---------------------
 ## read in data
 chu = read_csv("data-raw/dispersal-data/Chu/Chu_Natal_Dispersal_Estimates_Nikki.csv")
@@ -596,10 +596,10 @@ chu$Code = ifelse(chu$n == 1, "SingleObservation", "MeanDispersalDistance")
 chu_dd <- chu %>%
   select(all_of(cols_to_keep), geom, arimean, Code) %>%
   gather(key = "Field", value = "DispersalDistance", c(geom, arimean)) %>%
-  mutate(Source = "Chu 2021",
+  mutate(Source = "Chu & Clairmunt 2023",
          Sex = NA, Unit = "km",
          ObservationTypeSpecific = "natal dispersal distance",
-         Database = "Chu 2021") 
+         Database = "Chu & Clairmunt 2023") 
 
 ## check how many species in bioshifts 
 length(which(unique(chu_dd$scientificName) %in% unique(sp$scientificName))) ## 81
